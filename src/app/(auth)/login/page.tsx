@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -18,7 +17,6 @@ const loginSchema = z.object({
 type LoginForm = z.infer<typeof loginSchema>;
 
 export default function LoginPage() {
-  const router = useRouter();
   const [loading, setLoading] = useState(false);
 
   const { register, handleSubmit, formState: { errors } } = useForm<LoginForm>({
@@ -29,12 +27,11 @@ export default function LoginPage() {
     const checkSession = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (session) {
-        router.replace('/dashboard');
-        router.refresh();
+        window.location.href = '/dashboard';
       }
     };
     checkSession();
-  }, [router]);
+  }, []);
 
   const onSubmit = async (data: LoginForm) => {
     setLoading(true);
@@ -47,12 +44,10 @@ export default function LoginPage() {
       if (error) throw error;
       
       toast.success('Successfully logged in');
-      router.replace('/dashboard');
-      router.refresh();
+      window.location.href = '/dashboard';
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Failed to authenticate';
       toast.error(msg);
-    } finally {
       setLoading(false);
     }
   };

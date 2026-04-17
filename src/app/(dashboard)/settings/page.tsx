@@ -43,7 +43,7 @@ function ApiStatusChip({ ok, label }: { ok: boolean | null; label: string }) {
 }
 
 export default function SettingsPage() {
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<{ id: string; email?: string; user_metadata?: Record<string, string> } | null>(null);
   const [profile, setProfile] = useState<Partial<Profile>>({});
   const [saving, setSaving] = useState(false);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
@@ -119,8 +119,9 @@ export default function SettingsPage() {
       
       setProfile(p => ({ ...p, ...profileData, role: profileData.role ?? undefined, phone: profileData.phone ?? undefined, whatsapp: profileData.whatsapp ?? undefined }));
       toast.success('Profile saved successfully!');
-    } catch (err: any) {
-      toast.error(err.message || 'Failed to save profile');
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Failed to save profile';
+      toast.error(msg);
     } finally {
       setSaving(false);
     }
@@ -167,9 +168,10 @@ export default function SettingsPage() {
 
       setProfile(p => ({ ...p, avatar_url: publicUrl }));
       toast.success('Identity avatar updated successfully!');
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Avatar Error:', err);
-      toast.error(err.message || 'Avatar upload failed. Check the console for details.');
+      const msg = err instanceof Error ? err.message : 'Avatar upload failed. Check the console for details.';
+      toast.error(msg);
     } finally {
       setUploadingAvatar(false);
     }
@@ -195,7 +197,7 @@ export default function SettingsPage() {
           ].map(t => (
             <button
               key={t.id}
-              onClick={() => setActiveTab(t.id as any)}
+              onClick={() => setActiveTab(t.id as 'profile' | 'security' | 'intelligence')}
               className={`flex items-center gap-2 px-5 py-2 rounded-xl text-xs font-black transition-all ${
                 activeTab === t.id 
                   ? 'bg-white text-primary shadow-md shadow-blue-900/5 border border-slate-200' 

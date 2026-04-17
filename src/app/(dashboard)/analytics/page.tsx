@@ -24,8 +24,8 @@ interface InsightCardProps {
   label: string;
   value: string;
   subtext: string;
-  trend: number | null; // percent change
-  icon: any;
+  trend: number | null;
+  icon: React.ElementType;
   color: string;
 }
 
@@ -121,15 +121,17 @@ export default function AnalyticsPage() {
 
       await fetchData();
       setActiveAction(null);
-    } catch (err: any) {
-      toast.error(`Execution failed: ${err.message}`);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Execution failed';
+      toast.error(`Execution failed: ${msg}`);
     } finally {
       setExecuting(false);
     }
   };
 
   useEffect(() => { 
-    fetchData(); 
+    const run = async () => { await fetchData(); };
+    run();
     window.addEventListener('shipments-updated', fetchData);
     return () => window.removeEventListener('shipments-updated', fetchData);
   }, [fetchData]);
@@ -480,7 +482,7 @@ export default function AnalyticsPage() {
             <Package size={32} className="text-slate-300" />
           </div>
           <h2 className="text-xl font-black text-slate-800 mb-2">No data in this period</h2>
-          <p className="text-sm font-semibold text-slate-500 max-w-md">There are no recorded shipments for the active "{timeFilter}" time filter. Try expanding your search timeframe to view analytics.</p>
+          <p className="text-sm font-semibold text-slate-500 max-w-md">There are no recorded shipments for the active &quot;{timeFilter}&quot; time filter. Try expanding your search timeframe to view analytics.</p>
           <button 
             onClick={() => setTimeFilter('90d')}
             className="mt-6 px-6 py-2.5 bg-primary text-white text-xs font-black uppercase tracking-widest rounded-xl hover:bg-blue-700 transition-all shadow-md active:scale-95"

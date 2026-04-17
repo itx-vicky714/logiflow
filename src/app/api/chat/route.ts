@@ -32,14 +32,26 @@ function detectIntent(message: string): 'total_shipments' | 'active_shipments' |
   return null;
 }
 
-function smartFallbackText(message: string, shipments: any[]): string {
+interface ShipmentRecord {
+  shipment_code: string;
+  origin: string;
+  destination: string;
+  status: string;
+  risk_score: number;
+  mode: string;
+  cargo_type: string;
+  eta: string;
+  declared_value?: number;
+}
+
+function smartFallbackText(message: string, shipments: ShipmentRecord[]): string {
   const msg = message.toLowerCase();
   const intent = detectIntent(message);
   
   // High-level stats
   const total = shipments.length;
-  const highRisk = shipments.filter((s:any) => s.risk_score > 70).length;
-  const inTransit = shipments.filter((s:any) => s.status === 'in_transit' || s.status === 'on_time').length;
+  const highRisk = shipments.filter((s) => s.risk_score > 70).length;
+  const inTransit = shipments.filter((s) => s.status === 'in_transit' || s.status === 'on_time').length;
 
   const isHinglish = /(ky|hai|kya|kaise|kaha|bata|ye|wo|mera|ka|ki|ke|kon|kab)/i.test(msg);
   const isHindi = /[\u0900-\u097F]/.test(msg);
@@ -55,7 +67,7 @@ function smartFallbackText(message: string, shipments: any[]): string {
   }
 
   if (intent === 'delayed_shipments') {
-    return `You have ${shipments.filter((s:any)=>s.status==='delayed').length} delayed shipments.`;
+    return `You have ${shipments.filter((s)=>s.status==='delayed').length} delayed shipments.`;
   }
 
   if (intent === 'high_risk') {
@@ -69,7 +81,7 @@ function smartFallbackText(message: string, shipments: any[]): string {
     if (routeMatch) {
       const origin = routeMatch[1];
       const dest = routeMatch[2];
-      const match = shipments.find((s:any) => 
+      const match = shipments.find((s) => 
         (s.origin.toLowerCase().includes(origin) && s.destination.toLowerCase().includes(dest)) ||
         (s.origin.toLowerCase().includes(dest) && s.destination.toLowerCase().includes(origin))
       );
@@ -113,7 +125,7 @@ export async function POST(req: Request) {
     );
 
     const { data: { user } } = await supabase.auth.getUser();
-    let shipments: any[] = [];
+    let shipments: ShipmentRecord[] = [];
     if (user) {
       const { data } = await supabase.from('shipments').select('*').eq('user_id', user.id);
       if (data) shipments = data;
@@ -136,16 +148,16 @@ export async function POST(req: Request) {
 
     // Comprehensive Summary Generation
     const total = shipments.length;
-    const inTransit = shipments.filter((s:any) => s.status === 'in_transit' || s.status === 'on_time').length;
-    const delayed = shipments.filter((s:any) => s.status === 'delayed').length;
-    const highRisk = shipments.filter((s:any) => s.risk_score > 70).length;
-    const delivered = shipments.filter((s:any) => s.status === 'delivered').length;
-    const road = shipments.filter((s:any) => s.mode === 'road').length;
-    const rail = shipments.filter((s:any) => s.mode === 'rail').length;
-    const air = shipments.filter((s:any) => s.mode === 'air').length;
+    const inTransit = shipments.filter((s) => s.status === 'in_transit' || s.status === 'on_time').length;
+    const delayed = shipments.filter((s) => s.status === 'delayed').length;
+    const highRisk = shipments.filter((s) => s.risk_score > 70).length;
+    const delivered = shipments.filter((s) => s.status === 'delivered').length;
+    const road = shipments.filter((s) => s.mode === 'road').length;
+    const rail = shipments.filter((s) => s.mode === 'rail').length;
+    const air = shipments.filter((s) => s.mode === 'air').length;
     
-    const avgRisk = total > 0 ? Math.round(shipments.reduce((a:number, s:any) => a + s.risk_score, 0) / total) : 0;
-    const totalRev = shipments.reduce((a:number, s:any) => a + (s.declared_value || 0) * 0.05, 0); // Est revenue
+    const avgRisk = total > 0 ? Math.round(shipments.reduce((a: number, s) => a + s.risk_score, 0) / total) : 0;
+    const totalRev = shipments.reduce((a: number, s) => a + (s.declared_value || 0) * 0.05, 0); // Est revenue
 
     const summary = `
 [GROUNDING CONTEXT]
@@ -161,13 +173,13 @@ export async function POST(req: Request) {
     `.trim();
 
     // Inject top 60 shipments for specific route queries (increased for better recall)
-    const detailLines = (shipments as any[]).slice(0, 60).map((s: any) =>
+    const detailLines = shipments.slice(0, 60).map((s) =>
       `• ${s.shipment_code}: ${s.origin}→${s.destination} | Mode: ${s.mode} | Status: ${s.status} | Risk: ${s.risk_score} | Cargo: ${s.cargo_type} | ETA: ${s.eta}`
     ).join('\n');
 
     const fullSystem = `${SYSTEM_PROMPT}\n\n${summary}\n\n[DETAILED MANIFEST (TOP 60)]\n${detailLines}\n[END]`;
 
-    const contents: any[] = [
+    const contents: { role: string; parts: { text: string }[] }[] = [
       { role: 'user', parts: [{ text: fullSystem }] },
       { role: 'model', parts: [{ text: 'Control Tower AI systems active. Grounding context loaded. I have real-time access to the manifest of ' + total + ' shipments. Ready for route-specific queries like Patna to Surat or high-risk assessments.' }] },
     ];

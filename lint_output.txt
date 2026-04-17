@@ -1,0 +1,286 @@
+﻿
+> logiflow@0.1.0 lint
+> eslint . --ext .js,.jsx,.ts,.tsx
+
+
+C:\Users\premr\OneDrive\Desktop\LogiFlow\.agents\skills\react-components\examples\gold-standard-card.tsx
+  20:10  warning  'cardData' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\premr\OneDrive\Desktop\LogiFlow\.agents\skills\remotion\examples\WalkthroughComposition.tsx
+   2:9   warning  'Sequence' is defined but never used         @typescript-eslint/no-unused-vars
+  19:15  warning  'width' is assigned a value but never used   @typescript-eslint/no-unused-vars
+  19:22  warning  'height' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\premr\OneDrive\Desktop\LogiFlow\.agents\skills\remotion\resources\screen-slide-template.tsx
+  16:3  warning  'width' is defined but never used   @typescript-eslint/no-unused-vars
+  17:3  warning  'height' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\premr\OneDrive\Desktop\LogiFlow\.agents\skills\shadcn-ui\examples\data-table.tsx
+  157:17  warning  Compilation Skipped: Use of incompatible library
+
+This API returns functions which cannot be memoized without leading to stale UI. To prevent this, by default React Compiler will skip memoizing this component/hook. However, you may see issues if values from this API are passed to other components/hooks that are memoized.
+
+C:\Users\premr\OneDrive\Desktop\LogiFlow\.agents\skills\shadcn-ui\examples\data-table.tsx:157:17
+  155 |   const [rowSelection, setRowSelection] = React.useState({})
+  156 |
+> 157 |   const table = useReactTable({
+      |                 ^^^^^^^^^^^^^ TanStack Table's `useReactTable()` API returns functions that cannot be memoized safely
+  158 |     data,
+  159 |     columns,
+  160 |     onSortingChange: setSorting,  react-hooks/incompatible-library
+
+C:\Users\premr\OneDrive\Desktop\LogiFlow\src\app\(auth)\login\page.tsx
+  40:19  error  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  96:14  error  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+
+C:\Users\premr\OneDrive\Desktop\LogiFlow\src\app\(auth)\signup\page.tsx
+  50:19  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\premr\OneDrive\Desktop\LogiFlow\src\app\(dashboard)\ai-chat\page.tsx
+  73:14  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\premr\OneDrive\Desktop\LogiFlow\src\app\(dashboard)\analytics\page.tsx
+    5:58   warning  'modeIcon' is defined but never used                             @typescript-eslint/no-unused-vars
+   10:15   warning  'TrendingDown' is defined but never used                         @typescript-eslint/no-unused-vars
+   10:54   warning  'BarChart3' is defined but never used                            @typescript-eslint/no-unused-vars
+   11:31   warning  'Cloud' is defined but never used                                @typescript-eslint/no-unused-vars
+   12:3    warning  'Calendar' is defined but never used                             @typescript-eslint/no-unused-vars
+   12:24   warning  'Info' is defined but never used                                 @typescript-eslint/no-unused-vars
+   13:3    warning  'Target' is defined but never used                               @typescript-eslint/no-unused-vars
+   13:11   warning  'Rocket' is defined but never used                               @typescript-eslint/no-unused-vars
+   13:19   warning  'ShieldAlert' is defined but never used                          @typescript-eslint/no-unused-vars
+   13:32   warning  'Cpu' is defined but never used                                  @typescript-eslint/no-unused-vars
+   13:37   warning  'Network' is defined but never used                              @typescript-eslint/no-unused-vars
+   13:55   warning  'Maximize2' is defined but never used                            @typescript-eslint/no-unused-vars
+   13:66   warning  'ChevronRight' is defined but never used                         @typescript-eslint/no-unused-vars
+   13:80   warning  'X' is defined but never used                                    @typescript-eslint/no-unused-vars
+   13:83   warning  'CloudRain' is defined but never used                            @typescript-eslint/no-unused-vars
+   13:94   warning  'Clock' is defined but never used                                @typescript-eslint/no-unused-vars
+   13:101  warning  'Navigation' is defined but never used                           @typescript-eslint/no-unused-vars
+   13:113  warning  'AlertCircle' is defined but never used                          @typescript-eslint/no-unused-vars
+   13:126  warning  'Thermometer' is defined but never used                          @typescript-eslint/no-unused-vars
+   13:139  warning  'Droplets' is defined but never used                             @typescript-eslint/no-unused-vars
+   13:149  warning  'Wind' is defined but never used                                 @typescript-eslint/no-unused-vars
+   16:46   warning  'startOfDay' is defined but never used                           @typescript-eslint/no-unused-vars
+   16:58   warning  'differenceInDays' is defined but never used                     @typescript-eslint/no-unused-vars
+   28:9    error    Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  124:19   error    Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  237:9    warning  'weatherRisk' is assigned a value but never used                 @typescript-eslint/no-unused-vars
+  237:43   warning  'i' is defined but never used                                    @typescript-eslint/no-unused-vars
+  483:119  error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+  483:132  error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+
+C:\Users\premr\OneDrive\Desktop\LogiFlow\src\app\(dashboard)\dashboard\page.tsx
+   11:3   warning  'TrendingUp' is defined but never used    @typescript-eslint/no-unused-vars
+   11:27  warning  'X' is defined but never used             @typescript-eslint/no-unused-vars
+   11:30  warning  'GitBranch' is defined but never used     @typescript-eslint/no-unused-vars
+   11:52  warning  'Loader2' is defined but never used       @typescript-eslint/no-unused-vars
+   29:44  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   72:22  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  105:46  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\premr\OneDrive\Desktop\LogiFlow\src\app\(dashboard)\map\page.tsx
+   9:14  warning  'Filter' is defined but never used                  @typescript-eslint/no-unused-vars
+   9:35  warning  'CheckCircle' is defined but never used             @typescript-eslint/no-unused-vars
+  10:31  warning  'CloudRain' is defined but never used               @typescript-eslint/no-unused-vars
+  10:42  warning  'Package' is defined but never used                 @typescript-eslint/no-unused-vars
+  10:51  warning  'Truck' is defined but never used                   @typescript-eslint/no-unused-vars
+  10:58  warning  'Clock' is defined but never used                   @typescript-eslint/no-unused-vars
+  10:77  warning  'AlertCircle' is defined but never used             @typescript-eslint/no-unused-vars
+  37:22  warning  'setModeFilter' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  95:14  warning  'e' is defined but never used                       @typescript-eslint/no-unused-vars
+
+C:\Users\premr\OneDrive\Desktop\LogiFlow\src\app\(dashboard)\reports\page.tsx
+    5:49   warning  'riskLabel' is defined but never used                            @typescript-eslint/no-unused-vars
+    8:20   warning  'Mail' is defined but never used                                 @typescript-eslint/no-unused-vars
+    8:110  warning  'RefreshCw' is defined but never used                            @typescript-eslint/no-unused-vars
+    8:121  warning  'Filter' is defined but never used                               @typescript-eslint/no-unused-vars
+    8:129  warning  'Search' is defined but never used                               @typescript-eslint/no-unused-vars
+    8:137  warning  'Calendar' is defined but never used                             @typescript-eslint/no-unused-vars
+    8:147  warning  'Globe' is defined but never used                                @typescript-eslint/no-unused-vars
+    8:154  warning  'Zap' is defined but never used                                  @typescript-eslint/no-unused-vars
+   12:97   error    Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  190:27   error    Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  200:25   error    Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  211:14   warning  'err' is defined but never used                                  @typescript-eslint/no-unused-vars
+  211:19   error    Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  366:124  error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+  366:136  error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+
+C:\Users\premr\OneDrive\Desktop\LogiFlow\src\app\(dashboard)\settings\page.tsx
+   11:47  warning  'Bell' is defined but never used                                                                                                                                                                                                                                                         @typescript-eslint/no-unused-vars
+   46:36  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                 @typescript-eslint/no-explicit-any
+  122:19  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                 @typescript-eslint/no-explicit-any
+  170:19  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                 @typescript-eslint/no-explicit-any
+  198:51  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                 @typescript-eslint/no-explicit-any
+  224:21  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+C:\Users\premr\OneDrive\Desktop\LogiFlow\src\app\(dashboard)\shipments\new\page.tsx
+    3:27   warning  'useCallback' is defined but never used                          @typescript-eslint/no-unused-vars
+    6:114  warning  'riskLabel' is defined but never used                            @typescript-eslint/no-unused-vars
+   11:46   warning  'MapPin' is defined but never used                               @typescript-eslint/no-unused-vars
+   12:3    warning  'FileText' is defined but never used                             @typescript-eslint/no-unused-vars
+   12:40   warning  'ArrowRight' is defined but never used                           @typescript-eslint/no-unused-vars
+   12:52   warning  'Clock' is defined but never used                                @typescript-eslint/no-unused-vars
+   12:59   warning  'DollarSign' is defined but never used                           @typescript-eslint/no-unused-vars
+   13:3    warning  'Navigation' is defined but never used                           @typescript-eslint/no-unused-vars
+   77:35   error    Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  124:13   warning  'departure' is assigned a value but never used                   @typescript-eslint/no-unused-vars
+  151:19   error    Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  192:17   warning  'Icon' is assigned a value but never used                        @typescript-eslint/no-unused-vars
+  351:95   error    `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+  422:46   error    Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  426:72   error    Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  428:40   error    Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+
+C:\Users\premr\OneDrive\Desktop\LogiFlow\src\app\(dashboard)\shipments\page.tsx
+   7:41  warning  'Filter' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           @typescript-eslint/no-unused-vars
+  41:5   error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\premr\OneDrive\Desktop\LogiFlow\src\app\(dashboard)\shipments\page.tsx:41:5
+  39 |
+  40 |   useEffect(() => {
+> 41 |     fetchData();
+     |     ^^^^^^^^^ Avoid calling setState() directly within an effect
+  42 |     window.addEventListener('shipments-updated', fetchData);
+  43 |     return () => window.removeEventListener('shipments-updated', fetchData);
+  44 |   }, [fetchData]);  react-hooks/set-state-in-effect
+  48:7   error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\premr\OneDrive\Desktop\LogiFlow\src\app\(dashboard)\shipments\page.tsx:48:7
+  46 |   useEffect(() => {
+  47 |     if (searchParam) {
+> 48 |       setSearch(searchParam);
+     |       ^^^^^^^^^ Avoid calling setState() directly within an effect
+  49 |     }
+  50 |   }, [searchParam]);
+  51 |                                                                                              react-hooks/set-state-in-effect
+  81:5   warning  Expected an assignment or function call and instead saw an expression                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        @typescript-eslint/no-unused-expressions
+
+C:\Users\premr\OneDrive\Desktop\LogiFlow\src\app\api\chat\route.ts
+   35:56  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   41:40  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   42:41  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   58:44  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   72:39  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  116:20  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  139:43  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  140:41  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  141:42  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  142:43  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  143:38  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  144:38  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  145:37  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  147:74  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  148:52  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  164:39  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  164:67  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  170:21  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\premr\OneDrive\Desktop\LogiFlow\src\app\page.tsx
+    3:10   warning  'ChevronRight' is defined but never used                         @typescript-eslint/no-unused-vars
+    3:55   warning  'Clock' is defined but never used                                @typescript-eslint/no-unused-vars
+    3:62   warning  'Package' is defined but never used                              @typescript-eslint/no-unused-vars
+    3:71   warning  'MapPin' is defined but never used                               @typescript-eslint/no-unused-vars
+  150:78   error    `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+  215:16   error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+  215:176  error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+
+C:\Users\premr\OneDrive\Desktop\LogiFlow\src\components\LogiBot.tsx
+    6:47  warning  'Zap' is defined but never used                                                                                 @typescript-eslint/no-unused-vars
+   47:46  error    Unexpected any. Specify a different type                                                                        @typescript-eslint/no-explicit-any
+   53:33  error    Unexpected any. Specify a different type                                                                        @typescript-eslint/no-explicit-any
+   71:42  error    Unexpected any. Specify a different type                                                                        @typescript-eslint/no-explicit-any
+   71:79  error    Unexpected any. Specify a different type                                                                        @typescript-eslint/no-explicit-any
+   77:24  error    Unexpected any. Specify a different type                                                                        @typescript-eslint/no-explicit-any
+  165:6   warning  React Hook useCallback has a missing dependency: 'speakText'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Users\premr\OneDrive\Desktop\LogiFlow\src\components\MapComponent.tsx
+  60:66  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\premr\OneDrive\Desktop\LogiFlow\src\components\MapLayout.tsx
+    9:10  warning  'KEY_CITIES' is defined but never used           @typescript-eslint/no-unused-vars
+    9:38  warning  'getWeatherRiskColor' is defined but never used  @typescript-eslint/no-unused-vars
+   12:37  error    Unexpected any. Specify a different type         @typescript-eslint/no-explicit-any
+   71:31  error    Unexpected any. Specify a different type         @typescript-eslint/no-explicit-any
+  171:17  warning  'sc' is assigned a value but never used          @typescript-eslint/no-unused-vars
+
+C:\Users\premr\OneDrive\Desktop\LogiFlow\src\components\ShipmentDetailModal.tsx
+    6:56   warning  'riskBg' is defined but never used                               @typescript-eslint/no-unused-vars
+    7:52   warning  'getWeatherRiskBadge' is defined but never used                  @typescript-eslint/no-unused-vars
+    8:191  warning  'Activity' is defined but never used                             @typescript-eslint/no-unused-vars
+    8:201  warning  'ShieldAlert' is defined but never used                          @typescript-eslint/no-unused-vars
+   32:56   error    Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  119:36   error    Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  122:56   error    Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  184:21   error    Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  615:247  error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+  615:261  error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+  704:65   error    Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  880:10   warning  'SparklesIcon' is defined but never used                         @typescript-eslint/no-unused-vars
+  880:30   error    Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+
+C:\Users\premr\OneDrive\Desktop\LogiFlow\src\components\charts\AnalyticsCharts.tsx
+   5:35  warning  'LineChart' is defined but never used     @typescript-eslint/no-unused-vars
+  11:9   error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  39:67  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  39:78  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  63:65  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  85:65  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  85:76  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\premr\OneDrive\Desktop\LogiFlow\src\components\layout\Sidebar.tsx
+    9:23  warning  'ChevronRight' is defined but never used                                                                                                                                                                                                                                                 @typescript-eslint/no-unused-vars
+    9:50  warning  'Truck' is defined but never used                                                                                                                                                                                                                                                        @typescript-eslint/no-unused-vars
+   13:10  warning  'motion' is defined but never used                                                                                                                                                                                                                                                       @typescript-eslint/no-unused-vars
+   13:18  warning  'AnimatePresence' is defined but never used                                                                                                                                                                                                                                              @typescript-eslint/no-unused-vars
+   50:36  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                 @typescript-eslint/no-explicit-any
+   51:42  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                 @typescript-eslint/no-explicit-any
+  110:13  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+  137:83  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                 @typescript-eslint/no-explicit-any
+  149:36  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                 @typescript-eslint/no-explicit-any
+  171:45  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                 @typescript-eslint/no-explicit-any
+
+C:\Users\premr\OneDrive\Desktop\LogiFlow\src\components\layout\TopBar.tsx
+    8:30  warning  'Moon' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    @typescript-eslint/no-unused-vars
+    8:36  warning  'Sun' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     @typescript-eslint/no-unused-vars
+    8:50  warning  'Clock' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   @typescript-eslint/no-unused-vars
+    8:57  warning  'X' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       @typescript-eslint/no-unused-vars
+   12:10  warning  'format' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  @typescript-eslint/no-unused-vars
+   40:36  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            @typescript-eslint/no-explicit-any
+   60:19  warning  'error' is assigned a value but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          @typescript-eslint/no-unused-vars
+   74:5   error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\premr\OneDrive\Desktop\LogiFlow\src\components\layout\TopBar.tsx:74:5
+  72 |
+  73 |   useEffect(() => {
+> 74 |     loadData();
+     |     ^^^^^^^^ Avoid calling setState() directly within an effect
+  75 |     const t = setInterval(() => setTime(new Date()), 1000);
+  76 |
+  77 |     // Real-time subscription for notifications  react-hooks/set-state-in-effect
+  128:54  warning  'shipment_code' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           @typescript-eslint/no-unused-vars
+
+C:\Users\premr\OneDrive\Desktop\LogiFlow\src\types\index.ts
+  47:27  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+Γ£û 175 problems (79 errors, 96 warnings)
+

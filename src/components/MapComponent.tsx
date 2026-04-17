@@ -56,8 +56,16 @@ const cityCoords: Record<string, [number, number]> = {
   "Kochi": [9.9312, 76.2673]
 };
 
+interface ShipmentMarker {
+  id: string;
+  origin: string;
+  dest: string;
+  status: string;
+  eta: string;
+}
+
 // We receive ALL_SHIPMENTS directly from the props to render
-export default function MapComponent({ shipments }: { shipments: any[] }) {
+export default function MapComponent({ shipments }: { shipments: ShipmentMarker[] }) {
   useEffect(() => {
     // any manual DOM setup if needed (leaflet requires this sometimes)
   }, []);

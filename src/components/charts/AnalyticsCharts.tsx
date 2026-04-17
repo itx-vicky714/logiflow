@@ -8,8 +8,8 @@ import {
 
 interface Props {
   type: 'volume' | 'modePerf' | 'cost' | 'weather';
-  data: any[];
-  tooltipStyle: object;
+  data: Record<string, unknown>[];
+  tooltipStyle: React.CSSProperties;
 }
 
 export default function AnalyticsCharts({ type, data, tooltipStyle }: Props) {
@@ -36,8 +36,8 @@ export default function AnalyticsCharts({ type, data, tooltipStyle }: Props) {
             <YAxis yAxisId="left" stroke="#94a3b8" fontSize={10} tickLine={false} axisLine={false} />
             <YAxis yAxisId="right" orientation="right" stroke="#94a3b8" fontSize={10} tickLine={false} axisLine={false}
               tickFormatter={(v: number) => `₹${(v / 100000).toFixed(0)}L`} />
-            <Tooltip contentStyle={tooltipStyle} formatter={(val: any, name: any) =>
-              name === 'Revenue' ? [`₹${Number(val).toLocaleString('en-IN')}`, 'Revenue'] : [val, name]} />
+            <Tooltip contentStyle={tooltipStyle} formatter={(val: unknown, name: unknown) =>
+              name === 'Revenue' ? [`₹${Number(val).toLocaleString('en-IN')}`, 'Revenue'] : [String(val), String(name)]} />
             <Legend wrapperStyle={{ fontSize: 11, paddingTop: 8 }} />
             <Area yAxisId="left" type="monotone" dataKey="shipments" name="Shipments" stroke="#2563eb" strokeWidth={2} fill="url(#gradShip)" dot={false} />
             <Line yAxisId="left" type="monotone" dataKey="forecast" name="Forecast" stroke="#8b5cf6" strokeWidth={1.5} strokeDasharray="5 4" dot={false} />
@@ -60,7 +60,7 @@ export default function AnalyticsCharts({ type, data, tooltipStyle }: Props) {
             <XAxis dataKey="name" stroke="#94a3b8" fontSize={11} tickLine={false} axisLine={false} />
             <YAxis stroke="#94a3b8" fontSize={10} tickLine={false} axisLine={false}
               tickFormatter={(v: number) => v >= 100000 ? `₹${(v / 100000).toFixed(0)}L` : `₹${(v / 1000).toFixed(0)}K`} />
-            <Tooltip contentStyle={tooltipStyle} formatter={(v: any) => [`₹${Number(v).toLocaleString('en-IN')}`, '']} cursor={{ fill: '#f8fafc' }} />
+            <Tooltip contentStyle={tooltipStyle} formatter={(v: unknown) => [`₹${Number(v).toLocaleString('en-IN')}`, '']} cursor={{ fill: '#f8fafc' }} />
             <Legend wrapperStyle={{ fontSize: 11, paddingTop: 8 }} />
             <Bar dataKey="revenue" name="Revenue" fill="#2563eb" radius={[3, 3, 0, 0]} />
             <Bar dataKey="cost"    name="Cost"    fill="#94a3b8" radius={[3, 3, 0, 0]} />
@@ -82,7 +82,7 @@ export default function AnalyticsCharts({ type, data, tooltipStyle }: Props) {
             <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
             <XAxis dataKey="date" stroke="#94a3b8" fontSize={10} tickLine={false} axisLine={false} interval="preserveStartEnd" />
             <YAxis stroke="#94a3b8" fontSize={10} tickLine={false} axisLine={false} unit="%" />
-            <Tooltip contentStyle={tooltipStyle} formatter={(v: any, name: any) => [`${v}%`, name]} />
+            <Tooltip contentStyle={tooltipStyle} formatter={(v: unknown, name: unknown) => [`${String(v)}%`, String(name)]} />
             <Legend wrapperStyle={{ fontSize: 11, paddingTop: 8 }} />
             <Area type="monotone" dataKey="rain"  name="Rain Risk"  stroke="#3b82f6" strokeWidth={2} fill="url(#gradRain)" />
             <Area type="monotone" dataKey="fog"   name="Fog Risk"   stroke="#94a3b8" strokeWidth={2} fill="url(#gradFog)" />

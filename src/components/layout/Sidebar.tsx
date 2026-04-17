@@ -12,7 +12,10 @@ import { toast } from 'sonner';
 import { useSidebar } from '@/context/SidebarContext';
 import { motion, AnimatePresence } from 'framer-motion';
 
-const NAV_SECTIONS = [
+type NavItem = { name: string; href: string; icon: React.ElementType; exact?: boolean; exclude?: string; accent?: boolean };
+type NavSection = { label: string; items: NavItem[] };
+
+const NAV_SECTIONS: NavSection[] = [
   {
     label: 'Workspace',
     items: [
@@ -47,8 +50,8 @@ export function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
   const { collapsed, toggle } = useSidebar();
-  const [user, setUser] = useState<any>(null);
-  const [profile, setProfile] = useState<any>(null);
+  const [user, setUser] = useState<{ id: string; email?: string; user_metadata?: Record<string, string> } | null>(null);
+  const [profile, setProfile] = useState<{ full_name?: string; company?: string; avatar_url?: string } | null>(null);
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
@@ -134,7 +137,7 @@ export function Sidebar() {
             )}
             <div className="space-y-0.5">
               {section.items.map(item => {
-                const active = isActive(item.href, pathname, item.exact, (item as any).exclude);
+                const active = isActive(item.href, pathname, item.exact, 'exclude' in item ? (item as { exclude?: string }).exclude : undefined);
                 const Icon = item.icon;
                 return (
                   <Link
@@ -146,7 +149,7 @@ export function Sidebar() {
                       transition-all duration-150 group
                       ${collapsed ? 'justify-center px-2 py-2.5' : 'px-3 py-2.5'}
                       ${active
-                        ? (item as any).accent
+                        ? item.accent
                           ? 'bg-gradient-to-r from-[#3b5bdb] to-[#0ea5e9] text-white shadow-lg shadow-blue-900/30'
                           : 'bg-white/10 text-white'
                         : 'text-white/50 hover:text-white hover:bg-white/[0.06]'
@@ -168,7 +171,7 @@ export function Sidebar() {
                       <span className="flex-1 leading-none">{item.name}</span>
                     )}
 
-                    {!collapsed && (item as any).accent && !active && (
+                    {!collapsed && item.accent && !active && (
                       <span className="ml-auto text-[9px] bg-gradient-to-r from-indigo-400 to-cyan-400 text-white px-1.5 py-0.5 rounded-full font-black uppercase tracking-wider">
                         New
                       </span>

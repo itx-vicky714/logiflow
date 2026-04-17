@@ -17,6 +17,19 @@ interface Props {
 
 type Tab = 'overview' | 'risk' | 'vehicle' | 'routes' | 'timeline' | 'weather' | 'fleet';
 
+interface DispatchRoute {
+  stops?: { label: string; lat?: number; lng?: number }[];
+  current_stop_index?: number;
+  drivers?: {
+    full_name?: string;
+    license_number?: string;
+    phone?: string;
+    rating?: number;
+  };
+  status?: string;
+  [key: string]: unknown;
+}
+
 export default function ShipmentDetailModal({ shipment: initialShipment, onClose, onUpdate }: Props) {
   const [shipment, setShipment] = useState(initialShipment);
   const [tab, setTab] = useState<Tab>('overview');
@@ -26,10 +39,10 @@ export default function ShipmentDetailModal({ shipment: initialShipment, onClose
   const [emailModal, setEmailModal] = useState(false);
   const [emailSending, setEmailSending] = useState(false);
   const [emailPreview, setEmailPreview] = useState({ to: '', subject: '', body: '' });
-  
+
   // Dispatch states
   const [drivers, setDrivers] = useState<Driver[]>([]);
-  const [activeDispatch, setActiveDispatch] = useState<any>(null);
+  const [activeDispatch, setActiveDispatch] = useState<DispatchRoute | null>(null);
   const [assigning, setAssigning] = useState(false);
   const [selectedDriverId, setSelectedDriverId] = useState('');
 
@@ -52,23 +65,25 @@ export default function ShipmentDetailModal({ shipment: initialShipment, onClose
   const approxKm = { road: 900, rail: 1100, air: 1200, sea: 1800 }[shipment.mode] || 900;
 
   // Timeline generation - Grounded in active dispatch data if available
-  const timeline = activeDispatch?.stops?.map((stop: { label: string }, idx: number) => {
-    const isPast = idx < activeDispatch.current_stop_index;
-    const isCurrent = idx === activeDispatch.current_stop_index;
+  const timeline = activeDispatch?.stops?.map((stop, idx: number) => {
+    const currentIndex = activeDispatch.current_stop_index ?? 0;
+    const isPast = idx < currentIndex;
+    const isCurrent = idx === currentIndex;
     return {
       st: stop.label,
-      time: isPast ? subHours(now, (activeDispatch.current_stop_index - idx) * 4) : addHours(now, (idx - activeDispatch.current_stop_index) * 6),
+      time: isPast ? subHours(now, (currentIndex - idx) * 4) : addHours(now, (idx - currentIndex) * 6),
       status: isPast ? 'completed' : isCurrent ? 'current' : 'pending'
     };
   }) || (() => {
-    const durationMs = etaDate.getTime() - createdAt.getTime();
+    let durationMs = etaDate.getTime() - createdAt.getTime();
+    if (durationMs <= 0) durationMs = 24 * 3600 * 1000;
     return [
       { st: 'Order Placed', time: createdAt, status: 'completed' },
       { st: 'Dispatched from Hub', time: new Date(createdAt.getTime() + durationMs * 0.1), status: progress > 0 ? 'completed' : 'pending' },
       { st: 'Checkpoint 1', time: new Date(createdAt.getTime() + durationMs * 0.3), status: progress > 30 ? 'completed' : progress > 10 ? 'current' : 'pending' },
       { st: 'Checkpoint 2', time: new Date(createdAt.getTime() + durationMs * 0.6), status: progress > 60 ? 'completed' : progress > 30 ? 'current' : 'pending' },
       { st: 'Out for Delivery', time: new Date(createdAt.getTime() + durationMs * 0.9), status: progress > 90 ? (shipment.status === 'delivered' ? 'completed' : 'current') : 'pending' },
-      { st: 'Delivered', time: etaDate, status: shipment.status === 'delivered' ? 'completed' : progress >= 99 ? 'current' : 'pending' }
+      { st: 'Delivered', time: new Date(createdAt.getTime() + durationMs), status: shipment.status === 'delivered' ? 'completed' : progress >= 99 ? 'current' : 'pending' }
     ];
   })();
 
@@ -116,10 +131,10 @@ export default function ShipmentDetailModal({ shipment: initialShipment, onClose
     setRerouting(newMode);
     try {
       const { error } = await supabase.from('shipments')
-        .update({ mode: newMode as any, status: 'in_transit' })
+        .update({ mode: newMode as string, status: 'in_transit' })
         .eq('id', shipment.id);
       if (error) throw error;
-      setShipment(prev => ({ ...prev, mode: newMode as any, status: 'in_transit' }));
+      setShipment(prev => ({ ...prev, mode: newMode as Shipment['mode'], status: 'in_transit' }));
       toast.success(`Rerouted via ${newMode} successfully`);
       onUpdate();
     } catch {
@@ -181,8 +196,9 @@ export default function ShipmentDetailModal({ shipment: initialShipment, onClose
 
           setActiveDispatch(data);
           toast.success('Fleet unit assigned to shipment');
-      } catch (err: any) {
-          toast.error(err.message || 'Assignment failed');
+      } catch (err: unknown) {
+          const msg = err instanceof Error ? err.message : 'Assignment failed';
+          toast.error(msg);
       } finally {
           setAssigning(false);
       }
@@ -612,7 +628,7 @@ LogiFlow Operations Team`;
                   <GitBranch size={20} className="shrink-0 mt-0.5 text-blue-600" />
                   <div>
                     <h4 className="font-bold text-sm mb-1">Smart Route Optimization</h4>
-                    <p className="text-xs font-medium opacity-80 leading-relaxed">Compare alternative transport modes for this route. Costs and risk factors are dynamically calculated based on distance, cargo weight, and live weather data. Click "Approve Route" to immediately update the logistics plan.</p>
+                    <p className="text-xs font-medium opacity-80 leading-relaxed">Compare alternative transport modes for this route. Costs and risk factors are dynamically calculated based on distance, cargo weight, and live weather data. Click &quot;Approve Route&quot; to immediately update the logistics plan.</p>
                   </div>
                 </div>
 
@@ -654,7 +670,7 @@ LogiFlow Operations Team`;
                         <div className="sm:ml-4 sm:pl-4 sm:border-l border-slate-100 flex flex-col justify-center shrink-0">
                           <button
                             onClick={() => handleReroute(route.mode)}
-                            disabled={rerouting === route.mode}
+                            disabled={rerouting !== null}
                             className="w-full sm:w-auto px-5 py-3 bg-slate-900 text-white text-sm font-bold tracking-wide rounded-xl hover:bg-primary transition-colors disabled:opacity-50 flex items-center justify-center gap-2 shadow-sm"
                           >
                             {rerouting === route.mode ? <Loader2 size={16} className="animate-spin" /> : <GitBranch size={16} />}
@@ -701,7 +717,7 @@ LogiFlow Operations Team`;
                               Interactive Transit Stages
                           </h4>
                           <div className="space-y-3">
-                              {activeDispatch.stops?.map((stop: any, idx: number) => (
+                              {(activeDispatch.stops as { label: string; lat?: number; lng?: number }[] | undefined)?.map((stop, idx: number) => (
                                   <div key={idx} className="flex items-center gap-6 p-4 rounded-3xl border border-transparent hover:border-slate-50 hover:bg-slate-50/50 transition-all group">
                                       <div className="flex flex-col items-center gap-1 shrink-0">
                                           <div className={`w-10 h-10 rounded-2xl flex items-center justify-center text-xs font-black border transition-all ${
@@ -877,7 +893,7 @@ LogiFlow Operations Team`;
   );
 }
 
-function SparklesIcon(props: any) {
+function SparklesIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
       <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/>

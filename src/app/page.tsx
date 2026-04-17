@@ -147,7 +147,7 @@ export default function LandingPage() {
                 <h2 className="text-[11px] font-black text-indigo-600 uppercase tracking-[0.3em] mb-4">Intelligence</h2>
                 <h3 className="text-4xl md:text-5xl font-black text-slate-900 tracking-tight mb-8">AI-driven Risk Mitigation.</h3>
                 <p className="text-slate-500 font-medium leading-relaxed mb-8">
-                  Stop reacting to delays and start predicting them. LogiFlow's neural models analyze weather patterns, route congestion, and historical performance to calculate risk scores for every shipment in real-time.
+                  Stop reacting to delays and start predicting them. LogiFlow&apos;s neural models analyze weather patterns, route congestion, and historical performance to calculate risk scores for every shipment in real-time.
                 </p>
                 <ul className="space-y-4">
                   {['Automated rerouting recommendations', 'Predictive ETA adjustments', 'Anomaly detection clustering'].map((item, i) => (
@@ -212,7 +212,7 @@ export default function LandingPage() {
           <div className="max-w-3xl">
              <Globe size={48} className="text-indigo-400 mb-12 opacity-50" />
              <blockquote className="text-4xl md:text-5xl font-black italic tracking-tight leading-[1.1] mb-12">
-               "LogiFlow transformed our logistics from a cost center into a strategic competitive advantage. We now see the world through a single, intelligent pane of glass."
+               &ldquo;LogiFlow transformed our logistics from a cost center into a strategic competitive advantage. We now see the world through a single, intelligent pane of glass.&rdquo;
              </blockquote>
              <div className="flex items-center gap-6">
                 <div className="w-16 h-16 rounded-full bg-white/10" />

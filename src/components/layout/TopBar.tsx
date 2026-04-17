@@ -37,7 +37,7 @@ export function TopBar({ toggleSidebar }: { toggleSidebar?: () => void }) {
   const { toggle: ctxToggle } = useSidebar();
   const router = useRouter();
   const pathname = usePathname();
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<{ id: string; email?: string } | null>(null);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const [notifications, setNotifications] = useState<Notification[]>([]);
@@ -71,7 +71,10 @@ export function TopBar({ toggleSidebar }: { toggleSidebar?: () => void }) {
   }, []);
 
   useEffect(() => {
-    loadData();
+    const run = async () => {
+      await loadData();
+    };
+    run();
     const t = setInterval(() => setTime(new Date()), 1000);
 
     // Real-time subscription for notifications

@@ -44,7 +44,7 @@ export interface Report {
   id: string;
   user_id: string;
   report_type: string;
-  content: Record<string, any>;
+  content: Record<string, unknown>;
   created_at: string;
 }
 

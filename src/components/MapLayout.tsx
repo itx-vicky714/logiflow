@@ -9,7 +9,7 @@ import { modeColor, statusConfig, CITY_COORDS } from '@/lib/utils';
 import { KEY_CITIES, getCityWeather, getWeatherRiskColor } from '@/lib/weather';
 
 // Fix Leaflet default icon issue
-delete (L.Icon.Default.prototype as any)._getIconUrl;
+delete (L.Icon.Default.prototype as unknown as Record<string, unknown>)._getIconUrl;
 
 // Premium custom map pin icons
 // Premium custom map pin icons
@@ -68,7 +68,7 @@ function FitBounds({ shipments }: { shipments: Shipment[] }) {
       if (d) bounds.push(d);
     });
     if (bounds.length > 0) {
-      map.fitBounds(bounds as any, { padding: [100, 100], maxZoom: 6, animate: true, duration: 1.5 });
+      map.fitBounds(bounds as L.LatLngBoundsExpression, { padding: [100, 100], maxZoom: 6, animate: true, duration: 1.5 });
     }
   }, [shipments, map]);
   return null;
@@ -230,7 +230,7 @@ export default function MapLayout({ shipments, highlighted }: Props) {
             </div>
             {[['road', '#f97316', 'Road Freight', 'solid'], ['rail', '#3b82f6', 'Rail Cargo', 'solid'], ['air', '#8b5cf6', 'Air Freight', 'dashed'], ['sea', '#14b8a6', 'Ocean Transit', 'dotted']].map(([,color, label, type]) => (
               <div key={label} className="flex items-center gap-4 mb-3 last:mb-0">
-                <div className="w-8 h-1 rounded-full relative overflow-hidden shrink-0" style={{ backgroundColor: type === 'solid' ? color as string : 'transparent' }}>
+                <div className="w-8 h-1 rounded-full relative overflow-hidden shrink-0" style={{ backgroundColor: type === 'solid' ? (color ?? '') : 'transparent' }}>
                   {type === 'dashed' && <div className="absolute inset-0 border-b-[2px]" style={{ borderColor: color as string, borderStyle: 'dashed' }} />}
                   {type === 'dotted' && <div className="absolute inset-0 border-b-[3px]" style={{ borderColor: color as string, borderStyle: 'dotted' }} />}
                 </div>

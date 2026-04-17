@@ -74,7 +74,7 @@ export default function NewShipmentPage() {
     priority: 'normal', driver_contact: '', whatsapp_alerts: '', notes: '',
   });
 
-  const setField = (k: string, v: any) => setForm(prev => ({ ...prev, [k]: v }));
+  const setField = (k: keyof typeof form, v: string | boolean | number) => setForm(prev => ({ ...prev, [k]: v }));
 
   const routeOptions = form.origin && form.destination ? getRouteOptions(form.origin, form.destination, form.mode) : [];
   const primaryRoute = routeOptions.find(r => r.mode === form.mode);
@@ -148,8 +148,9 @@ export default function NewShipmentPage() {
       if (error) throw error;
       toast.success('🚀 Shipment launched successfully!');
       router.push('/shipments');
-    } catch (err: any) {
-      toast.error(err.message || 'Failed to create shipment');
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Failed to create shipment';
+      toast.error(msg);
     } finally {
       setSubmitting(false);
     }
@@ -348,7 +349,7 @@ export default function NewShipmentPage() {
                     </div>
                     <div>
                       <h2 className="font-black text-slate-800 text-[16px]">Cargo Details</h2>
-                      <p className="text-[12px] text-slate-500 font-semibold">Specify what you're shipping</p>
+                      <p className="text-[12px] text-slate-500 font-semibold">Specify what you&apos;re shipping</p>
                     </div>
                   </div>
 
@@ -358,7 +359,7 @@ export default function NewShipmentPage() {
                       {CARGO_CATEGORIES.map(c => (
                         <button
                           key={c.id} type="button"
-                          onClick={() => setField('cargo_type', c.id === 'other' ? '' : c.label)}
+                          onClick={() => setField('cargo_type' as keyof typeof form, c.id === 'other' ? '' : c.label)}
                           className={`p-3 rounded-xl border-2 text-center transition-all hover:scale-[1.02] ${
                             form.cargo_type === c.label 
                               ? 'border-[#3b5bdb] bg-indigo-50 shadow-sm'
@@ -413,19 +414,19 @@ export default function NewShipmentPage() {
                   <div>
                     <FieldLabel>Special Handling Requirements</FieldLabel>
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                      {[
-                        { key: 'fragile', label: 'Fragile', icon: Leaf, warnCls: 'border-amber-300 bg-amber-50 text-amber-700' },
-                        { key: 'cold_chain', label: 'Cold Chain', icon: Cloud, warnCls: 'border-sky-300 bg-sky-50 text-sky-700' },
-                        { key: 'hazardous', label: 'Hazardous', icon: AlertTriangle, warnCls: 'border-red-300 bg-red-50 text-red-700' },
-                        { key: 'oversized', label: 'Oversized', icon: Maximize2, warnCls: 'border-purple-300 bg-purple-50 text-purple-700' },
-                      ].map(opt => {
-                        const Icon = (opt as any).icon || Package;
+                      {([
+                        { key: 'fragile' as const, label: 'Fragile', icon: Leaf, warnCls: 'border-amber-300 bg-amber-50 text-amber-700' },
+                        { key: 'cold_chain' as const, label: 'Cold Chain', icon: Cloud, warnCls: 'border-sky-300 bg-sky-50 text-sky-700' },
+                        { key: 'hazardous' as const, label: 'Hazardous', icon: AlertTriangle, warnCls: 'border-red-300 bg-red-50 text-red-700' },
+                        { key: 'oversized' as const, label: 'Oversized', icon: Maximize2, warnCls: 'border-purple-300 bg-purple-50 text-purple-700' },
+                      ] as { key: keyof typeof form; label: string; icon: React.ElementType; warnCls: string }[]).map(opt => {
+                        const Icon = opt.icon;
                         return (
                           <button
                             key={opt.key} type="button"
-                            onClick={() => setField(opt.key, !(form as any)[opt.key])}
+                            onClick={() => setField(opt.key, !form[opt.key])}
                             className={`px-3 py-3 rounded-xl border-2 text-[11px] font-black transition-all text-center flex flex-col items-center gap-2 ${
-                              (form as any)[opt.key] ? opt.warnCls : 'border-slate-200 text-slate-500 hover:border-slate-300 bg-white'
+                              form[opt.key] ? opt.warnCls : 'border-slate-200 text-slate-500 hover:border-slate-300 bg-white'
                             }`}
                           >
                             <Icon size={16} />

@@ -26,7 +26,19 @@ export default function DashboardPage() {
   const [statusFilter, setStatusFilter] = useState('all');
   const [selectedShipment, setSelectedShipment] = useState<Shipment | null>(null);
   const [mounted, setMounted] = useState(false);
-  const [dbAlerts, setDbAlerts] = useState<any[]>([]);
+  const [dbAlerts, setDbAlerts] = useState<{
+    id: string;
+    type: string;
+    severity: string;
+    title: string;
+    message: string;
+    cause?: string;
+    recommended_action?: string;
+    shipment?: string;
+    status: string;
+    is_read: boolean;
+    created_at: string;
+  }[]>([]);
   const [simulating, setSimulating] = useState(false);
 
   const fetchData = useCallback(async () => {
@@ -69,7 +81,11 @@ export default function DashboardPage() {
     if (!user) return;
     
     const now = new Date();
-    const newAlerts: any[] = [];
+    const newAlerts: {
+      user_id: string; type: string; severity: string; title: string;
+      message: string; cause: string; recommended_action: string;
+      shipment: string; status: string;
+    }[] = [];
     
     shipments.forEach(s => {
       const eta = new Date(s.eta);
@@ -102,7 +118,7 @@ export default function DashboardPage() {
     setSimulating(false);
   };
 
-  const handleResolveDbAlert = async (alert: any) => {
+  const handleResolveDbAlert = async (alert: { id: string; recommended_action?: string; shipment?: string }) => {
     setSimulating(true); // just use this for loading state
     try {
       if (alert.recommended_action === 'reroute') {

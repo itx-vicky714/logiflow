@@ -6,6 +6,32 @@ import {
   Trash2, ChevronDown, Mic, Volume2, VolumeX, Zap
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
+
+interface ShipmentRecord {
+  shipment_code: string;
+  origin: string;
+  destination: string;
+  status: string;
+  risk_score: number;
+  mode: string;
+  [key: string]: unknown;
+}
+
+interface SpeechRecognitionEvent {
+  resultIndex: number;
+  results: { [index: number]: { [index: number]: { transcript: string } }; length: number };
+}
+
+interface SpeechRecognitionInstance {
+  continuous: boolean;
+  interimResults: boolean;
+  lang: string;
+  onresult: ((e: SpeechRecognitionEvent) => void) | null;
+  onend: (() => void) | null;
+  onerror: (() => void) | null;
+  start: () => void;
+  stop: () => void;
+}
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface Message {
@@ -44,13 +70,13 @@ export default function LogiBot() {
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [retryPayload, setRetryPayload] = useState<string | null>(null);
-  const [shipments, setShipments] = useState<any[]>([]);
+  const [shipments, setShipments] = useState<ShipmentRecord[]>([]);
   const [isListening, setIsListening] = useState(false);
   const [voiceEnabled, setVoiceEnabled] = useState(false);
 
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-  const recognitionRef = useRef<any>(null);
+  const recognitionRef = useRef<SpeechRecognitionInstance | null>(null);
 
   // Load shipments
   useEffect(() => {
@@ -68,13 +94,14 @@ export default function LogiBot() {
   // Speech Recognition setup
   useEffect(() => {
     if (typeof window === 'undefined') return;
-    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    const w = window as typeof window & { SpeechRecognition?: new () => SpeechRecognitionInstance; webkitSpeechRecognition?: new () => SpeechRecognitionInstance };
+    const SpeechRecognition = w.SpeechRecognition || w.webkitSpeechRecognition;
     if (!SpeechRecognition) return;
     const rec = new SpeechRecognition();
     rec.continuous = false;
     rec.interimResults = true;
     rec.lang = 'hi-IN';
-    rec.onresult = (e: any) => {
+    rec.onresult = (e: SpeechRecognitionEvent) => {
       let t = '';
       for (let i = e.resultIndex; i < e.results.length; i++) t += e.results[i][0].transcript;
       setInput(t);

@@ -37,8 +37,9 @@ export default function LoginPage() {
       
       toast.success('Successfully logged in');
       router.push('/dashboard');
-    } catch (err: any) {
-      toast.error(err.message || 'Failed to authenticate');
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Failed to authenticate';
+      toast.error(msg);
     } finally {
       setLoading(false);
     }
@@ -93,7 +94,7 @@ export default function LoginPage() {
         </form>
 
         <p className="text-center text-sm text-slate-500 mt-8">
-          Don't have an account? <Link href="/signup" className="text-primary font-medium hover:underline">Sign up</Link>
+          Don&apos;t have an account? <Link href="/signup" className="text-primary font-medium hover:underline">Sign up</Link>
         </p>
       </div>
     </div>

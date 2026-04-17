@@ -38,14 +38,16 @@ export default function ShipmentsPage() {
   const searchParam = searchParams?.get('search');
 
   useEffect(() => {
-    fetchData();
+    const run = async () => { await fetchData(); };
+    run();
     window.addEventListener('shipments-updated', fetchData);
     return () => window.removeEventListener('shipments-updated', fetchData);
   }, [fetchData]);
 
   useEffect(() => {
     if (searchParam) {
-      setSearch(searchParam);
+      const apply = async () => { setSearch(searchParam); };
+      apply();
     }
   }, [searchParam]);
 

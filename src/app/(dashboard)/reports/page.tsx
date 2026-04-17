@@ -9,7 +9,7 @@ import { Download, Mail, Sparkles, FileText, BarChart3, Cloud, Activity, Trendin
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 
-interface ReportCard { id: string; title: string; description: string; frequency: string; icon: any; color: string; }
+interface ReportCard { id: string; title: string; description: string; frequency: string; icon: React.ElementType; color: string; }
 const REPORT_TYPES: ReportCard[] = [
   { id: 'daily',       title: 'Daily Operations Summary',    description: 'All active shipments, delays, deliveries and performance for today.',            frequency: 'On Demand', icon: FileText,      color: 'text-blue-600 bg-blue-50 border-blue-100' },
   { id: 'disruption',  title: 'Disruption Analysis',         description: 'Root cause analysis of delays, risk escalations and supply chain disruptions.',   frequency: 'On Demand', icon: AlertTriangle,  color: 'text-red-600 bg-red-50 border-red-100' },
@@ -187,7 +187,7 @@ export default function ReportsPage() {
 
       // AI Text
       if (report.aiText) {
-        const y = (doc as any).lastAutoTable.finalY + 15;
+        const y = (doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 15;
         doc.setFontSize(12); doc.setFont('helvetica', 'bold');
         doc.text('AI ASSESSMENT & MITIGATION', 14, y);
         doc.setFontSize(9); doc.setFont('helvetica', 'normal');
@@ -197,7 +197,7 @@ export default function ReportsPage() {
 
       // Table
       autoTable(doc, {
-        startY: (doc as any).lastAutoTable?.finalY + (report.aiText ? 60 : 15) || 120,
+        startY: ((doc as unknown as { lastAutoTable?: { finalY: number } }).lastAutoTable?.finalY ?? 80) + (report.aiText ? 60 : 15),
         head: [['CODE', 'ROUTE', 'MODE', 'STATUS', 'RISK', 'CARGO']],
         body: report.tableRows.slice(0, 40).map(s => [
           s.shipment_code, `${s.origin}→${s.destination}`, s.mode.toUpperCase(), s.status.toUpperCase(), `${s.risk_score}/100`, s.cargo_type
@@ -208,7 +208,9 @@ export default function ReportsPage() {
 
       doc.save(`logiflow-intelligence-${report.id}.pdf`);
       toast.success('Download complete');
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'PDF export failed';
+      console.error('PDF export error:', msg);
       toast.error('PDF export failed');
     }
   };
@@ -363,7 +365,7 @@ export default function ReportsPage() {
                                         <div className="w-1.5 h-1.5 rounded-full bg-cyan-500" />
                                         {s.title}
                                     </div>
-                                    <p className="text-xs font-semibold text-cyan-700 leading-relaxed italic line-clamp-4">"{s.content}"</p>
+                                    <p className="text-xs font-semibold text-cyan-700 leading-relaxed italic line-clamp-4">&quot;{s.content}&quot;</p>
                                 </div>
                             ))}
                         </div>

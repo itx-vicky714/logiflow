@@ -15,17 +15,22 @@ export default function LandingPage() {
             <span className="text-xl font-black tracking-tight text-slate-900">Logi<span className="text-indigo-600">Flow</span></span>
           </div>
           
-          <div className="hidden md:flex items-center gap-10">
-            {['Platform', 'Intelligence', 'Fleet', 'Enterprise'].map(item => (
-              <a key={item} href={`#${item.toLowerCase()}`} className="text-[13px] font-bold text-slate-500 hover:text-indigo-600 transition-colors uppercase tracking-widest">{item}</a>
+          <div className="hidden lg:flex items-center gap-8">
+            {[
+              { label: 'Platform', id: 'platform' },
+              { label: 'Intelligence', id: 'intelligence' },
+              { label: 'Fleet', id: 'fleet' },
+              { label: 'Enterprise', id: 'enterprise' }
+            ].map(item => (
+              <a key={item.id} href={`#${item.id}`} className="text-[12px] font-black text-slate-500 hover:text-indigo-600 transition-colors uppercase tracking-[0.15em]">{item.label}</a>
             ))}
           </div>
 
           <div className="flex items-center gap-4">
-            <Link href="/login" className="px-6 py-2.5 text-[13px] font-bold text-slate-600 hover:text-slate-900 transition-colors uppercase tracking-widest">
+            <Link href="/login" className="hidden sm:block px-6 py-2.5 text-[13px] font-bold text-slate-600 hover:text-slate-900 transition-colors uppercase tracking-widest">
               Login
             </Link>
-            <Link href="/dashboard" className="px-8 py-3 bg-slate-900 text-white text-[13px] font-black rounded-2xl hover:bg-slate-800 transition-all shadow-xl shadow-slate-200 uppercase tracking-widest active:scale-95">
+            <Link href="/dashboard" className="px-5 sm:px-8 py-2.5 sm:py-3 bg-slate-900 text-white text-[11px] sm:text-[13px] font-black rounded-2xl hover:bg-slate-800 transition-all shadow-xl shadow-slate-200 uppercase tracking-widest active:scale-95">
               Launch Deck
             </Link>
           </div>
@@ -43,15 +48,15 @@ export default function LandingPage() {
               <span className="text-[10px] font-black text-indigo-600 uppercase tracking-[0.2em]">Next-Gen Logistics OS v3.0</span>
             </div>
             
-            <h1 className="text-7xl md:text-8xl font-black text-slate-900 tracking-[-0.04em] leading-[0.95] mb-8 animate-in fade-in slide-in-from-bottom-6 duration-700 delay-100">
+            <h1 className="text-5xl sm:text-7xl md:text-8xl font-black text-slate-900 tracking-[-0.04em] leading-[0.95] mb-8 animate-in fade-in slide-in-from-bottom-6 duration-700 delay-100 break-words">
               Flow with <br />
               <span className="text-indigo-600 italic">Neural</span> Precision.
             </h1>
             
-            <p className="text-xl text-slate-500 font-medium leading-relaxed mb-12 animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-200">
-              LogiFlow is the enterprise control tower for modern supply chains. 
-              Real-time telemetry, AI-driven risk mitigation, and autonomous 
-              fleet orchestration—all in one cinematic interface.
+            <p className="text-lg sm:text-xl text-slate-500 font-medium leading-relaxed mb-12 animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-200">
+              LogiFlow is the AI-native control tower for global supply chains. 
+              We enable enterprise logistics teams to predict disruptions, 
+              automate fleet orchestration, and maintain 100% manifest visibility.
             </p>
 
             <div className="flex flex-wrap items-center gap-6 animate-in fade-in slide-in-from-bottom-10 duration-1000 delay-300">
@@ -101,9 +106,9 @@ export default function LandingPage() {
                 <h2 className="text-[11px] font-black text-indigo-600 uppercase tracking-[0.3em] mb-4">Core Infrastructure</h2>
                 <h3 className="text-5xl font-black text-slate-900 tracking-tight">Built for scale. <br />Engineered for reliability.</h3>
              </div>
-             <p className="max-w-sm text-slate-500 font-medium leading-relaxed">
-               LogiFlow combines legacy logistics data with next-gen neural models to create a truly predictive supply chain.
-             </p>
+              <p className="max-w-sm text-slate-500 font-medium leading-relaxed">
+                LogiFlow integrates with your existing ERP to inject neural intelligence into every node, warehouse, and transit corridor.
+              </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">

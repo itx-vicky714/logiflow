@@ -429,8 +429,8 @@ export default function AnalyticsPage() {
                 <h3 className="text-sm font-black text-slate-800 mb-1 flex items-center gap-2"><Route size={16} className="text-amber-500" /> Route Disruption Matrix</h3>
                 <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Identifying the weakest geographic links</p>
               </div>
-              <div className="overflow-x-auto flex-1 p-2">
-                <table className="w-full text-left border-collapse">
+              <div className="w-full overflow-x-auto flex-1 p-2">
+                <table className="w-full text-left border-collapse min-w-[600px]">
                   <thead>
                     <tr>
                       {['Route', 'Vol', 'Health', 'Status', 'Impact'].map(h => (

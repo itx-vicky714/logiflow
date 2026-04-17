@@ -224,7 +224,7 @@ export default function DashboardPage() {
       </div>
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
         {kpiCards.map(card => {
           const Icon = card.icon;
           return (
@@ -301,12 +301,12 @@ export default function DashboardPage() {
               <option value="delivered">Delivered</option>
             </select>
           </div>
-          <div className="overflow-x-auto flex-1">
-            <table className="w-full text-sm">
+          <div className="w-full overflow-x-auto min-h-0 min-w-0">
+            <table className="w-full text-sm min-w-[600px]">
               <thead>
-                <tr className="border-b border-slate-100 bg-gradient-to-r from-slate-50 to-white text-left">
+                <tr className="border-b border-slate-100 bg-slate-50/30 text-left">
                   {['Shipment', 'Mode', 'Route', 'ETA', 'Status', 'Risk', ''].map(h => (
-                    <th key={h} className="px-4 py-3 text-[10px] font-black text-slate-400 uppercase tracking-[0.12em]">{h}</th>
+                    <th key={h} className="px-4 py-4 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">{h}</th>
                   ))}
                 </tr>
               </thead>

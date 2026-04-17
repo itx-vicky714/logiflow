@@ -53,7 +53,8 @@
 /* Base                                */
 /* ─────────────────────────────────── */
 
-html {
+html, body {
+  overflow-x: hidden;
   scroll-behavior: smooth;
 }
 
@@ -282,7 +283,7 @@ body {
 .page-bg {
   background: 
     radial-gradient(ellipse 80% 50% at 50% -10%, rgba(59,91,219,0.08) 0%, transparent 60%),
-    var(--background);
+    #020617; /* Deep Navy Base for Control Tower feel */
   min-height: 100vh;
 }
 
@@ -347,7 +348,16 @@ body {
 
 .leaflet-container {
   font-family: inherit;
-  background: #e8f0fc !important;
+  background: #020617 !important; /* Deep Navy/Black */
+}
+
+/* Neon Blue Map Tiles - Futuristic Control Tower Look */
+.neon-map-tiles {
+  filter: sepia(100%) hue-rotate(190deg) saturate(400%) brightness(0.4) contrast(1.2) !important;
+}
+
+.map-glow-blue {
+  box-shadow: 0 0 20px rgba(59, 130, 246, 0.4);
 }
 
 .leaflet-popup-content-wrapper {

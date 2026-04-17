@@ -92,7 +92,7 @@ export default function MapLayout({ shipments, highlighted }: Props) {
   return (
     <div className="h-[100%] w-full bg-[#f8fafc] z-0 relative">
       {/* Premium SVG Grid Overlay */}
-      <div className="absolute inset-0 pointer-events-none z-50 overflow-hidden opacity-[0.03]">
+      <div className="absolute inset-0 pointer-events-none z-50 overflow-hidden opacity-[0.1]">
         <svg width="100%" height="100%">
           <defs>
             <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
@@ -113,6 +113,7 @@ export default function MapLayout({ shipments, highlighted }: Props) {
         <TileLayer
           attribution='&copy; <a href="https://carto.com/attributions">CARTO</a>'
           url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+          className="neon-map-tiles"
         />
         <FitBounds shipments={shipments} />
 
@@ -185,7 +186,7 @@ export default function MapLayout({ shipments, highlighted }: Props) {
                 color={color}
                 weight={isHighlighted ? 4 : 3}
                 opacity={isHighlighted ? 0.9 : isFocusMode ? 0.05 : 0.3}
-                className={isHighlighted ? 'drop-shadow-[0_0_10px_rgba(255,255,255,0.5)]' : ''}
+                className={isHighlighted ? 'drop-shadow-[0_0_15px_rgba(59,130,246,0.8)]' : ''}
                 dashArray={s.mode === 'air' ? '10 10' : s.mode === 'sea' ? '5 10' : undefined}
               />
               <Marker 
@@ -222,21 +223,27 @@ export default function MapLayout({ shipments, highlighted }: Props) {
           );
         })}
 
-        {/* Map UI Legend Overlay — Now bottom-right with dark theme */}
-        <div className="leaflet-bottom leaflet-right" style={{ zIndex: 1000, margin: '24px' }}>
-          <div className="leaflet-control bg-slate-900/80 backdrop-blur-xl border border-slate-700/50 rounded-3xl p-5 shadow-[0_20px_50px_rgba(0,0,0,0.3)] transition-opacity duration-300" style={{ opacity: isFocusMode ? 0.4 : 1 }}>
-            <div className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-4 flex items-center gap-2">
-              <div className="w-1.5 h-1.5 rounded-full bg-[#3b5bdb] animate-pulse"/> MODAL INFRASTRUCTURE
+        <div className="leaflet-bottom leaflet-right" style={{ zIndex: 1000, margin: '20px' }}>
+          <div className="leaflet-control bg-slate-900/40 backdrop-blur-md border border-white/10 rounded-2xl p-3 shadow-2xl transition-opacity duration-300 pointer-events-none" style={{ opacity: isFocusMode ? 0.2 : 0.8 }}>
+            <div className="text-[9px] font-black text-blue-400 uppercase tracking-[0.2em] mb-3 flex items-center gap-2">
+              <div className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse"/> GRID TELEMETRY
             </div>
-            {[['road', '#f97316', 'Road Freight', 'solid'], ['rail', '#3b82f6', 'Rail Cargo', 'solid'], ['air', '#8b5cf6', 'Air Freight', 'dashed'], ['sea', '#14b8a6', 'Ocean Transit', 'dotted']].map(([,color, label, type]) => (
-              <div key={label} className="flex items-center gap-4 mb-3 last:mb-0">
-                <div className="w-8 h-1 rounded-full relative overflow-hidden shrink-0" style={{ backgroundColor: type === 'solid' ? (color ?? '') : 'transparent' }}>
-                  {type === 'dashed' && <div className="absolute inset-0 border-b-[2px]" style={{ borderColor: color as string, borderStyle: 'dashed' }} />}
-                  {type === 'dotted' && <div className="absolute inset-0 border-b-[3px]" style={{ borderColor: color as string, borderStyle: 'dotted' }} />}
+            <div className="space-y-2">
+              {[
+                { mode: 'road', color: '#3b82f6', label: 'Road Hub', type: 'solid' },
+                { mode: 'rail', color: '#60a5fa', label: 'Rail Link', type: 'solid' },
+                { mode: 'air',  color: '#93c5fd', label: 'Air Corridor', type: 'dashed' },
+                { mode: 'sea',  color: '#bfdbfe', label: 'Sea Route', type: 'dotted' }
+              ].map((item) => (
+                <div key={item.label} className="flex items-center gap-3">
+                  <div className="w-6 h-0.5 rounded-full relative shrink-0" style={{ backgroundColor: item.type === 'solid' ? item.color : 'transparent' }}>
+                    {item.type === 'dashed' && <div className="absolute inset-0 border-b-[2px]" style={{ borderColor: item.color, borderStyle: 'dashed' }} />}
+                    {item.type === 'dotted' && <div className="absolute inset-0 border-b-[3px]" style={{ borderColor: item.color, borderStyle: 'dotted' }} />}
+                  </div>
+                  <span className="text-[9px] font-bold text-slate-300 tracking-wider uppercase">{item.label}</span>
                 </div>
-                <span className="text-[11px] font-black text-slate-300 tracking-wider uppercase">{label}</span>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         </div>
       </MapContainer>

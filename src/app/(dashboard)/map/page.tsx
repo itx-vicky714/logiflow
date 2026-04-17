@@ -170,16 +170,16 @@ export default function MapPage() {
           <div className="absolute inset-0 pointer-events-none shadow-[inset_0_0_120px_rgba(15,23,42,0.05)] z-20" />
           
           {/* Floating Manifest Panel - Non-blocking */}
-          <div className="absolute top-6 left-6 z-[60] w-[340px] max-h-[calc(100vh-20rem)] pointer-events-none">
-            <div className="pointer-events-auto bg-white/80 backdrop-blur-xl border border-white/40 rounded-[2rem] shadow-[0_20px_50px_rgba(0,0,0,0.12)] overflow-hidden flex flex-col">
-              <div className="px-6 py-5 border-b border-slate-100/50 flex items-center justify-between bg-white/40">
-                <h3 className="text-[11px] font-black text-slate-800 uppercase tracking-widest flex items-center gap-2.5">
-                  <Activity size={15} className="text-[#3b5bdb]"/> Global Manifest
+          <div className="absolute top-6 left-6 z-[60] w-[320px] max-h-[calc(100vh-22rem)] pointer-events-none">
+            <div className="pointer-events-auto bg-slate-900/40 backdrop-blur-xl border border-white/10 rounded-[2.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.3)] overflow-hidden flex flex-col">
+              <div className="px-6 py-5 border-b border-white/5 flex items-center justify-between bg-white/5">
+                <h3 className="text-[10px] font-black text-blue-400 uppercase tracking-[0.2em] flex items-center gap-2.5">
+                  <Activity size={14} className="animate-pulse"/> LIVE MANIFEST
                 </h3>
-                <span className="bg-[#3b5bdb]/10 text-[#3b5bdb] text-[9px] font-black px-2.5 py-1 rounded-lg border border-[#3b5bdb]/10">{filtered.length} Nodes</span>
+                <span className="bg-blue-500/10 text-blue-400 text-[9px] font-black px-2 py-0.5 rounded-lg border border-blue-500/20">{filtered.length} NODES</span>
               </div>
               
-              <div className="overflow-y-auto p-4 space-y-2.5 max-h-[400px] no-scrollbar">
+              <div className="overflow-y-auto p-3 space-y-2 max-h-[380px] no-scrollbar">
                 {filtered.map(s => {
                   const sc = statusConfig(s.status);
                   const isSelected = highlighted === s.id;
@@ -187,29 +187,29 @@ export default function MapPage() {
                     <motion.div 
                       key={s.id} 
                       onClick={() => setHighlighted(isSelected ? null : s.id)}
-                      className={`p-4 rounded-2xl cursor-pointer transition-all duration-300 border ${
-                        isSelected ? 'bg-white border-[#3b5bdb] shadow-lg ring-4 ring-indigo-50/30' : 'bg-white/50 border-white/60 hover:border-slate-300 hover:bg-white'
+                      className={`p-4 rounded-3xl cursor-pointer transition-all duration-300 border ${
+                        isSelected ? 'bg-white/10 border-blue-500/50 shadow-[0_0_20px_rgba(59,130,246,0.2)]' : 'bg-white/5 border-white/5 hover:bg-white/10'
                       }`}
                     >
                       <div className="flex justify-between items-start">
                         <div>
-                          <div className="font-mono text-[9px] tracking-widest text-slate-400 font-black uppercase mb-1 flex items-center gap-2">
+                          <div className="font-mono text-[8px] tracking-[0.2em] text-slate-400 font-black uppercase mb-1 flex items-center gap-2">
                             {s.shipment_code}
                           </div>
-                          <div className="text-[13px] font-bold text-slate-800">
-                            {s.origin} <span className="text-slate-300 px-0.5 font-normal">→</span> {s.destination}
+                          <div className="text-[12px] font-black text-white tracking-tight">
+                            {s.origin} <span className="text-slate-600 px-0.5">→</span> {s.destination}
                           </div>
                         </div>
-                        <div className="shrink-0 text-[#3b5bdb]">
+                        <div className="shrink-0 text-blue-400 opacity-80">
                           {modeIcon(s.mode)}
                         </div>
                       </div>
                       <div className="flex items-center gap-2 mt-3">
-                        <span className={`text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded-md border ${sc.bg} ${sc.text} ${sc.bg.replace('bg-', 'border-').replace('100', '200')}`}>
+                        <span className={`text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded-lg border ${sc.bg} ${sc.text} border-current/20`}>
                           {sc.label}
                         </span>
                         <div className="flex-1" />
-                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-tighter">{s.risk_score}% Risk</span>
+                        <span className="text-[9px] font-black text-slate-500 uppercase tracking-tighter">{s.risk_score}% RISK</span>
                       </div>
                     </motion.div>
                   );

@@ -66,16 +66,32 @@ export default async function proxy(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (!user && !request.nextUrl.pathname.startsWith('/login') && !request.nextUrl.pathname.startsWith('/signup')) {
-    const isProtectedRoute = ['/dashboard', '/shipments', '/analytics', '/reports', '/map', '/ai-chat', '/settings'].some(route => request.nextUrl.pathname.startsWith(route));
-    if (isProtectedRoute) {
-        return NextResponse.redirect(new URL('/login', request.url));
-    }
+  const isAuthRoute = request.nextUrl.pathname.startsWith('/login') || request.nextUrl.pathname.startsWith('/signup');
+  const isProtectedRoute = ['/dashboard', '/shipments', '/analytics', '/reports', '/map', '/ai-chat', '/settings'].some(route => request.nextUrl.pathname.startsWith(route));
+
+  // Redirect unauthenticated users away from protected routes
+  if (!user && isProtectedRoute) {
+    return NextResponse.redirect(new URL('/login', request.url));
+  }
+
+  // Redirect authenticated users away from auth pages
+  if (user && isAuthRoute) {
+    return NextResponse.redirect(new URL('/dashboard', request.url));
   }
 
   return response;
 }
 
 export const config = {
-  matcher: ['/dashboard/:path*', '/shipments/:path*', '/analytics/:path*', '/reports/:path*', '/map/:path*', '/ai-chat/:path*', '/settings/:path*'],
+  matcher: [
+    '/dashboard/:path*', 
+    '/shipments/:path*', 
+    '/analytics/:path*', 
+    '/reports/:path*', 
+    '/map/:path*', 
+    '/ai-chat/:path*', 
+    '/settings/:path*',
+    '/login',
+    '/signup'
+  ],
 };

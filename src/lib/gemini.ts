@@ -1,5 +1,5 @@
 export async function callGemini(prompt: string): Promise<string> {
-  const apiKey = process.env.GEMINI_API_KEY || process.env.NEXT_PUBLIC_GEMINI_API_KEY;
+  const apiKey = process.env.GEMINI_API_KEY;
   
   if (!apiKey || apiKey === 'your_gemini_api_key') {
     return 'LogiBot is initializing... Please check your Gemini API key in .env.local';

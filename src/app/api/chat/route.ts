@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+export const dynamic = 'force-dynamic';
 
 const SYSTEM_PROMPT = `You are LogiBot, the EXCLUSIVE Logistics Intelligence AI for the LogiFlow Platform.
 Your sole purpose is to provide REAL-TIME, DATA-BACKED answers using the [GROUNDING CONTEXT] and [DETAILED MANIFEST] provided below.
@@ -16,12 +17,18 @@ CRITICAL RULES:
 - MULTILINGUAL: Support English, Hindi, and Hinglish natively.
 - TONE: Professional Control Tower Officer.`;
 
-function detectIntent(message: string): 'total_shipments' | 'high_risk' | 'route_query' | 'risk_analysis' | null {
+function detectIntent(message: string): 'total_shipments' | 'active_shipments' | 'high_risk' | 'route_query' | 'risk_analysis' | 'delayed_shipments' | 'shipment_id_query' | 'website_capability_query' | null {
   const m = message.toLowerCase();
-  if (m.includes('total') || m.includes('kitna') || m.includes('how many')) return 'total_shipments';
+  
+  if (m.includes('total') || (m.includes('how many') && !m.includes('delay') && !m.includes('risk')) || (m.includes('kitna') && m.includes('total'))) return 'total_shipments';
+  if (m.includes('active')) return 'active_shipments';
+  if (m.includes('delay') || m.includes('delayed')) return 'delayed_shipments';
   if (m.includes('high risk') || m.includes('risk pe') || (m.includes('khatra') && m.includes('pe'))) return 'high_risk';
-  if (m.includes('status') || m.includes('to') || m.includes('se') || m.includes('route')) return 'route_query';
+  if (m.includes('status') || m.includes('route') || /from .+ to .+/.test(m) || /(se|tak)\s/.test(m)) return 'route_query';
   if (m.includes('analysis') || m.includes('assessment') || m.includes('risk-scan')) return 'risk_analysis';
+  if (/shipment\s+#?[a-z0-9-]+/.test(m) || m.includes('id ')) return 'shipment_id_query';
+  if (m.includes('what can you do') || m.includes('website capability') || m.includes('features')) return 'website_capability_query';
+  
   return null;
 }
 
@@ -42,6 +49,14 @@ function smartFallbackText(message: string, shipments: any[]): string {
     if (isHinglish) return `Aapke total ${total} shipments synced hain right now.`;
     return `Your active manifest contains ${total} registered shipments.`;
   }
+  
+  if (intent === 'active_shipments') {
+    return `There are currently ${inTransit} active shipments in transit or on time.`;
+  }
+
+  if (intent === 'delayed_shipments') {
+    return `You have ${shipments.filter((s:any)=>s.status==='delayed').length} delayed shipments.`;
+  }
 
   if (intent === 'high_risk') {
     if (isHindi) return `वर्तमान में ${highRisk} शिपमेंट हाई-रिस्क जोन में हैं।`;
@@ -49,12 +64,12 @@ function smartFallbackText(message: string, shipments: any[]): string {
     return `Analysis shows ${highRisk} shipments are currently categorized as high-risk.`;
   }
 
-  if (intent === 'route_query') {
+  if (intent === 'route_query' || intent === 'shipment_id_query') {
     const routeMatch = msg.match(/(patna|mumbai|delhi|surat|pune|bangalore|kolkata|jaipur|hyderabad|chennai).*(surat|patna|mumbai|delhi|pune|bangalore|kolkata|jaipur|hyderabad|chennai)/);
     if (routeMatch) {
       const origin = routeMatch[1];
       const dest = routeMatch[2];
-      const match = shipments.find(s => 
+      const match = shipments.find((s:any) => 
         (s.origin.toLowerCase().includes(origin) && s.destination.toLowerCase().includes(dest)) ||
         (s.origin.toLowerCase().includes(dest) && s.destination.toLowerCase().includes(origin))
       );
@@ -62,23 +77,59 @@ function smartFallbackText(message: string, shipments: any[]): string {
         return `Confirmed: ${match.shipment_code} (${match.origin} → ${match.destination}) status is ${match.status.replace('_', ' ')}. Risk score is ${match.risk_score}/100.`;
       }
     }
-    return "Manifest mein is route ke liye koi active shipment nahi mil raha hai.";
+    return "No shipment found for this query.";
+  }
+  
+  if (intent === 'website_capability_query') {
+    return "I am LogiBot. I can analyze shipments, track active routes, predict risk using AI, and help orchestrate dispatches.";
   }
 
-  if (isHindi) return "क्षमा करें, मैं इस विशिष्ट प्रश्न का उत्तर नहीं ढूंढ पाया। कृपया शिपमेंट या रिस्क के बारे में पूछें।";
-  return "Query not identified in manifest records. Try asking for 'total count' or 'high risk shipments'.";
+  return "No shipment found for this query.";
 }
+
+import { createServerClient } from '@supabase/ssr';
+import { cookies } from 'next/headers';
 
 export async function POST(req: Request) {
   let userMessage = '';
   try {
     const body = await req.json();
-    const { message, history = [], shipments = [] } = body;
+    const { message, history = [] } = body;
     userMessage = message || '';
 
     if (!message?.trim()) return NextResponse.json({ error: 'Message required' }, { status: 400 });
 
+    const cookieStore = await cookies();
+    const supabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        cookies: {
+          get(name: string) {
+            return cookieStore.get(name)?.value;
+          },
+        },
+      }
+    );
+
+    const { data: { user } } = await supabase.auth.getUser();
+    let shipments: any[] = [];
+    if (user) {
+      const { data } = await supabase.from('shipments').select('*').eq('user_id', user.id);
+      if (data) shipments = data;
+    } else {
+      // Fallback to passed shipments if not logged in (e.g. testing)
+      shipments = body.shipments || [];
+    }
+
     const apiKey = process.env.GEMINI_API_KEY;
+    
+    // Deterministic override before calling LLM
+    const intent = detectIntent(userMessage);
+    if (intent && intent !== 'risk_analysis') {
+      return NextResponse.json({ text: smartFallbackText(userMessage, shipments), deterministic: true });
+    }
+
     if (!apiKey || apiKey === '' || apiKey.startsWith('your_')) {
       return NextResponse.json({ text: smartFallbackText(message, shipments), fallback: true });
     }
@@ -152,7 +203,13 @@ export async function POST(req: Request) {
     if (!response.ok && response.status === 429) {
       return NextResponse.json({ text: '⏳ Bot is recalibrating. Try again in 10s.', fallback: true });
     }
-    if (!response.ok) response = await tryModel('gemini-1.5-pro').catch(() => response);
+    if (!response.ok) {
+      try {
+        response = await tryModel('gemini-1.5-pro');
+      } catch {
+        return NextResponse.json({ text: smartFallbackText(message, shipments), fallback: true });
+      }
+    }
 
     if (!response.ok) return NextResponse.json({ text: smartFallbackText(message, shipments), fallback: true });
 

@@ -1,5 +1,5 @@
 export type ShipmentMode = 'road' | 'rail' | 'air' | 'sea';
-export type ShipmentStatus = 'pending' | 'in_transit' | 'on_time' | 'delayed' | 'delivered';
+export type ShipmentStatus = 'pending' | 'dispatched' | 'in_transit' | 'on_time' | 'delayed' | 'delivered';
 export type AlertSeverity = 'low' | 'medium' | 'high' | 'critical';
 
 export interface Shipment {

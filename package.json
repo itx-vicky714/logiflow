@@ -1,16 +1,17 @@
 {
-  "name": "temp-app",
+  "name": "logiflow",
   "version": "0.1.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "next lint"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
     "@hookform/resolvers": "^5.2.2",
+    "@supabase/ssr": "^0.10.2",
     "@supabase/supabase-js": "^2.103.2",
     "date-fns": "^4.1.0",
     "framer-motion": "^12.38.0",

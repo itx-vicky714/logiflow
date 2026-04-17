@@ -60,14 +60,17 @@ export default function ShipmentDetailModal({ shipment: initialShipment, onClose
       time: isPast ? subHours(now, (activeDispatch.current_stop_index - idx) * 4) : addHours(now, (idx - activeDispatch.current_stop_index) * 6),
       status: isPast ? 'completed' : isCurrent ? 'current' : 'pending'
     };
-  }) || [
-    { st: 'Order Placed', time: createdAt, status: 'completed' },
-    { st: 'Dispatched from Hub', time: addHours(createdAt, 12), status: progress > 15 ? 'completed' : 'pending' },
-    { st: 'In Transit Checkpoint 1', time: addHours(createdAt, 36), status: progress > 40 ? 'completed' : progress > 20 ? 'current' : 'pending' },
-    { st: 'In Transit Checkpoint 2', time: subHours(etaDate, 24), status: progress > 80 ? 'completed' : progress > 60 ? 'current' : 'pending' },
-    { st: 'Out for Delivery', time: subHours(etaDate, 4), status: shipment.status === 'delivered' ? 'completed' : progress > 90 ? 'current' : 'pending' },
-    { st: 'Delivered', time: etaDate, status: shipment.status === 'delivered' ? 'completed' : (shipment.status === 'delayed' && now > etaDate ? 'delayed' : 'pending') }
-  ];
+  }) || (() => {
+    const durationMs = etaDate.getTime() - createdAt.getTime();
+    return [
+      { st: 'Order Placed', time: createdAt, status: 'completed' },
+      { st: 'Dispatched from Hub', time: new Date(createdAt.getTime() + durationMs * 0.1), status: progress > 0 ? 'completed' : 'pending' },
+      { st: 'Checkpoint 1', time: new Date(createdAt.getTime() + durationMs * 0.3), status: progress > 30 ? 'completed' : progress > 10 ? 'current' : 'pending' },
+      { st: 'Checkpoint 2', time: new Date(createdAt.getTime() + durationMs * 0.6), status: progress > 60 ? 'completed' : progress > 30 ? 'current' : 'pending' },
+      { st: 'Out for Delivery', time: new Date(createdAt.getTime() + durationMs * 0.9), status: progress > 90 ? (shipment.status === 'delivered' ? 'completed' : 'current') : 'pending' },
+      { st: 'Delivered', time: etaDate, status: shipment.status === 'delivered' ? 'completed' : progress >= 99 ? 'current' : 'pending' }
+    ];
+  })();
 
   // Fetch AI risk when tab opens
   useEffect(() => {
@@ -84,7 +87,7 @@ export default function ShipmentDetailModal({ shipment: initialShipment, onClose
         - Weather Hazard: ${weatherRisk.primaryHazard}
         ${shipment.declared_value ? `- Value: ₹${shipment.declared_value.toLocaleString()}` : ''}
         
-        Focus on: main risk factors, immediate action items, and mitigation recommendation. Be direct and actionable.`;
+        Focus on: main risk factors, immediate action items, and mitigation recommendation. Be direct and actionable. DO NOT return portfolio-level stats. THIS MUST BE SPECIFIC TO SHIPMENT ${shipment.shipment_code} ONLY.`;
 
       fetch('/api/chat', {
         method: 'POST',
@@ -92,14 +95,17 @@ export default function ShipmentDetailModal({ shipment: initialShipment, onClose
         body: JSON.stringify({ message: prompt, history: [], shipments: [shipment] })
       })
         .then(r => r.json())
-        .then(d => setAiRisk(d.text || 'Risk assessment could not be generated.'))
+        .then(d => {
+          if (d.fallback) throw new Error("Fallback triggered");
+          setAiRisk(d.text || 'Risk assessment could not be generated.');
+        })
         .catch(() => {
           if (shipment.risk_score > 70) {
-            setAiRisk("CRITICAL: Extreme operational variance detected. Weather and route congestion cross-referenced with load mass indicate high failure probability. Immediate reroute recommended.");
+            setAiRisk(`CRITICAL [${shipment.shipment_code}]: Extreme operational variance detected on the ${shipment.origin}→${shipment.destination} route. Weather hazard (${weatherRisk.primaryHazard || 'None'}) cross-referenced with load indicates high failure probability. Immediate reroute recommended.`);
           } else if (shipment.risk_score > 40) {
-            setAiRisk("MODERATE: Minor schedule drift observed. Route stability is fluctuating but remains within acceptable SLAs. Monitor terminal congestion.");
+            setAiRisk(`MODERATE [${shipment.shipment_code}]: Minor schedule drift observed for this ${shipment.mode} freight. Route stability is fluctuating but remains within acceptable SLAs. Monitor terminal congestion.`);
           } else {
-            setAiRisk("Nominal operational telemetry. All flight/road parameters aligned with perfect delivery window. No action required.");
+            setAiRisk(`NOMINAL [${shipment.shipment_code}]: Telemetry for ${shipment.origin} to ${shipment.destination} is optimal. All parameters aligned with perfect delivery window. No action required.`);
           }
         })
         .finally(() => setAiLoading(false));
@@ -158,15 +164,18 @@ export default function ShipmentDetailModal({ shipment: initialShipment, onClose
           // Sync with shipments table for redundancy and UI display
           const { data: driverInfo } = await supabase.from('drivers').select('*').eq('id', selectedDriverId).single();
           if (driverInfo) {
+              const newStatus = shipment.status === 'pending' ? 'dispatched' : shipment.status;
               await supabase.from('shipments').update({
                   transporter_name: 'LogiFlow Fleet',
-                  driver_contact: driverInfo.phone || 'N/A'
+                  driver_contact: driverInfo.phone || 'N/A',
+                  status: newStatus
               }).eq('id', shipment.id);
               
               setShipment(prev => ({ 
                   ...prev, 
                   transporter_name: 'LogiFlow Fleet',
-                  driver_contact: driverInfo.phone || 'N/A'
+                  driver_contact: driverInfo.phone || 'N/A',
+                  status: newStatus
               }));
           }
 
@@ -228,12 +237,25 @@ LogiFlow Operations Team`;
     sea:  { type: 'Container Vessel',    icon: '🚢', number: shipment.vehicle_number || 'INL-VESSEL-00', driver: 'Master Mariner',   contact: 'Port Control', checkpoint: 'Coastal waters — on course', fuel: 'Heavy Fuel Oil', fatigue: 'Operational' },
   }[shipment.mode];
 
-  const altRoutes = [
-    { mode: 'air' as const,  label: 'Air Freight',   etaHrs: Math.max(2, Math.round(etaHours * 0.3)),  cost: '₹95,000', risk: Math.max(10, shipment.risk_score - 30), diff: 'Fastest ETA, High Cost' },
-    { mode: 'rail' as const, label: 'Rail Cargo',    etaHrs: Math.max(6, Math.round(etaHours * 1.3)),  cost: '₹18,000', risk: Math.max(8,  shipment.risk_score - 20), diff: 'Lowest Cost, Reliable' },
-    { mode: 'road' as const, label: 'Road Freight',  etaHrs: Math.max(4, Math.round(etaHours * 0.9)),  cost: '₹32,000', risk: Math.max(15, shipment.risk_score - 10), diff: 'Standard Delivery' },
-    { mode: 'sea' as const,  label: 'Sea Shipping',  etaHrs: Math.max(48, Math.round(etaHours * 2.5)), cost: '₹8,500',  risk: Math.max(20, shipment.risk_score + 5),  diff: 'Economical, High Transit' },
-  ].filter(r => r.mode !== shipment.mode).slice(0, 3);
+  const altRoutes = (() => {
+    const o = shipment.origin.toLowerCase();
+    const d = shipment.destination.toLowerCase();
+    const isCoastal = ['mumbai', 'chennai', 'surat', 'kolkata'].some(c => o.includes(c)) && ['mumbai', 'chennai', 'surat', 'kolkata'].some(c => d.includes(c));
+    const isRail = ['mumbai', 'delhi', 'pune', 'bangalore', 'jaipur', 'patna'].some(c => o.includes(c)) && ['mumbai', 'delhi', 'pune', 'bangalore', 'jaipur', 'patna'].some(c => d.includes(c));
+    const isHighValue = (shipment.declared_value || 0) > 500000 || shipment.priority === 'High';
+    
+    const w = shipment.weight_kg || 100;
+    const all = [
+      { mode: 'air' as const, label: 'Air Freight', etaHrs: Math.max(2, Math.round(etaHours * 0.3)), cost: Math.round(w * 150 + 20000), risk: Math.max(5, shipment.risk_score - 30), diff: 'Fastest ETA, Premium Cost', feasible: isHighValue },
+      { mode: 'rail' as const, label: 'Rail Cargo', etaHrs: Math.max(12, Math.round(etaHours * 1.5)), cost: Math.round(w * 10 + 5000), risk: Math.max(8, shipment.risk_score - 20), diff: 'Highly reliable, Low Cost', feasible: isRail },
+      { mode: 'road' as const, label: 'Road Freight', etaHrs: Math.max(4, Math.round(etaHours * 1.0)), cost: Math.round(w * 25 + 8000), risk: Math.max(15, shipment.risk_score - 10), diff: 'Standard Delivery', feasible: true },
+      { mode: 'sea' as const, label: 'Sea Shipping', etaHrs: Math.max(48, Math.round(etaHours * 3.0)), cost: Math.round(w * 3 + 2000), risk: Math.max(20, shipment.risk_score + 5), diff: 'Economical, Slowest', feasible: isCoastal },
+    ];
+    return all.filter(r => r.mode !== shipment.mode && r.feasible)
+      .map(r => ({ ...r, costStr: `₹${r.cost.toLocaleString('en-IN')}`, score: (100 - r.risk) + (1000 / r.etaHrs) - (r.cost / 10000) }))
+      .sort((a,b) => b.score - a.score)
+      .slice(0, 3);
+  })();
 
   const tabs = [
     { id: 'overview' as Tab, label: 'Overview',      icon: MapPin },
@@ -620,7 +642,7 @@ LogiFlow Operations Team`;
                             </div>
                             <div className="bg-slate-50 rounded-lg p-3 border border-slate-100">
                               <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1.5 flex items-center gap-1"><IndianRupee size={10}/> Cost</div>
-                              <div className="font-black text-emerald-700 text-sm">{route.cost}</div>
+                              <div className="font-black text-emerald-700 text-sm">{route.costStr}</div>
                             </div>
                             <div className="bg-slate-50 rounded-lg p-3 border border-slate-100">
                               <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1.5 flex items-center gap-1"><Shield size={10}/> Risk</div>
@@ -737,37 +759,45 @@ LogiFlow Operations Team`;
                      </div>
                      <div>
                         <h3 className="text-3xl font-black text-slate-800 tracking-tight">Fleet Unit Unassigned</h3>
-                        <p className="text-xs font-bold text-slate-400 uppercase tracking-[0.2em] mt-2">Activate logistics resource for {shipment.shipment_code}</p>
+                        <p className="text-xs font-bold text-slate-400 uppercase tracking-[0.2em] mt-2">
+                           {shipment.status === 'delivered' ? `Shipment ${shipment.shipment_code} has been delivered.` : `Activate logistics resource for ${shipment.shipment_code}`}
+                        </p>
                      </div>
                      
-                     <div className="space-y-4">
-                        <div className="relative group">
-                            <div className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors">
-                                <User size={18} />
-                            </div>
-                            <select 
-                              value={selectedDriverId}
-                              onChange={(e) => setSelectedDriverId(e.target.value)}
-                              className="w-full pl-16 pr-8 py-5 bg-white border-2 border-slate-100 rounded-3xl text-sm font-black text-slate-800 focus:outline-none focus:border-primary focus:ring-8 focus:ring-primary/5 transition-all appearance-none cursor-pointer"
-                            >
-                              <option value="">Select Priority Driver</option>
-                              {drivers.map(d => (
-                                  <option key={d.id} value={d.id}>{d.full_name} • {d.license_number}</option>
-                              ))}
-                            </select>
-                            <div className="absolute right-6 top-1/2 -translate-y-1/2 pointer-events-none text-slate-300"><ChevronRight size={18} className="rotate-90" /></div>
-                        </div>
+                     {shipment.status !== 'delivered' ? (
+                       <div className="space-y-4">
+                          <div className="relative group">
+                              <div className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors">
+                                  <User size={18} />
+                              </div>
+                              <select 
+                                value={selectedDriverId}
+                                onChange={(e) => setSelectedDriverId(e.target.value)}
+                                className="w-full pl-16 pr-8 py-5 bg-white border-2 border-slate-100 rounded-3xl text-sm font-black text-slate-800 focus:outline-none focus:border-primary focus:ring-8 focus:ring-primary/5 transition-all appearance-none cursor-pointer"
+                              >
+                                <option value="">Select Priority Driver</option>
+                                {drivers.map(d => (
+                                    <option key={d.id} value={d.id}>{d.full_name} • {d.license_number}</option>
+                                ))}
+                              </select>
+                              <div className="absolute right-6 top-1/2 -translate-y-1/2 pointer-events-none text-slate-300"><ChevronRight size={18} className="rotate-90" /></div>
+                          </div>
 
-                        <button 
-                          onClick={handleAssignDriver}
-                          disabled={!selectedDriverId || assigning}
-                          className="w-full py-5 bg-primary text-white text-[11px] font-black uppercase tracking-[0.3em] rounded-3xl shadow-2xl shadow-blue-900/20 hover:bg-blue-700 active:scale-[0.98] transition-all disabled:opacity-50"
-                        >
-                          {assigning ? <Loader2 className="animate-spin mx-auto" size={18} /> : 'Initiate Dispatch Protocol'}
-                        </button>
-                     </div>
+                          <button 
+                            onClick={handleAssignDriver}
+                            disabled={!selectedDriverId || assigning}
+                            className="w-full py-5 bg-primary text-white text-[11px] font-black uppercase tracking-[0.3em] rounded-3xl shadow-2xl shadow-blue-900/20 hover:bg-blue-700 active:scale-[0.98] transition-all disabled:opacity-50"
+                          >
+                            {assigning ? <Loader2 className="animate-spin mx-auto" size={18} /> : 'Initiate Dispatch Protocol'}
+                          </button>
+                       </div>
+                     ) : (
+                       <div className="text-green-600 font-bold py-5 bg-green-50 border border-green-200 rounded-3xl text-[13px] uppercase tracking-widest mt-2">
+                         Delivered Validation Complete
+                       </div>
+                     )}
 
-                     {drivers.length === 0 && (
+                     {drivers.length === 0 && shipment.status !== 'delivered' && (
                         <div className="p-4 bg-amber-50 border border-amber-100 rounded-2xl text-[10px] font-black text-amber-700 uppercase tracking-widest flex items-center justify-center gap-2">
                            <AlertTriangle size={14} /> Global Driver Pool Empty
                         </div>

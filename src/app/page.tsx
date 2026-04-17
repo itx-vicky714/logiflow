@@ -1,6 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
-import { ChevronRight, Shield, Globe, Zap, BarChart3, Clock, Package, MapPin, ArrowRight, PlayCircle } from 'lucide-react';
+import { ChevronRight, Shield, Globe, Zap, BarChart3, Clock, Package, MapPin, ArrowRight, PlayCircle, CheckCircle } from 'lucide-react';
 
 export default function LandingPage() {
   return (
@@ -139,8 +139,74 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Trust Quote */}
-      <section className="py-48 bg-slate-900 text-white relative overflow-hidden">
+      {/* Intelligence Section */}
+      <section id="intelligence" className="py-32 bg-slate-50">
+        <div className="max-w-7xl mx-auto px-8">
+          <div className="flex flex-col md:flex-row-reverse md:items-center justify-between gap-16">
+             <div className="flex-1">
+                <h2 className="text-[11px] font-black text-indigo-600 uppercase tracking-[0.3em] mb-4">Intelligence</h2>
+                <h3 className="text-4xl md:text-5xl font-black text-slate-900 tracking-tight mb-8">AI-driven Risk Mitigation.</h3>
+                <p className="text-slate-500 font-medium leading-relaxed mb-8">
+                  Stop reacting to delays and start predicting them. LogiFlow's neural models analyze weather patterns, route congestion, and historical performance to calculate risk scores for every shipment in real-time.
+                </p>
+                <ul className="space-y-4">
+                  {['Automated rerouting recommendations', 'Predictive ETA adjustments', 'Anomaly detection clustering'].map((item, i) => (
+                    <li key={i} className="flex items-center gap-3 font-semibold text-slate-700">
+                      <div className="w-6 h-6 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center"><CheckCircle size={12}/></div>
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+             </div>
+             <div className="flex-1">
+                <div className="bg-slate-900 rounded-[2rem] p-8 shadow-2xl relative overflow-hidden">
+                   <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/20 rounded-full blur-3xl" />
+                   <div className="relative space-y-4">
+                      {[1, 2, 3].map(i => (
+                         <div key={i} className="bg-white/10 backdrop-blur border border-white/10 rounded-xl p-4 flex justify-between items-center">
+                            <div className="w-1/2 h-4 bg-white/20 rounded" />
+                            <div className="w-12 h-6 bg-indigo-500/80 rounded" />
+                         </div>
+                      ))}
+                   </div>
+                </div>
+             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Fleet Section */}
+      <section id="fleet" className="py-32 bg-white">
+        <div className="max-w-7xl mx-auto px-8">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-16">
+             <div className="flex-1">
+                <h2 className="text-[11px] font-black text-indigo-600 uppercase tracking-[0.3em] mb-4">Fleet</h2>
+                <h3 className="text-4xl md:text-5xl font-black text-slate-900 tracking-tight mb-8">Autonomous Dispatch.</h3>
+                <p className="text-slate-500 font-medium leading-relaxed mb-8">
+                  Manage drivers, dispatch routes, and real-time operational constraints across thousands of concurrent shipments. Our automated allocation logic minimizes idle time and maximizes fuel efficiency.
+                </p>
+                <div className="grid grid-cols-2 gap-6">
+                  <div className="p-6 bg-slate-50 rounded-2xl border border-slate-100">
+                    <div className="text-3xl font-black text-slate-900 mb-1">99.9%</div>
+                    <div className="text-xs font-bold text-slate-500 uppercase tracking-widest">Uptime</div>
+                  </div>
+                  <div className="p-6 bg-slate-50 rounded-2xl border border-slate-100">
+                    <div className="text-3xl font-black text-slate-900 mb-1">3x</div>
+                    <div className="text-xs font-bold text-slate-500 uppercase tracking-widest">Efficiency</div>
+                  </div>
+                </div>
+             </div>
+             <div className="flex-1 grid grid-cols-2 gap-4">
+                {[1, 2, 3, 4].map(i => (
+                   <div key={i} className={`h-40 rounded-3xl ${i%2===0 ? 'bg-indigo-50 border-indigo-100' : 'bg-slate-50 border-slate-100'} border p-6 flex flex-col justify-between`} />
+                ))}
+             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Trust Quote / Enterprise Section */}
+      <section id="enterprise" className="py-48 bg-slate-900 text-white relative overflow-hidden">
         <div className="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-l from-indigo-600/10 to-transparent" />
         <div className="max-w-7xl mx-auto px-8 relative z-10">
           <div className="max-w-3xl">

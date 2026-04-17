@@ -27,11 +27,10 @@ export interface RouteWeatherRisk {
   recommendation: string;
 }
 
-const now = new Date();
-const month = now.getMonth() + 1; // 1-12
-
 // Determine Indian season
 function getSeason(): 'winter' | 'summer' | 'monsoon' | 'post_monsoon' {
+  const now = new Date();
+  const month = now.getMonth() + 1; // 1-12
   if (month >= 12 || month <= 2) return 'winter';
   if (month >= 3 && month <= 5) return 'summer';
   if (month >= 6 && month <= 9) return 'monsoon';
@@ -147,6 +146,7 @@ export function getCityWeather(city: string): CityWeather {
   const base = CITY_BASE[city]?.[season] ?? { condition: 'sunny' as WeatherCondition, tempC: 28, humidity: 60, wind: 12 };
   
   // Add small random variance for realism
+  const now = new Date();
   const seed = city.charCodeAt(0) + now.getDate();
   const tempVariance = ((seed % 5) - 2);
   const windVariance = ((seed % 7) - 3);

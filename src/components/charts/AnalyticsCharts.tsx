@@ -17,7 +17,8 @@ export default function AnalyticsCharts({ type, data, tooltipStyle }: Props) {
   // e.g.: <div style={{ width: '100%', height: 240, minHeight: 240 }}><AnalyticsCharts .../></div>
   // ResponsiveContainer with width="100%" height="100%" requires a pixel-sized ancestor.
   return (
-    <ResponsiveContainer width="100%" height="100%">
+    <div style={{width: '100%', height: 300}}>
+      <ResponsiveContainer width="100%" height={300}>
         {type === 'volume' ? (
           <ComposedChart data={data} margin={{ top: 5, right: 10, left: -10, bottom: 0 }}>
             <defs>
@@ -89,5 +90,6 @@ export default function AnalyticsCharts({ type, data, tooltipStyle }: Props) {
           </AreaChart>
         )}
       </ResponsiveContainer>
+    </div>
   );
 }

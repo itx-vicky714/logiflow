@@ -16,60 +16,7 @@ import { toast } from 'sonner';
 
 const ShipmentDetailModal = dynamic(() => import('@/components/ShipmentDetailModal'), { ssr: false });
 
-// Generate smart alerts from live shipment data
-function buildAlerts(shipments: Shipment[]) {
-  const now = new Date();
-  const alerts: Array<{
-    id: string; type: string; severity: 'critical' | 'high' | 'medium' | 'low';
-    message: string; cause: string; action: string; actionLabel: string;
-    shipmentId: string; resolved: boolean;
-  }> = [];
-
-  shipments.forEach(s => {
-    const eta = new Date(s.eta);
-    const hoursToEta = (eta.getTime() - now.getTime()) / 3600000;
-    const weatherRisk = getRouteWeatherRisk(s.origin, s.destination);
-
-    if (s.status === 'delayed') {
-      alerts.push({
-        id: `delay-${s.id}`, type: 'delay', severity: 'high',
-        message: `⚠️ ${s.shipment_code} delayed: ${s.origin} → ${s.destination}`,
-        cause: `Shipment is behind schedule. Risk score: ${s.risk_score}/100. Check for road issues, vehicle breakdown, or documentation problems.`,
-        action: 'reroute', actionLabel: 'Suggest Reroute',
-        shipmentId: s.id, resolved: false
-      });
-    }
-    if (s.risk_score > 80) {
-      alerts.push({
-        id: `risk-${s.id}`, type: 'risk', severity: 'critical',
-        message: `🔴 Critical risk: ${s.shipment_code} (${s.risk_score}/100)`,
-        cause: `High risk: ${s.mode} mode, ${s.cargo_type} cargo, ${s.weight_kg}kg. Requires immediate review and intervention.`,
-        action: 'review', actionLabel: 'Mark Reviewed',
-        shipmentId: s.id, resolved: false
-      });
-    }
-    if (weatherRisk.overallRisk > 60 && s.status === 'in_transit') {
-      alerts.push({
-        id: `weather-${s.id}`, type: 'weather', severity: 'medium',
-        message: `🌧️ Weather alert: ${s.origin} → ${s.destination} route`,
-        cause: `${weatherRisk.primaryHazard}. Est. delay: ${weatherRisk.delayEstimateHours}h. Recommendation: ${weatherRisk.recommendation}`,
-        action: 'reschedule', actionLabel: 'Acknowledge',
-        shipmentId: s.id, resolved: false
-      });
-    }
-    if (hoursToEta > 0 && hoursToEta < 4 && s.status === 'in_transit') {
-      alerts.push({
-        id: `eta-${s.id}`, type: 'eta', severity: 'low',
-        message: `⏰ ${s.shipment_code} arriving in ${Math.round(hoursToEta)}h at ${s.destination}`,
-        cause: 'Shipment arriving soon. Prepare receiving dock, ensure personnel availability.',
-        action: 'notify', actionLabel: 'Notify Team',
-        shipmentId: s.id, resolved: false
-      });
-    }
-  });
-
-  return alerts.slice(0, 6);
-}
+// Removed local buildAlerts in favor of Supabase notifications
 
 export default function DashboardPage() {
   const [shipments, setShipments] = useState<Shipment[]>([]);
@@ -79,8 +26,8 @@ export default function DashboardPage() {
   const [statusFilter, setStatusFilter] = useState('all');
   const [selectedShipment, setSelectedShipment] = useState<Shipment | null>(null);
   const [mounted, setMounted] = useState(false);
-  const [resolvedAlerts, setResolvedAlerts] = useState<Set<string>>(new Set());
-  const [resolvingAlert, setResolvingAlert] = useState<string | null>(null);
+  const [dbAlerts, setDbAlerts] = useState<any[]>([]);
+  const [simulating, setSimulating] = useState(false);
 
   const fetchData = useCallback(async () => {
     const { data: { user } } = await supabase.auth.getUser();
@@ -98,6 +45,13 @@ export default function DashboardPage() {
       const revenue = data.filter(s => s.status === 'delivered' || s.status === 'on_time').reduce((sum, s) => sum + estimateRevenue(s), 0);
       setKpi({ total, inTransit, onTime, delayed, atRisk, avgRisk, revenue });
     }
+    
+    // Fetch DB Alerts
+    const { data: alertsData } = await supabase.from('notifications').select('*').eq('user_id', user.id).eq('is_read', false).order('created_at', { ascending: false });
+    if (alertsData) {
+      setDbAlerts(alertsData);
+    }
+    
     setLoading(false);
   }, []);
 
@@ -108,33 +62,73 @@ export default function DashboardPage() {
     return () => window.removeEventListener('shipments-updated', fetchData);
   }, [fetchData]);
 
-  const alerts = buildAlerts(shipments).filter(a => !resolvedAlerts.has(a.id));
+  const handleSimulateAlerts = async () => {
+    if (shipments.length === 0) return toast.info('No shipments to analyze');
+    setSimulating(true);
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+    
+    const now = new Date();
+    const newAlerts: any[] = [];
+    
+    shipments.forEach(s => {
+      const eta = new Date(s.eta);
+      const hoursToEta = (eta.getTime() - now.getTime()) / 3600000;
+      const weatherRisk = getRouteWeatherRisk(s.origin, s.destination);
 
-  const handleResolveAlert = async (alert: ReturnType<typeof buildAlerts>[0]) => {
-    setResolvingAlert(alert.id);
+      if (s.status === 'delayed') {
+        newAlerts.push({ user_id: user.id, type: 'delay', severity: 'high', title: `Delay on ${s.shipment_code}`, message: `⚠️ ${s.shipment_code} delayed: ${s.origin} → ${s.destination}`, cause: `Risk score: ${s.risk_score}. Check for route issues.`, recommended_action: 'reroute', shipment: s.shipment_code, status: 'active' });
+      }
+      if (s.risk_score > 80 && s.status !== 'delivered') {
+        newAlerts.push({ user_id: user.id, type: 'risk', severity: 'critical', title: `Critical Risk: ${s.shipment_code}`, message: `🔴 Risk score ${s.risk_score}/100`, cause: `${s.mode} mode, ${s.cargo_type} cargo. Requires review.`, recommended_action: 'assign driver', shipment: s.shipment_code, status: 'active' });
+      }
+      if (weatherRisk.overallRisk > 60 && s.status === 'in_transit') {
+        newAlerts.push({ user_id: user.id, type: 'weather', severity: 'medium', title: `Weather: ${weatherRisk.primaryHazard}`, message: `🌧️ Route ${s.origin} → ${s.destination}`, cause: weatherRisk.recommendation, recommended_action: 'acknowledge', shipment: s.shipment_code, status: 'active' });
+      }
+      if (hoursToEta > 0 && hoursToEta < 24 && s.status === 'in_transit') {
+        newAlerts.push({ user_id: user.id, type: 'info', severity: 'low', title: `Approaching ETA`, message: `⏰ ${s.shipment_code} arriving ${Math.round(hoursToEta)}h`, cause: 'Prepare receiving dock.', recommended_action: 'dismiss informational', shipment: s.shipment_code, status: 'active' });
+      }
+    });
+
+    if (newAlerts.length > 0) {
+      // Clear old unread first to avoid spam
+      await supabase.from('notifications').update({ is_read: true }).eq('user_id', user.id).eq('is_read', false);
+      await supabase.from('notifications').insert(newAlerts.slice(0, 4));
+      toast.success(`Generated ${Math.min(4, newAlerts.length)} deterministic alerts.`);
+      fetchData();
+    } else {
+      toast.info('All nominal. No alert triggers matched.');
+    }
+    setSimulating(false);
+  };
+
+  const handleResolveDbAlert = async (alert: any) => {
+    setSimulating(true); // just use this for loading state
     try {
-      if (alert.action === 'reroute') {
-        // Auto-reroute to rail if currently road
-        const s = shipments.find(s => s.id === alert.shipmentId);
+      if (alert.recommended_action === 'reroute') {
+        const s = shipments.find(sh => sh.shipment_code === alert.shipment);
         if (s && s.mode === 'road') {
-          await supabase.from('shipments').update({ mode: 'rail', notes: 'Auto-rerouted via LogiFlow alert resolution' }).eq('id', s.id);
+          await supabase.from('shipments').update({ mode: 'rail', notes: 'Auto-rerouted via alert' }).eq('shipment_code', alert.shipment);
           toast.success('Rerouted to Rail successfully');
         } else {
           toast.success('Reroute suggestion applied');
         }
-      } else if (alert.action === 'reschedule') {
-        toast.success('Weather alert acknowledged');
-      } else if (alert.action === 'review') {
-        toast.success('Shipment marked as reviewed');
-      } else if (alert.action === 'notify') {
-        toast.success('Team notification sent');
+      } else if (alert.recommended_action === 'acknowledge') {
+        toast.success('Alert acknowledged');
+      } else if (alert.recommended_action === 'assign driver') {
+        toast.success('Driver assigned via alert');
+      } else if (alert.recommended_action === 'dismiss informational') {
+        toast.success('Alert dismissed');
+      } else {
+        toast.success('Action executed');
       }
-      setResolvedAlerts(prev => new Set([...prev, alert.id]));
+      
+      await supabase.from('notifications').update({ is_read: true, status: 'resolved', resolved_at: new Date().toISOString() }).eq('id', alert.id);
       await fetchData();
     } catch {
       toast.error('Action failed');
     } finally {
-      setResolvingAlert(null);
+      setSimulating(false);
     }
   };
 
@@ -265,7 +259,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Main Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
         {/* Shipment Table */}
         <div className="lg:col-span-2 bg-white border border-border rounded-2xl shadow-sm flex flex-col min-h-0 overflow-hidden">
           <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
@@ -358,35 +352,40 @@ export default function DashboardPage() {
                 <AlertTriangle size={15} className="text-amber-500" />
                 Smart Alerts
               </h3>
-              {alerts.length > 0 && (
+              {dbAlerts.length > 0 && (
                 <span className="bg-rose-100 text-rose-600 text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-wide">
-                  {alerts.length} Active
+                  {dbAlerts.length} Active
                 </span>
               )}
             </div>
             <div className="space-y-2.5 max-h-80 overflow-y-auto">
-              {alerts.length === 0 && (
+              <div className="flex items-center gap-2 mb-3">
+                <button onClick={handleSimulateAlerts} disabled={simulating} className="flex-1 text-[10px] uppercase font-black tracking-widest text-[#3b5bdb] hover:bg-indigo-50 border border-indigo-100 rounded-lg py-2 transition-all disabled:opacity-50">
+                  {simulating ? 'Simulating...' : 'Simulate Engine Trigger'}
+                </button>
+              </div>
+              {dbAlerts.length === 0 && (
                 <div className="text-center py-6">
                   <div className="w-10 h-10 bg-emerald-50 rounded-full flex items-center justify-center mx-auto mb-2">
                     <CheckCircle size={20} className="text-emerald-400" />
                   </div>
                   <p className="font-black text-[13px] text-slate-600">All systems normal</p>
-                  <p className="text-[11px] text-slate-400 font-semibold mt-1">No active alerts detected</p>
+                  <p className="text-[11px] text-slate-400 font-semibold mt-1">No active alerts from engine</p>
                 </div>
               )}
-              {alerts.map(a => {
+              {dbAlerts.map(a => {
                 const styles = alertTextStyle[a.severity] ?? alertTextStyle.low;
                 return (
                   <div key={a.id} className={`p-3.5 rounded-xl border ${alertSeverityStyle[a.severity]}`}>
-                    <div className={`text-[12px] font-black mb-1 ${styles.title}`}>{a.message}</div>
-                    <div className={`text-[11px] font-semibold leading-relaxed mb-2.5 ${styles.cause} opacity-80`}>{a.cause}</div>
+                    <div className={`text-[12px] font-black mb-1 ${styles.title}`}>{a.title || a.message}</div>
+                    <div className={`text-[11px] font-semibold leading-relaxed mb-2.5 ${styles.cause} opacity-80`}>{a.cause || a.message}</div>
                     <button
-                      onClick={() => handleResolveAlert(a)}
-                      disabled={resolvingAlert === a.id}
+                      onClick={() => handleResolveDbAlert(a)}
+                      disabled={simulating}
                       className={`flex items-center gap-1.5 text-[11px] font-black px-3 py-1.5 bg-white/70 hover:bg-white border border-current/20 rounded-lg transition-all disabled:opacity-60 ${styles.title} uppercase tracking-wide`}
                     >
-                      {resolvingAlert === a.id ? <Loader2 size={10} className="animate-spin" /> : <Activity size={10} />}
-                      {a.actionLabel}
+                      <Activity size={10} />
+                      {a.recommended_action || 'Acknowledge'}
                     </button>
                   </div>
                 );
@@ -400,7 +399,7 @@ export default function DashboardPage() {
             {mounted && modeChartData.length > 0 ? (
               <>
                 <div style={{ width: '100%', height: 160, minHeight: 160 }}>
-                  <ResponsiveContainer width="100%" height="100%">
+                  <ResponsiveContainer width="100%" height={160}>
                     <PieChart>
                       <Pie data={modeChartData} cx="50%" cy="50%" innerRadius={45} outerRadius={68} paddingAngle={3} dataKey="value" stroke="none">
                         {modeChartData.map((entry, i) => <Cell key={i} fill={entry.color} />)}

@@ -2,9 +2,9 @@
 
 ![LogiFlow Banner](https://via.placeholder.com/1200x300.png?text=LogiFlow+Supply+Chain)
 
-[![Next.js](https://img.shields.io/badge/Next.js-14-black.svg?style=flat&logo=next.js)](https://nextjs.org/)
-[![React](https://img.shields.io/badge/React-18-blue.svg?style=flat&logo=react)](https://react.dev/)
-[![Tailwind CSS](https://img.shields.io/badge/Tailwind-3.4-38B2AC.svg?style=flat&logo=tailwind-css)](https://tailwindcss.com/)
+[![Next.js](https://img.shields.io/badge/Next.js-16.2-black.svg?style=flat&logo=next.js)](https://nextjs.org/)
+[![React](https://img.shields.io/badge/React-19.2-blue.svg?style=flat&logo=react)](https://react.dev/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind-4.2-38B2AC.svg?style=flat&logo=tailwind-css)](https://tailwindcss.com/)
 [![Supabase](https://img.shields.io/badge/Supabase-Database-3ECF8E.svg?style=flat&logo=supabase)](https://supabase.com/)
 [![Gemini](https://img.shields.io/badge/Google-Gemini_Flash-4186F4.svg?style=flat&logo=google)](https://ai.google.dev/)
 [![Leaflet](https://img.shields.io/badge/Leaflet-Maps-199900.svg?style=flat&logo=leaflet)](https://leafletjs.com/)

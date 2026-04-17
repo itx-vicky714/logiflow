@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
@@ -25,6 +25,17 @@ export default function LoginPage() {
     resolver: zodResolver(loginSchema)
   });
 
+  useEffect(() => {
+    const checkSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        router.replace('/dashboard');
+        router.refresh();
+      }
+    };
+    checkSession();
+  }, [router]);
+
   const onSubmit = async (data: LoginForm) => {
     setLoading(true);
     try {
@@ -36,7 +47,8 @@ export default function LoginPage() {
       if (error) throw error;
       
       toast.success('Successfully logged in');
-      router.push('/dashboard');
+      router.replace('/dashboard');
+      router.refresh();
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Failed to authenticate';
       toast.error(msg);

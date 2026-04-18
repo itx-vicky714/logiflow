@@ -4,196 +4,93 @@ import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
-import {
-  LayoutDashboard, Map, BarChart3, FileText, Settings, LogOut,
-  Package, Plus, Zap, ChevronRight, ChevronLeft, Truck
-} from 'lucide-react';
 import { toast } from 'sonner';
-import { useSidebar } from '@/context/SidebarContext';
-import { motion, AnimatePresence } from 'framer-motion';
-
-type NavItem = { name: string; href: string; icon: React.ElementType; exact?: boolean; exclude?: string; accent?: boolean };
-type NavSection = { label: string; items: NavItem[] };
-
-const NAV_SECTIONS: NavSection[] = [
-  {
-    label: 'Workspace',
-    items: [
-      { name: 'Dashboard',    href: '/dashboard',     icon: LayoutDashboard, exact: true },
-      { name: 'Shipments',    href: '/shipments',     icon: Package,         exact: false, exclude: '/shipments/new' },
-      { name: 'New Unit',     href: '/shipments/new', icon: Plus,            exact: true,  accent: true },
-    ]
-  },
-  {
-    label: 'Intelligence',
-    items: [
-      { name: 'Live Grid',    href: '/map',           icon: Map,             exact: false },
-      { name: 'Analytics',    href: '/analytics',     icon: BarChart3,       exact: false },
-      { name: 'Reports',      href: '/reports',       icon: FileText,        exact: false },
-    ]
-  },
-  {
-    label: 'Control',
-    items: [
-      { name: 'System Settings', href: '/settings',  icon: Settings,        exact: false },
-    ]
-  },
-];
-
-function isActive(href: string, pathname: string, exact?: boolean, exclude?: string): boolean {
-  if (exclude && pathname.startsWith(exclude)) return false;
-  if (exact) return pathname === href;
-  return pathname === href || pathname.startsWith(href + '/');
-}
 
 export function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
-  const { collapsed, toggle } = useSidebar();
-  const [user, setUser] = useState<{ id: string; email?: string; user_metadata?: Record<string, string> } | null>(null);
-  const [profile, setProfile] = useState<{ full_name?: string; company?: string; avatar_url?: string } | null>(null);
+  const [user, setUser] = useState<{ id: string; email?: string } | null>(null);
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
-      if (data.user) {
-        setUser(data.user);
-        supabase.from('profiles').select('*').eq('id', data.user.id).single().then(({ data: p }) => {
-          setProfile(p);
-        });
-      }
+      if (data.user) setUser(data.user);
     });
   }, []);
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
-    toast.success('Logged out');
+    toast.success('System session terminated');
     router.push('/login');
   };
 
-  const displayName = profile?.full_name || user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'User';
-  const displayCompany = profile?.company || user?.user_metadata?.company || 'My Company';
-  const initials = displayName.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2);
+  const navItems = [
+    { name: 'Dashboard', href: '/dashboard', icon: 'dashboard' },
+    { name: 'Add Shipment', href: '/shipments/new', icon: 'add' },
+    { name: 'Shipments', href: '/shipments', icon: 'local_shipping' },
+    { name: 'Analytics', href: '/analytics', icon: 'analytics' },
+    { name: 'Reports', href: '/reports', icon: 'description' },
+    { name: 'Settings', href: '/settings', icon: 'settings' },
+  ];
 
   return (
-    <aside className={`
-      h-screen hidden md:flex flex-col sidebar-bg z-20 shrink-0
-      transition-all duration-300 ease-out
-      ${collapsed ? 'w-[64px]' : 'w-[248px]'}
-    `}>
-      {/* ── Logo ── */}
-      <div className={`flex items-center border-b border-slate-100 shrink-0 ${collapsed ? 'justify-center h-20' : 'px-6 h-20 justify-between'}`}>
-        {!collapsed ? (
-          <>
-            <Link href="/dashboard" className="flex items-center gap-3 min-w-0 group">
-              <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-primary to-cyan-500 flex items-center justify-center shrink-0 shadow-lg shadow-blue-900/40 group-hover:scale-105 transition-transform">
-                <Zap size={18} className="text-white" />
-              </div>
-              <div className="flex flex-col">
-                <div className="text-[17px] font-black tracking-tight text-slate-800 leading-none">
-                  Logi<span className="text-primary">Flow</span>
-                </div>
-                <div className="text-[9px] text-slate-400 font-black tracking-[0.3em] uppercase mt-1">Enterprise</div>
-              </div>
-            </Link>
-            <button onClick={toggle} className="p-2 rounded-xl text-slate-400 hover:text-slate-800 hover:bg-slate-100 transition-all shrink-0">
-              <ChevronLeft size={16} />
-            </button>
-          </>
-        ) : (
-          <button onClick={toggle} className="w-10 h-10 rounded-2xl bg-gradient-to-br from-primary to-cyan-500 flex items-center justify-center shadow-lg shadow-blue-900/40">
-            <Zap size={18} className="text-white" />
-          </button>
-        )}
-      </div>
-
-      {/* ── User Card ── */}
-      <Link href="/settings" className={`flex items-center gap-3 border-b border-slate-100 hover:bg-slate-50 transition-all shrink-0 ${collapsed ? 'justify-center px-2 py-3.5' : 'px-4 py-3.5'}`}>
-        <div className="relative shrink-0">
-          {profile?.avatar_url ? (
-            <img src={profile.avatar_url} alt="" className="w-8 h-8 rounded-full object-cover ring-2 ring-slate-100" />
-          ) : (
-            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-400 to-cyan-400 flex items-center justify-center text-white text-xs font-black shadow-inner">
-              {initials}
+    <aside className="h-screen w-64 fixed left-0 top-0 flex flex-col bg-surface-container-low dark:bg-slate-900 font-['Inter'] antialiased tracking-tight z-50">
+      <div className="flex flex-col h-full py-8">
+        
+        {/* Branding Hub */}
+        <div className="px-8 mb-12">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-primary-container rounded-lg flex items-center justify-center text-on-primary shadow-sm shadow-primary/20">
+              <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>analytics</span>
             </div>
-          )}
-          <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-emerald-400 rounded-full border-2 border-[#0f172a] shadow-sm" />
+            <div>
+              <h1 className="text-xl font-bold tracking-tighter text-[#191c1e] dark:text-slate-100">Precision</h1>
+              <p className="text-[10px] uppercase tracking-[0.2em] text-on-surface-variant font-bold leading-none">Editorial Logistics</p>
+            </div>
+          </div>
         </div>
-        {!collapsed && (
-          <div className="flex-1 min-w-0">
-            <div className="text-[13px] font-semibold text-slate-800 truncate leading-tight">{displayName}</div>
-            <div className="text-[11px] text-slate-400 truncate mt-0.5">{displayCompany}</div>
-          </div>
-        )}
-      </Link>
 
-      {/* ── Nav ── */}
-      <nav className="flex-1 overflow-y-auto py-4 space-y-6 px-2">
-        {NAV_SECTIONS.map(section => (
-          <div key={section.label}>
-            {!collapsed && (
-              <div className="text-[9px] font-black text-slate-400 tracking-[0.2em] uppercase px-3 mb-2">
-                {section.label}
-              </div>
-            )}
-            <div className="space-y-0.5">
-              {section.items.map(item => {
-                const active = isActive(item.href, pathname, item.exact, 'exclude' in item ? (item as { exclude?: string }).exclude : undefined);
-                const Icon = item.icon;
-                return (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    title={collapsed ? item.name : undefined}
-                    className={`
-                      relative flex items-center gap-3 rounded-xl text-[13px] font-semibold
-                      transition-all duration-150 group
-                      ${collapsed ? 'justify-center px-2 py-2.5' : 'px-3 py-2.5'}
-                      ${active
-                        ? item.accent
-                          ? 'bg-gradient-to-r from-[#3b82f6] to-[#0ea5e9] text-white shadow-md'
-                          : 'bg-indigo-50 text-[#3b82f6]'
-                        : 'text-slate-500 hover:text-slate-800 hover:bg-slate-50'
-                      }
-                    `}
-                  >
-                    {/* Active indicator bar */}
-                    {active && !collapsed && (
-                      <div className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 rounded-r-full bg-[#3b82f6]" />
-                    )}
+        {/* Tactical Navigation */}
+        <nav className="flex-1 space-y-1">
+          {navItems.map((item) => {
+            const active = pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href));
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={`${
+                  active ? 'text-primary font-bold' : 'text-on-surface-variant font-medium'
+                } flex items-center gap-3 py-3.5 px-8 transition-all duration-300 hover:text-primary scale-100 active:scale-95 group`}
+              >
+                <span className={`material-symbols-outlined transition-transform duration-500 ${active ? 'fill-1' : 'group-hover:rotate-12'}`}>{item.icon}</span>
+                <span className="tracking-tight">{item.name}</span>
+                {active && <div className="absolute left-0 w-1 h-6 bg-primary rounded-r-full" />}
+              </Link>
+            );
+          })}
+        </nav>
 
-                    <Icon size={16} className={`shrink-0 transition-colors ${
-                      active
-                        ? (item.accent ? 'text-white' : 'text-[#3b82f6]')
-                        : 'text-slate-400 group-hover:text-slate-600'
-                    }`} />
+        {/* Global Action & Status */}
+        <div className="px-8 mt-auto space-y-4">
+          <Link href="/ai-chat" className="w-full bg-primary text-on-primary font-bold flex items-center justify-center gap-2 py-3.5 rounded-xl shadow-lg shadow-primary/10 hover:opacity-95 active:scale-95 transition-all duration-300 text-xs">
+            <span className="material-symbols-outlined text-sm">forum</span>
+            <span className="uppercase tracking-widest">Chat Support</span>
+          </Link>
 
-                    {!collapsed && (
-                      <span className="flex-1 leading-none">{item.name}</span>
-                    )}
-
-                    {!collapsed && item.accent && !active && (
-                      <span className="ml-auto text-[9px] bg-gradient-to-r from-indigo-400 to-cyan-400 text-white px-1.5 py-0.5 rounded-full font-black uppercase tracking-wider">
-                        New
-                      </span>
-                    )}
-                  </Link>
-                );
-              })}
+          <div className="p-4 bg-surface-container rounded-2xl border border-white/40">
+            <p className="text-[10px] font-black uppercase tracking-widest text-on-surface mb-2">System Status</p>
+            <div className="flex items-center gap-2">
+              <span className="status-pulse bg-primary"></span>
+              <span className="text-[11px] text-on-surface-variant font-bold tracking-tight">Active Node Sync</span>
             </div>
           </div>
-        ))}
-      </nav>
-
-      {/* ── Logout ── */}
-      <div className={`border-t border-slate-100 ${collapsed ? 'p-2' : 'p-3'}`}>
-        <button
-          onClick={handleLogout}
-          title={collapsed ? 'Sign Out' : undefined}
-          className={`flex items-center gap-3 w-full rounded-xl text-[13px] font-semibold text-slate-500 hover:text-rose-500 hover:bg-rose-50 transition-all ${collapsed ? 'justify-center px-2 py-2.5' : 'px-3 py-2.5'}`}
-        >
-          <LogOut size={16} className="shrink-0" />
-          {!collapsed && <span>Sign Out</span>}
-        </button>
+          
+          <button 
+            onClick={handleLogout}
+            className="w-full py-2 text-[10px] uppercase tracking-[0.3em] font-black text-on-surface-variant/40 hover:text-error transition-colors text-center"
+          >
+            Sign Out Session
+          </button>
+        </div>
       </div>
     </aside>
   );

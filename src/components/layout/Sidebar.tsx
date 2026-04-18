@@ -137,7 +137,7 @@ export function Sidebar() {
         )}
       </AnimatePresence>
 
-      <aside className="h-screen w-64 fixed left-0 top-0 hidden lg:flex flex-col bg-[#f2f4f6] font-['Inter'] antialiased tracking-tight z-50 border-r border-slate-200">
+      <aside className="h-screen w-64 fixed left-0 top-0 flex flex-col bg-[#f2f4f6] font-['Inter'] antialiased tracking-tight z-50 border-r border-slate-200 transition-transform duration-300 -translate-x-full lg:translate-x-0">
         {sidebarContent}
       </aside>
     </>

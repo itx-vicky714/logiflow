@@ -21,10 +21,10 @@ export function TopBar() {
         </div>
 
         {/* Search & Tactics */}
-        <div className="hidden sm:flex items-center gap-6 flex-1 min-w-0 mr-8 ml-4 lg:ml-0">
+        <div className="flex items-center gap-4 lg:gap-6 flex-1 min-w-0 mr-4 lg:mr-8 ml-2 lg:ml-0">
           <span className="text-lg font-black text-[#191c1e] tracking-tight shrink-0 hidden lg:block">Control Tower</span>
           
-          <div className="relative flex-1 max-w-md h-10 focus-within:ring-2 focus-within:ring-[#493ee5]/20 rounded-lg min-w-[200px]">
+          <div className="relative flex-1 max-w-md h-10 focus-within:ring-2 focus-within:ring-[#493ee5]/20 rounded-lg min-w-0 sm:min-w-[200px]">
             <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-sm w-4 h-4 flex items-center justify-center">search</span>
             <input 
               className="w-full h-full bg-surface-container-highest/50 border-none rounded-lg pl-10 pr-4 py-2 text-sm focus:ring-0 outline-none" 

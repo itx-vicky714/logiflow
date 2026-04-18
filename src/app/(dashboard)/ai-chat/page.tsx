@@ -120,13 +120,13 @@ export default function AIChatPage() {
         </div>
 
         {/* Input & Directive Control */}
-        <div className="p-10 border-t border-surface-container bg-surface-container-low/30 relative z-20 shrink-0">
+        <div className="p-8 border-t border-surface-container bg-surface-container-low/50 relative z-20 shrink-0">
           
-          <div className="flex flex-wrap gap-3 mb-8">
+          <div className="flex flex-wrap gap-2 mb-6 max-h-32 overflow-y-auto custom-scrollbar">
             {SUGGESTIONS.map(s => (
                <button 
                 key={s} onClick={() => handleSend(s)}
-                className="px-6 py-3 bg-surface-container-lowest border border-white/50 rounded-xl text-[10px] font-black uppercase tracking-widest text-[#493ee5] hover:bg-on-surface hover:text-white hover:scale-105 transition-all shadow-sm active:scale-95"
+                className="px-4 py-2 bg-surface-container-lowest border border-white/50 rounded-xl text-[9px] font-black uppercase tracking-widest text-primary hover:bg-on-surface hover:text-white transition-all shadow-sm active:scale-95 whitespace-nowrap"
                >
                  {s}
                </button>

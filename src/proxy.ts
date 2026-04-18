@@ -71,12 +71,18 @@ export default async function proxy(request: NextRequest) {
 
   // Redirect unauthenticated users away from protected routes
   if (!user && isProtectedRoute) {
-    return NextResponse.redirect(new URL('/login', request.url));
+    const url = request.nextUrl.clone();
+    url.pathname = '/login';
+    url.search = ''; // Clear search params to prevent Loops or malformed URLs
+    return NextResponse.redirect(url);
   }
 
   // Redirect authenticated users away from auth pages
   if (user && isAuthRoute) {
-    return NextResponse.redirect(new URL('/dashboard', request.url));
+    const url = request.nextUrl.clone();
+    url.pathname = '/dashboard';
+    url.search = '';
+    return NextResponse.redirect(url);
   }
 
   // Performance Optimization: RSC Header Normalization

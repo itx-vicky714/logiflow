@@ -16,22 +16,22 @@ export function TopBar() {
       <div className="flex items-center justify-between px-12 w-full h-full">
         
         {/* Search & Tactics */}
-        <div className="flex items-center gap-8 flex-1 min-w-0">
-          <span className="text-lg font-black text-[#191c1e] tracking-tight shrink-0 w-[140px]">Control Tower</span>
+        <div className="flex items-center gap-6 flex-1 min-w-0 mr-8">
+          <span className="text-lg font-black text-[#191c1e] tracking-tight shrink-0 hidden lg:block">Control Tower</span>
           
-          <div className="relative w-full max-w-md h-10 focus-within:ring-2 focus-within:ring-[#493ee5]/20 rounded-lg shrink-0">
+          <div className="relative flex-1 max-w-md h-10 focus-within:ring-2 focus-within:ring-[#493ee5]/20 rounded-lg min-w-[200px]">
             <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-sm w-4 h-4 flex items-center justify-center">search</span>
             <input 
               className="w-full h-full bg-surface-container-highest/50 border-none rounded-lg pl-10 pr-4 py-2 text-sm focus:ring-0 outline-none" 
-              placeholder="Search logistics IDs, vessels, or alerts..." 
+              placeholder="Search logistics IDs..." 
               type="text"
             />
           </div>
           
-          <div className="flex items-center gap-3 ml-2 shrink-0">
-            <button className="w-[100px] h-9 bg-primary text-on-primary rounded-lg text-xs font-bold shadow-sm hover:opacity-90 transition-opacity">All Clear</button>
-            <button className="w-[80px] h-9 border border-outline-variant text-on-surface rounded-lg text-xs font-bold hover:bg-surface-container transition-colors">Reset</button>
-            <button className="w-[100px] h-9 border border-outline-variant text-on-surface rounded-lg text-xs font-bold hover:bg-surface-container transition-colors">Simulate</button>
+          <div className="flex items-center gap-2 shrink-0">
+            <button className="px-4 h-9 bg-primary text-on-primary rounded-lg text-xs font-bold shadow-sm hover:opacity-90 transition-opacity whitespace-nowrap">All Clear</button>
+            <button className="px-4 h-9 border border-outline-variant text-on-surface rounded-lg text-xs font-bold hover:bg-surface-container transition-colors whitespace-nowrap">Reset</button>
+            <button className="px-4 h-9 border border-outline-variant text-on-surface rounded-lg text-xs font-bold hover:bg-surface-container transition-colors whitespace-nowrap">Simulate</button>
           </div>
         </div>
 

@@ -29,54 +29,59 @@ export default function DashboardPage() {
   const [dbAlerts, setDbAlerts] = useState<any[]>([]);
 
   const fetchData = useCallback(async () => {
-    // Optimistic UI: Load from cache if available
-    const cachedUser = sessionStorage.getItem('logiflow_user');
+    // 1. Yield-to-main-thread optimization: Wrap heavy bootstrapping in idle callback
+    const performHeavyLogic = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      
+      sessionStorage.setItem('logiflow_user', JSON.stringify(user));
+      
+      // Parallelize background tasks but yield during execution
+      await seedShipments(user.id);
+      
+      const { data } = await supabase
+        .from('shipments').select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
+        
+      if (data) {
+        setShipments(data);
+        const total      = data.length;
+        const inTransit  = data.filter(s => s.status === 'in_transit').length;
+        const onTime     = data.filter(s => s.status === 'on_time').length;
+        const delayed    = data.filter(s => s.status === 'delayed').length;
+        const atRisk     = data.filter(s => s.risk_score >= HIGH_RISK_THRESHOLD).length;
+        const avgRisk    = total > 0 ? Math.round(data.reduce((a, b) => a + b.risk_score, 0) / total) : 0;
+        const revenue    = data
+          .filter(s => s.status === 'delivered' || s.status === 'on_time' || s.status === 'in_transit')
+          .reduce((sum, s) => sum + estimateRevenue(s), 0);
+        
+        const newKpi = { total, inTransit, onTime, delayed, atRisk, avgRisk, revenue };
+        setKpi(newKpi);
+        sessionStorage.setItem('logiflow_kpi', JSON.stringify(newKpi));
+      }
+
+      const { data: alertsData } = await supabase
+        .from('notifications').select('*')
+        .eq('user_id', user.id)
+        .eq('is_read', false)
+        .order('created_at', { ascending: false });
+      if (alertsData) setDbAlerts(alertsData);
+      setLoading(false);
+    };
+
+    // Optimistic UI: Initial Delivery from Cache
     const cachedKpi = sessionStorage.getItem('logiflow_kpi');
-    if (cachedUser) {
-       // We can potentially skip the metadata loading if we trust the cache
-    }
     if (cachedKpi) {
        setKpi(JSON.parse(cachedKpi));
-       setLoading(false); // Immediate visual delivery
+       setLoading(false);
     }
 
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-      setLoading(false);
-      return;
+    if ('requestIdleCallback' in window) {
+       (window as any).requestIdleCallback(() => performHeavyLogic());
+    } else {
+       setTimeout(performHeavyLogic, 0);
     }
-    
-    sessionStorage.setItem('logiflow_user', JSON.stringify(user));
-    
-    await seedShipments(user.id);
-    const { data } = await supabase
-      .from('shipments').select('*')
-      .eq('user_id', user.id)
-      .order('created_at', { ascending: false });
-    if (data) {
-      setShipments(data);
-      const total      = data.length;
-      const inTransit  = data.filter(s => s.status === 'in_transit').length;
-      const onTime     = data.filter(s => s.status === 'on_time').length;
-      const delayed    = data.filter(s => s.status === 'delayed').length;
-      const atRisk     = data.filter(s => s.risk_score >= HIGH_RISK_THRESHOLD).length;
-      const avgRisk    = total > 0 ? Math.round(data.reduce((a, b) => a + b.risk_score, 0) / total) : 0;
-      const revenue    = data
-        .filter(s => s.status === 'delivered' || s.status === 'on_time' || s.status === 'in_transit')
-        .reduce((sum, s) => sum + estimateRevenue(s), 0);
-      
-      const newKpi = { total, inTransit, onTime, delayed, atRisk, avgRisk, revenue };
-      setKpi(newKpi);
-      sessionStorage.setItem('logiflow_kpi', JSON.stringify(newKpi));
-    }
-
-    const { data: alertsData } = await supabase
-      .from('notifications').select('*')
-      .eq('user_id', user.id)
-      .eq('is_read', false)
-      .order('created_at', { ascending: false });
-    if (alertsData) setDbAlerts(alertsData);
-    setLoading(false);
   }, []);
 
   useEffect(() => {

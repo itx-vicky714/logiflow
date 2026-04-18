@@ -30,15 +30,13 @@ export default function RootLayout({
         <link rel="preconnect" href="https://xrmupqlgjjyyexnfktbe.supabase.co" crossOrigin="anonymous" />
         <link rel="dns-prefetch" href="https://xrmupqlgjjyyexnfktbe.supabase.co" />
 
-        {/* Font Subsetting (1.1MB -> ~15KB) & Preload */}
+        {/* Local Font Subsetting (Hosted locally in /public/fonts/) */}
         <link 
           rel="preload" 
-          as="style" 
-          href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-25..0&display=swap&text=_abcdefghijklmnopqrstuvwxyz0123456789" 
-        />
-        <link 
-          rel="stylesheet" 
-          href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-25..0&display=swap&text=_abcdefghijklmnopqrstuvwxyz0123456789"
+          as="font" 
+          type="font/woff2"
+          href="/fonts/material-symbols.woff2" 
+          crossOrigin="anonymous"
         />
 
         {/* Critical CSS Inlining for LCP Optimization */}

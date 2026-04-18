@@ -36,9 +36,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       if (validatedUser) {
         setUser(validatedUser);
         sessionStorage.setItem('logiflow_session_user', JSON.stringify(validatedUser));
+        // Sync to cookie for server-side Edge verification (bypassing 964ms latency)
+        document.cookie = `logiflow-session=${validatedUser.id}; path=/; max-age=3600; SameSite=Lax`;
       } else {
         setUser(null);
         sessionStorage.removeItem('logiflow_session_user');
+        document.cookie = 'logiflow-session=; path=/; max-age=0; SameSite=Lax';
       }
       setIsOptimistic(false);
       setLoading(false);
@@ -52,8 +55,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setUser(newUser);
       if (newUser) {
         sessionStorage.setItem('logiflow_session_user', JSON.stringify(newUser));
+        document.cookie = `logiflow-session=${newUser.id}; path=/; max-age=3600; SameSite=Lax`;
       } else {
         sessionStorage.removeItem('logiflow_session_user');
+        document.cookie = 'logiflow-session=; path=/; max-age=0; SameSite=Lax';
       }
     });
 

@@ -3,14 +3,10 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 
-export function TopBar() {
-  const [user, setUser] = useState<{ id: string; email?: string } | null>(null);
+import { useAuth } from '@/context/AuthContext';
 
-  useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => {
-      if (data.user) setUser(data.user);
-    });
-  }, []);
+export function TopBar() {
+  const { user } = useAuth();
 
   const profileName = user?.email?.split('@')[0]?.replace(/[._]/g, ' ') || 'Guest User';
   const avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(profileName)}&background=493ee5&color=fff&bold=true`;

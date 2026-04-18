@@ -75,7 +75,14 @@ export default function SettingsPage() {
         setValue('email_alerts', p.email_alerts ?? true);
       }
       supabase.from('shipments').select('id').limit(1).then(({ error }) => setSupabaseOk(!error));
-      fetch('/api/chat', { method: 'POST', body: JSON.stringify({ message: 'status', history: [] }), headers: { 'Content-Type': 'application/json' } })
+      fetch('/api/chat', { 
+        method: 'POST', 
+        body: JSON.stringify({ message: 'status', history: [] }), 
+        headers: { 
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        } 
+      })
         .then(r => r.json()).then(d => setGeminiOk(!d.error)).catch(() => setGeminiOk(false));
     };
     load();

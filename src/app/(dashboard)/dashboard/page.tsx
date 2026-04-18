@@ -29,8 +29,25 @@ export default function DashboardPage() {
   const [dbAlerts, setDbAlerts] = useState<any[]>([]);
 
   const fetchData = useCallback(async () => {
+    // Optimistic UI: Load from cache if available
+    const cachedUser = sessionStorage.getItem('logiflow_user');
+    const cachedKpi = sessionStorage.getItem('logiflow_kpi');
+    if (cachedUser) {
+       // We can potentially skip the metadata loading if we trust the cache
+    }
+    if (cachedKpi) {
+       setKpi(JSON.parse(cachedKpi));
+       setLoading(false); // Immediate visual delivery
+    }
+
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
+    if (!user) {
+      setLoading(false);
+      return;
+    }
+    
+    sessionStorage.setItem('logiflow_user', JSON.stringify(user));
+    
     await seedShipments(user.id);
     const { data } = await supabase
       .from('shipments').select('*')
@@ -47,7 +64,10 @@ export default function DashboardPage() {
       const revenue    = data
         .filter(s => s.status === 'delivered' || s.status === 'on_time' || s.status === 'in_transit')
         .reduce((sum, s) => sum + estimateRevenue(s), 0);
-      setKpi({ total, inTransit, onTime, delayed, atRisk, avgRisk, revenue });
+      
+      const newKpi = { total, inTransit, onTime, delayed, atRisk, avgRisk, revenue };
+      setKpi(newKpi);
+      sessionStorage.setItem('logiflow_kpi', JSON.stringify(newKpi));
     }
 
     const { data: alertsData } = await supabase

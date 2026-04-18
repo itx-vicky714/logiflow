@@ -110,7 +110,11 @@ export default function ReportsPage() {
       if (card.id === 'ai_risk' || card.id === 'disruption') {
         const summary = shipments.slice(0, 10).map(s => `${s.shipment_code}: ${s.mode}, ${s.status}, risk:${s.risk_score}`).join('\n');
         const res = await fetch('/api/chat', {
-          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          method: 'POST', 
+          headers: { 
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          },
           body: JSON.stringify({ message: `Analyze these Indian freight nodes for ${card.title}:\n${summary}`, history: [] })
         });
         const d = await res.json();

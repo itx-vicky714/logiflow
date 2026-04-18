@@ -3,6 +3,8 @@ import { Inter } from "next/font/google";
 import { Toaster } from "sonner";
 import "./globals.css";
 
+import "@fontsource/material-symbols-outlined/index.css";
+
 const inter = Inter({ 
   subsets: ["latin"],
   display: "swap",
@@ -22,15 +24,11 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
-        <link 
-          rel="preload" 
-          href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" 
-          as="style" 
-        />
-        <link 
-          href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" 
-          rel="stylesheet" 
-        />
+        {/* Network Waterfall Suppression */}
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link rel="dns-prefetch" href="https://fonts.gstatic.com" />
+        <link rel="preconnect" href="https://xrmupqlgjjyyexnfktbe.supabase.co" crossOrigin="anonymous" />
+        <link rel="dns-prefetch" href="https://xrmupqlgjjyyexnfktbe.supabase.co" />
       </head>
       <body className={inter.className}>
         {children}

@@ -12,7 +12,8 @@ export function TopBar() {
     });
   }, []);
 
-  const profileName = user?.email?.split('@')[0]?.replace('.', ' ') || 'Alex Thorne';
+  const profileName = user?.email?.split('@')[0]?.replace(/[._]/g, ' ') || 'Guest User';
+  const avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(profileName)}&background=493ee5&color=fff&bold=true`;
 
   return (
     <header className="fixed top-0 right-0 left-64 h-20 z-40 bg-[#f7f9fb]/80 backdrop-blur-xl shadow-[0_4px_24px_rgba(25,28,30,0.06)]">
@@ -62,7 +63,7 @@ export function TopBar() {
             <img 
               alt="Profile" 
               className="w-10 h-10 rounded-full border-2 border-surface-container object-cover" 
-              src="https://lh3.googleusercontent.com/aida-public/AB6AXuDtgAcrhKb8HrSgQ09IMvCc0Vcr33B8t8L4aWBvR9ub1imyHsNuK_BtbZOr_10PtjVyGolb90d5mNXDqBHQXugKR0eJMJRW1BugdvNVJ02O4Je6X7JmY2JyC3WYja9DkRSddM0ARZZ-7MRuNUWo1Y1DqUgdpP4r6ATeIt1E77l7BtidolwzJTeqYVh2CDcGUWo6b6jSa5wVEfL1Pg_SFQVlT2GXGQSgfP9RjsikFXW_IIItLjyXDeGzR7eOg-GMhSyLrI83zskFQqk"
+              src={avatarUrl}
             />
           </div>
         </div>

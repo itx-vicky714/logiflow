@@ -45,59 +45,44 @@ export default function DashboardPage() {
   const [dbAlerts, setDbAlerts] = useState<any[]>([]);
 
   const fetchData = useCallback(async () => {
-    const performHeavyLogic = async () => {
+    try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
       
-      sessionStorage.setItem('logiflow_user', JSON.stringify(user));
-      
-      // Seed shipments in background
       await seedShipments(user.id);
       
       const { data } = await supabase
-        .from('shipments').select('*')
+        .from('shipments')
+        .select('*')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false });
         
       if (data) {
-        // BREAK UP DATA PARSING (Long Task Mitigation)
-        setTimeout(() => {
-          const total      = data.length;
-          const inTransit  = data.filter(s => s.status === 'in_transit').length;
-          const onTime     = data.filter(s => s.status === 'on_time' || s.status === 'delivered').length;
-          const delayed    = data.filter(s => s.status === 'delayed').length;
-          const atRisk     = data.filter(s => s.risk_score >= HIGH_RISK_THRESHOLD).length;
-          const avgRisk    = total > 0 ? Math.round(data.reduce((a, b) => a + b.risk_score, 0) / total) : 0;
-          const revenue    = data
-            .filter(s => s.status === 'delivered' || s.status === 'on_time' || s.status === 'in_transit')
-            .reduce((sum, s) => sum + estimateRevenue(s), 0);
+        setShipments(data);
+        const total = data.length;
+        const inTransit = data.filter(s => s.status === 'in_transit').length;
+        const onTime = data.filter(s => s.status === 'on_time' || s.status === 'delivered').length;
+        const delayed = data.filter(s => s.status === 'delayed').length;
+        const atRisk = data.filter(s => s.risk_score >= HIGH_RISK_THRESHOLD).length;
+        const avgRisk = total > 0 ? Math.round(data.reduce((a, b) => a + b.risk_score, 0) / total) : 0;
+        const revenue = data
+          .filter(s => s.status === 'delivered' || s.status === 'on_time' || s.status === 'in_transit')
+          .reduce((sum, s) => sum + estimateRevenue(s), 0);
           
-          const newKpi = { total, inTransit, onTime, delayed, atRisk, avgRisk, revenue };
-          setKpi(newKpi);
-          setShipments(data);
-          sessionStorage.setItem('logiflow_kpi', JSON.stringify(newKpi));
-        }, 0);
+        setKpi({ total, inTransit, onTime, delayed, atRisk, avgRisk, revenue });
       }
 
       const { data: alertsData } = await supabase
-        .from('notifications').select('*')
+        .from('notifications')
+        .select('*')
         .eq('user_id', user.id)
         .eq('is_read', false)
         .order('created_at', { ascending: false });
       if (alertsData) setDbAlerts(alertsData);
+    } catch (error) {
+      console.error('Error fetching dashboard data:', error);
+    } finally {
       setLoading(false);
-    };
-
-    const cachedKpi = sessionStorage.getItem('logiflow_kpi');
-    if (cachedKpi) {
-       setKpi(JSON.parse(cachedKpi));
-       setLoading(false);
-    }
-
-    if ('requestIdleCallback' in window) {
-       (window as any).requestIdleCallback(() => performHeavyLogic());
-    } else {
-       setTimeout(performHeavyLogic, 0);
     }
   }, []);
 

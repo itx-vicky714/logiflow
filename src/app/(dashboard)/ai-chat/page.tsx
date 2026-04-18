@@ -26,14 +26,11 @@ export default function AIChatPage() {
   ]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
-  const listRef = useRef<any>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
 
-  // Stabilize scroll with requestAnimationFrame to avoid layout thrashing
   useEffect(() => {
-    if (listRef.current) {
-      requestAnimationFrame(() => {
-        listRef.current?.scrollToRow({ index: messages.length - 1, align: 'end' });
-      });
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
   }, [messages]);
 
@@ -66,38 +63,15 @@ export default function AIChatPage() {
 
       setMessages(prev => [...prev, { role: 'assistant', content: data.text }]);
     } catch (err: any) {
-      toast.error('Neural Link Interference');
+      toast.error('Connection error');
       setMessages(prev => [...prev, { role: 'assistant', content: "⚠️ System error: Neural uplink failed. Please re-synchronize." }]);
     } finally {
       setLoading(false);
     }
   }, [input, loading, messages]);
 
-  // Message Row for Virtualization 2.x API
-  const MessageRow = useCallback(({ index, style }: { index: number, style: React.CSSProperties }) => {
-    const m = messages[index];
-    if (!m) return null;
-    return (
-      <div style={style} className={`flex px-12 py-4 ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-        <div className={`max-w-[75%] p-6 rounded-3xl text-[14px] font-bold leading-relaxed shadow-sm ${
-          m.role === 'user' 
-            ? 'bg-on-surface text-inverse-on-surface rounded-tr-none' 
-            : 'bg-surface-container-low text-on-surface border border-white/50 rounded-tl-none italic'
-        }`}>
-          {m.content.split('\n').map((line, idx) => (
-            <p key={idx} className={idx > 0 ? 'mt-4' : ''}>
-               {line.split('**').map((part, pIdx) => (
-                 pIdx % 2 === 1 ? <span key={pIdx} className="text-primary font-black">{part}</span> : part
-               ))}
-            </p>
-          ))}
-        </div>
-      </div>
-    );
-  }, [messages]);
-
   return (
-    <div className="flex flex-col h-[calc(100vh-10rem)] max-w-5xl mx-auto font-['Inter'] antialiased tracking-tight animate-in fade-in slide-in-from-bottom-4 duration-700">
+    <div className="flex flex-col h-[calc(100vh-10rem)] max-w-5xl mx-auto font-['Inter'] antialiased tracking-tight">
       
       {/* Header Segment */}
       <div className="mb-8 flex items-center justify-between shrink-0">
@@ -115,21 +89,25 @@ export default function AIChatPage() {
          </div>
       </div>
 
-      {/* Main Chat Core with Layout Containment */}
-      <div className="flex-1 bg-surface-container-lowest border border-white/50 rounded-[3rem] curated-shadow flex flex-col overflow-hidden relative" style={{ contain: 'layout' }}>
-        <div className="absolute inset-0 bg-gradient-to-b from-surface-container-low/10 to-transparent pointer-events-none" />
-        
-        {/* Virtualized Scrollable Transcript */}
-        <div className="flex-1 min-h-0 relative z-10 py-8">
-          <List<{}>
-            listRef={listRef}
-            rowCount={messages.length}
-            rowHeight={140}
-            rowComponent={MessageRow}
-            rowProps={{}}
-            style={{ height: 500, width: '100%' }}
-            className="scrollbar-hide"
-          />
+      <div className="flex-1 bg-surface-container-lowest border border-white/50 rounded-[3rem] curated-shadow flex flex-col overflow-hidden relative">
+        <div className="flex-1 overflow-y-auto p-12 space-y-8 scrollbar-hide" ref={scrollRef}>
+          {messages.map((m, idx) => (
+            <div key={idx} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+              <div className={`max-w-[75%] p-6 rounded-3xl text-[14px] font-bold leading-relaxed shadow-sm ${
+                m.role === 'user' 
+                  ? 'bg-on-surface text-inverse-on-surface rounded-tr-none' 
+                  : 'bg-surface-container-low text-on-surface border border-white/50 rounded-tl-none italic'
+              }`}>
+                {m.content.split('\n').map((line, lIdx) => (
+                  <p key={lIdx} className={lIdx > 0 ? 'mt-4' : ''}>
+                     {line.split('**').map((part, pIdx) => (
+                       pIdx % 2 === 1 ? <span key={pIdx} className="text-primary font-black">{part}</span> : part
+                     ))}
+                  </p>
+                ))}
+              </div>
+            </div>
+          ))}
           
           {loading && (
             <div className="flex justify-start px-12 mt-4">

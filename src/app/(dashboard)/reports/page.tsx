@@ -134,14 +134,8 @@ export default function ReportsPage() {
     toast.info('Initiating PDF Protocol...');
     setGenerating('pdf');
     try {
-      // Dynamic import to reduce initial bundle size and TTI
-      const [jsPDFMod, autoTableMod] = await Promise.all([
-        import('jspdf'),
-        import('jspdf-autotable')
-      ]);
-      
-      const jsPDF = jsPDFMod.default;
-      const autoTable = autoTableMod.default;
+      const { jsPDF } = await import('jspdf');
+      const autoTable = (await import('jspdf-autotable')).default;
       
       const doc = new jsPDF();
       doc.setFontSize(22); doc.text('LogiFlow Intelligence', 14, 20);

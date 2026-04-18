@@ -1,6 +1,9 @@
 import { NextResponse } from 'next/server';
 export const dynamic = 'force-dynamic';
 
+/** Consistent high-risk threshold used in both API and dashboard */
+const HIGH_RISK_THRESHOLD = 70;
+
 const SYSTEM_PROMPT = `You are LogiBot, the EXCLUSIVE Logistics Intelligence AI for the LogiFlow Platform.
 Your sole purpose is to provide REAL-TIME, DATA-BACKED answers using the [GROUNDING CONTEXT] and [DETAILED MANIFEST] provided below.
 
@@ -17,17 +20,19 @@ CRITICAL RULES:
 - MULTILINGUAL: Support English, Hindi, and Hinglish natively.
 - TONE: Professional Control Tower Officer.`;
 
-function detectIntent(message: string): 'total_shipments' | 'active_shipments' | 'high_risk' | 'route_query' | 'risk_analysis' | 'delayed_shipments' | 'shipment_id_query' | 'website_capability_query' | null {
+function detectIntent(message: string): 'total_shipments' | 'active_shipments' | 'high_risk' | 'route_query' | 'risk_analysis' | 'delayed_shipments' | 'shipment_id_query' | 'website_capability_query' | 'alerts_summary' | 'revenue_query' | null {
   const m = message.toLowerCase();
   
   if (m.includes('total') || (m.includes('how many') && !m.includes('delay') && !m.includes('risk')) || (m.includes('kitna') && m.includes('total'))) return 'total_shipments';
-  if (m.includes('active')) return 'active_shipments';
-  if (m.includes('delay') || m.includes('delayed')) return 'delayed_shipments';
-  if (m.includes('high risk') || m.includes('risk pe') || (m.includes('khatra') && m.includes('pe'))) return 'high_risk';
+  if (m.includes('active') || m.includes('in transit') || m.includes('moving')) return 'active_shipments';
+  if (m.includes('delay') || m.includes('delayed') || m.includes('late')) return 'delayed_shipments';
+  if (m.includes('high risk') || m.includes('risk pe') || (m.includes('khatra')) || m.includes('at risk')) return 'high_risk';
+  if (m.includes('alert') || m.includes('notification') || m.includes('warning')) return 'alerts_summary';
+  if (m.includes('revenue') || m.includes('earning') || m.includes('money') || m.includes('income')) return 'revenue_query';
   if (m.includes('status') || m.includes('route') || /from .+ to .+/.test(m) || /(se|tak)\s/.test(m)) return 'route_query';
-  if (m.includes('analysis') || m.includes('assessment') || m.includes('risk-scan')) return 'risk_analysis';
-  if (/shipment\s+#?[a-z0-9-]+/.test(m) || m.includes('id ')) return 'shipment_id_query';
-  if (m.includes('what can you do') || m.includes('website capability') || m.includes('features')) return 'website_capability_query';
+  if (m.includes('analysis') || m.includes('assessment') || m.includes('risk-scan') || m.includes('scan')) return 'risk_analysis';
+  if (/shipment\s+#?[a-z0-9-]+/.test(m) || m.includes('id ') || m.includes('log-')) return 'shipment_id_query';
+  if (m.includes('what can you do') || m.includes('website capability') || m.includes('features') || m.includes('help')) return 'website_capability_query';
   
   return null;
 }
@@ -48,55 +53,84 @@ function smartFallbackText(message: string, shipments: ShipmentRecord[]): string
   const msg = message.toLowerCase();
   const intent = detectIntent(message);
   
-  // High-level stats
+  // High-level stats (consistent with HIGH_RISK_THRESHOLD)
   const total = shipments.length;
-  const highRisk = shipments.filter((s) => s.risk_score > 70).length;
-  const inTransit = shipments.filter((s) => s.status === 'in_transit' || s.status === 'on_time').length;
+  const highRisk = shipments.filter((s) => s.risk_score >= HIGH_RISK_THRESHOLD).length;
+  const inTransit = shipments.filter((s) => s.status === 'in_transit').length;
+  const onTime = shipments.filter((s) => s.status === 'on_time').length;
+  const delayed = shipments.filter((s) => s.status === 'delayed').length;
+  const delivered = shipments.filter((s) => s.status === 'delivered').length;
+  const totalRevenue = shipments
+    .filter((s) => s.status === 'delivered' || s.status === 'on_time')
+    .reduce((sum, s) => sum + (s.declared_value ? s.declared_value * 0.025 : (1000 * 8)), 0);
 
   const isHinglish = /(ky|hai|kya|kaise|kaha|bata|ye|wo|mera|ka|ki|ke|kon|kab)/i.test(msg);
   const isHindi = /[\u0900-\u097F]/.test(msg);
 
   if (intent === 'total_shipments') {
-    if (isHindi) return `आपके सिस्टम में अभी कुल ${total} शिपमेंट रिकॉर्ड किए गए हैं।`;
-    if (isHinglish) return `Aapke total ${total} shipments synced hain right now.`;
-    return `Your active manifest contains ${total} registered shipments.`;
+    if (isHindi) return `आपके सिस्टम में अभी कुल **${total}** शिपमेंट रिकॉर्ड किए गए हैं — ${inTransit} ट्रांजिट में, ${delayed} देरी से।`;
+    if (isHinglish) return `Aapke system mein total **${total}** shipments hain. ${inTransit} abhi in transit hain, ${delayed} delayed hain.`;
+    return `Your manifest contains **${total}** registered shipments — ${inTransit} in transit, ${onTime} on time, ${delayed} delayed, ${delivered} delivered.`;
   }
   
   if (intent === 'active_shipments') {
-    return `There are currently ${inTransit} active shipments in transit or on time.`;
+    return `Currently **${inTransit}** shipments are actively in transit. Additionally, **${onTime}** are confirmed on-time.`;
   }
 
   if (intent === 'delayed_shipments') {
-    return `You have ${shipments.filter((s)=>s.status==='delayed').length} delayed shipments.`;
+    if (delayed === 0) return 'Great news — no shipments are currently delayed. All routes are running on schedule.';
+    const delayedCodes = shipments.filter((s) => s.status === 'delayed').slice(0, 5).map((s) => s.shipment_code).join(', ');
+    if (isHindi) return `अभी **${delayed}** शिपमेंट देरी से चल रही हैं।`;
+    return `**${delayed}** shipment${delayed > 1 ? 's are' : ' is'} currently delayed.${delayed <= 5 ? ' IDs: ' + delayedCodes : ''} Navigate to the Shipments page for full details.`;
   }
 
   if (intent === 'high_risk') {
-    if (isHindi) return `वर्तमान में ${highRisk} शिपमेंट हाई-रिस्क जोन में हैं।`;
-    if (isHinglish) return `Current manifest mein ${highRisk} shipments high risk pe hain.`;
-    return `Analysis shows ${highRisk} shipments are currently categorized as high-risk.`;
+    if (highRisk === 0) return `No shipments currently exceed the risk threshold of ${HIGH_RISK_THRESHOLD}/100. All routes are operating within acceptable parameters.`;
+    const riskyCodes = shipments.filter((s) => s.risk_score >= HIGH_RISK_THRESHOLD).slice(0, 5).map((s) => `${s.shipment_code}(${s.risk_score})`).join(', ');
+    if (isHindi) return `वर्तमान में **${highRisk}** शिपमेंट हाई-रिस्क ज़ोन में हैं (स्कोर ≥ ${HIGH_RISK_THRESHOLD}/100)।`;
+    if (isHinglish) return `${highRisk} shipments high risk pe hain (score ≥ ${HIGH_RISK_THRESHOLD}). IDs: ${riskyCodes}`;
+    return `**${highRisk}** shipment${highRisk > 1 ? 's' : ''} with risk score ≥ ${HIGH_RISK_THRESHOLD}/100 detected.${highRisk <= 5 ? '\n\nHigh-risk IDs: ' + riskyCodes : ' Check the dashboard for the full list.'}`;
+  }
+
+  if (intent === 'alerts_summary') {
+    const criticalCount = shipments.filter((s) => s.risk_score >= HIGH_RISK_THRESHOLD).length;
+    const delayCount = shipments.filter((s) => s.status === 'delayed').length;
+    return `**Smart Alerts Summary:**\n- 🔴 Delayed shipments requiring action: **${delayCount}**\n- ⚠️ High-risk shipments (score ≥ ${HIGH_RISK_THRESHOLD}): **${criticalCount}**\n\nUse the **Simulate** button on the dashboard to generate detailed real-time alerts, or click any alert's action link to resolve it.`;
+  }
+
+  if (intent === 'revenue_query') {
+    const rev = totalRevenue >= 100000 ? `₹${(totalRevenue/100000).toFixed(1)}L` : totalRevenue >= 1000 ? `₹${(totalRevenue/1000).toFixed(1)}K` : `₹${Math.round(totalRevenue)}`;
+    return `Estimated revenue from **${onTime + delivered}** completed shipments is approximately **${rev}** (based on 2.5% of declared value or standard freight rates).`;
   }
 
   if (intent === 'route_query' || intent === 'shipment_id_query') {
-    const routeMatch = msg.match(/(patna|mumbai|delhi|surat|pune|bangalore|kolkata|jaipur|hyderabad|chennai).*(surat|patna|mumbai|delhi|pune|bangalore|kolkata|jaipur|hyderabad|chennai)/);
-    if (routeMatch) {
-      const origin = routeMatch[1];
-      const dest = routeMatch[2];
-      const match = shipments.find((s) => 
-        (s.origin.toLowerCase().includes(origin) && s.destination.toLowerCase().includes(dest)) ||
-        (s.origin.toLowerCase().includes(dest) && s.destination.toLowerCase().includes(origin))
-      );
-      if (match) {
-        return `Confirmed: ${match.shipment_code} (${match.origin} → ${match.destination}) status is ${match.status.replace('_', ' ')}. Risk score is ${match.risk_score}/100.`;
-      }
+    // Try to match by shipment code directly
+    const codeMatch = msg.match(/log-[\w-]+/i);
+    if (codeMatch) {
+      const s = shipments.find((sh) => sh.shipment_code.toLowerCase() === codeMatch[0].toLowerCase());
+      if (s) return `**${s.shipment_code}:** ${s.origin} → ${s.destination} | Status: **${s.status.replace('_', ' ')}** | Mode: ${s.mode} | Risk: **${s.risk_score}/100** | ETA: ${new Date(s.eta).toLocaleDateString('en-IN')}`;
     }
-    return "No shipment found for this query.";
+    // Try to match by route
+    const cities = ['patna','mumbai','delhi','surat','pune','bangalore','kolkata','jaipur','hyderabad','chennai','lucknow','ahmedabad','kochi','nagpur','guwahati','visakhapatnam'];
+    const foundCities = cities.filter((c) => msg.includes(c));
+    if (foundCities.length >= 2) {
+      const [c1, c2] = foundCities;
+      const match = shipments.find((s) =>
+        (s.origin.toLowerCase().includes(c1) && s.destination.toLowerCase().includes(c2)) ||
+        (s.origin.toLowerCase().includes(c2) && s.destination.toLowerCase().includes(c1))
+      );
+      if (match) return `**${match.shipment_code}** (${match.origin} → ${match.destination})\nStatus: **${match.status.replace('_', ' ')}** | Risk: **${match.risk_score}/100** | Mode: ${match.mode}`;
+      return `No active shipment found on the ${foundCities[0]} ↔ ${foundCities[1]} route.`;
+    }
+    return 'Please provide the shipment code (e.g. LOG-...) or a route (e.g. Mumbai to Delhi) for a specific lookup.';
   }
   
   if (intent === 'website_capability_query') {
-    return "I am LogiBot. I can analyze shipments, track active routes, predict risk using AI, and help orchestrate dispatches.";
+    return `**LogiBot** can help you with:\n- 📦 Total, delayed, in-transit, and high-risk shipment counts\n- 🗺️ Route-specific status and risk lookups\n- ⚠️ Smart alert summaries\n- 💰 Revenue estimates\n- 🌧️ Weather risk advisories for any route\n\nJust ask in English, Hindi, or Hinglish!`;
   }
 
-  return "No shipment found for this query.";
+  // Generic helpful fallback — never show "No shipment found" for general questions
+  return `Your fleet: **${total}** total | **${inTransit}** in transit | **${delayed}** delayed | **${highRisk}** high-risk.\n\nAsk me about a specific route, shipment ID, delays, risk levels, or alerts!`;
 }
 
 import { createServerClient } from '@supabase/ssr';
@@ -148,9 +182,10 @@ export async function POST(req: Request) {
 
     // Comprehensive Summary Generation
     const total = shipments.length;
-    const inTransit = shipments.filter((s) => s.status === 'in_transit' || s.status === 'on_time').length;
+    const inTransit = shipments.filter((s) => s.status === 'in_transit').length;
+    const onTimeLlm = shipments.filter((s) => s.status === 'on_time').length;
     const delayed = shipments.filter((s) => s.status === 'delayed').length;
-    const highRisk = shipments.filter((s) => s.risk_score > 70).length;
+    const highRisk = shipments.filter((s) => s.risk_score >= HIGH_RISK_THRESHOLD).length;
     const delivered = shipments.filter((s) => s.status === 'delivered').length;
     const road = shipments.filter((s) => s.mode === 'road').length;
     const rail = shipments.filter((s) => s.mode === 'rail').length;
@@ -162,9 +197,10 @@ export async function POST(req: Request) {
     const summary = `
 [GROUNDING CONTEXT]
 - TOTAL SHIPMENTS: ${total}
-- IN TRANSIT/ON TIME: ${inTransit}
+- IN TRANSIT: ${inTransit}
+- ON TIME: ${onTimeLlm}
 - DELAYED (Action Required): ${delayed}
-- HIGH RISK (>70): ${highRisk}
+- HIGH RISK (score >= ${HIGH_RISK_THRESHOLD}): ${highRisk}
 - DELIVERED: ${delivered}
 - AVG NETWORK RISK: ${avgRisk}/100
 - EST. REVENUE: ₹${totalRev.toLocaleString('en-IN')}

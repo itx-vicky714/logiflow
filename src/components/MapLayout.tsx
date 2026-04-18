@@ -14,25 +14,21 @@ delete (L.Icon.Default.prototype as unknown as Record<string, unknown>)._getIcon
 // Premium custom map pin icons
 // Premium custom map pin icons
 // Premium custom vehicle icons
-const createVehicleIcon = (mode: 'road' | 'rail' | 'air' | 'sea', isHighlighted: boolean) => {
-  const modeMap = {
-    road: { icon: '🚛', color: '#f97316' },
-    rail: { icon: '🚂', color: '#3b82f6' },
-    air:  { icon: '✈️', color: '#8b5cf6' },
-    sea:  { icon: '🚢', color: '#14b8a6' }
-  };
-  const { icon, color } = modeMap[mode] || modeMap.road;
-  
+const createVehicleIcon = (mode: string, isHighlighted: boolean, status: string, riskScore: number) => {
+  const isRed = status === 'delayed';
+  const isYellow = riskScore > 60 && !isRed;
+  const isGreen = !isRed && !isYellow;
+
+  const color = isRed ? '#ef4444' : isYellow ? '#f59e0b' : '#10b981';
+  const ringColor = isRed ? 'rgba(239,68,68,0.3)' : isYellow ? 'rgba(245,158,11,0.3)' : 'rgba(16,185,129,0.3)';
+
   const html = `
-    <div class="relative w-8 h-8 -translate-x-1/2 -translate-y-1/2 transition-all duration-500 scale-${isHighlighted ? '125' : '100'}">
-      ${isHighlighted ? `<div class="absolute inset-0 rounded-full opacity-30 animate-ping" style="background-color: ${color};"></div>` : ''}
-      <div class="absolute inset-0 rounded-xl bg-slate-900/80 backdrop-blur-md border border-white/20 shadow-2xl flex items-center justify-center text-[16px]">
-        ${icon}
-      </div>
-      <div class="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full border border-white" style="background-color: ${color};"></div>
+    <div class="relative flex items-center justify-center transition-all duration-300" style="width: ${isHighlighted ? '24px' : '16px'}; height: ${isHighlighted ? '24px' : '16px'};">
+      ${isHighlighted ? `<div class="absolute inset-0 rounded-full animate-ping" style="background-color: ${ringColor};"></div>` : ''}
+      <div class="absolute inset-0 rounded-full border-[2.5px] border-white shadow-md z-10" style="background-color: ${color};"></div>
     </div>
   `;
-  return L.divIcon({ html, className: 'custom-vehicle-icon', iconSize: [0, 0], iconAnchor: [0, 0], popupAnchor: [0, -15] });
+  return L.divIcon({ html, className: 'custom-vehicle-icon bg-transparent border-0', iconSize: [0, 0], iconAnchor: [0, 0], popupAnchor: [0, -10] });
 };
 
 // Custom Weather Badge Icon Generator - Frosted glass look
@@ -179,20 +175,20 @@ export default function MapLayout({ shipments, highlighted }: Props) {
                   color={color} weight={12} opacity={0.2} className="animate-pulse"
                 />
               )}
-              {/* Actual Polyline with enhanced glow */}
+              {/* Actual Polyline */}
               <Polyline
                 positions={[originCoords, destCoords]}
-                color={color}
-                weight={isHighlighted ? 4 : 3}
-                opacity={isHighlighted ? 0.9 : isFocusMode ? 0.05 : 0.3}
-                className={isHighlighted ? 'drop-shadow-[0_0_15px_rgba(59,130,246,0.8)]' : ''}
+                color={s.status === 'delayed' ? '#ef4444' : s.risk_score > 60 ? '#f59e0b' : '#10b981'}
+                weight={isHighlighted ? 4 : 2}
+                opacity={isHighlighted ? 0.9 : isFocusMode ? 0.05 : 0.6}
+                className={isHighlighted ? 'drop-shadow-[0_0_8px_rgba(59,130,246,0.3)]' : ''}
                 dashArray={s.mode === 'air' ? '10 10' : s.mode === 'sea' ? '5 10' : undefined}
               />
               <Marker 
                 position={originCoords} 
-                icon={createVehicleIcon(s.mode, isHighlighted)} 
+                icon={createVehicleIcon(s.mode, isHighlighted, s.status, s.risk_score)} 
                 zIndexOffset={isHighlighted ? 1000 : 0}
-                opacity={isHighlighted ? 1 : isFocusMode ? 0.1 : 0.8}
+                opacity={isHighlighted ? 1 : isFocusMode ? 0.2 : 1}
               >
                 <Popup className="premium-popup">
                   <div className="text-xs font-sans p-1">
@@ -205,9 +201,9 @@ export default function MapLayout({ shipments, highlighted }: Props) {
               </Marker>
               <Marker 
                 position={destCoords} 
-                icon={createVehicleIcon(s.mode, isHighlighted)} 
+                icon={createVehicleIcon(s.mode, isHighlighted, s.status, s.risk_score)} 
                 zIndexOffset={isHighlighted ? 1000 : 0}
-                opacity={isHighlighted ? 1 : isFocusMode ? 0.1 : 0.8}
+                opacity={isHighlighted ? 1 : isFocusMode ? 0.2 : 1}
               >
                 <Popup className="premium-popup">
                   <div className="text-xs font-sans p-1">
@@ -223,25 +219,30 @@ export default function MapLayout({ shipments, highlighted }: Props) {
         })}
 
         <div className="leaflet-bottom leaflet-right" style={{ zIndex: 1000, margin: '20px' }}>
-          <div className="leaflet-control bg-white/80 backdrop-blur-md border border-slate-200 rounded-2xl p-3 shadow-sm transition-opacity duration-300 pointer-events-none" style={{ opacity: isFocusMode ? 0.2 : 0.8 }}>
-            <div className="text-[9px] font-black text-[#3b82f6] uppercase tracking-[0.2em] mb-3 flex items-center gap-2">
-              <div className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse"/> GRID TELEMETRY
-            </div>
-            <div className="space-y-2">
+          <div className="leaflet-control bg-white rounded-xl p-4 shadow-lg border border-slate-200 transition-opacity duration-300">
+            <h4 className="text-[10px] font-black text-slate-800 uppercase tracking-widest mb-3">Map Legend</h4>
+            <div className="grid grid-cols-2 gap-x-6 gap-y-3">
               {[
-                { mode: 'road', color: '#3b82f6', label: 'Road Hub', type: 'solid' },
-                { mode: 'rail', color: '#60a5fa', label: 'Rail Link', type: 'solid' },
-                { mode: 'air',  color: '#93c5fd', label: 'Air Corridor', type: 'dashed' },
-                { mode: 'sea',  color: '#bfdbfe', label: 'Sea Route', type: 'dotted' }
+                { label: 'Normal', color: '#10b981' },
+                { label: 'At Risk', color: '#f59e0b' },
+                { label: 'Delayed', color: '#ef4444' }
               ].map((item) => (
-                <div key={item.label} className="flex items-center gap-3">
-                  <div className="w-6 h-0.5 rounded-full relative shrink-0" style={{ backgroundColor: item.type === 'solid' ? item.color : 'transparent' }}>
-                    {item.type === 'dashed' && <div className="absolute inset-0 border-b-[2px]" style={{ borderColor: item.color, borderStyle: 'dashed' }} />}
-                    {item.type === 'dotted' && <div className="absolute inset-0 border-b-[3px]" style={{ borderColor: item.color, borderStyle: 'dotted' }} />}
-                  </div>
-                  <span className="text-[9px] font-bold text-slate-500 tracking-wider uppercase">{item.label}</span>
+                <div key={item.label} className="flex items-center gap-2">
+                  <div className="w-3 h-3 rounded-full border-2 border-white shadow-sm" style={{ backgroundColor: item.color }}></div>
+                  <span className="text-[10px] font-bold text-slate-600 uppercase tracking-wider">{item.label}</span>
                 </div>
               ))}
+              
+              <div className="flex items-center gap-2">
+                <div className="w-4 h-0.5 bg-slate-400"></div>
+                <span className="text-[10px] font-bold text-slate-600 uppercase tracking-wider">Route</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 rounded-full border-2 border-white bg-slate-300 relative flex items-center justify-center shadow-sm">
+                   <div className="absolute w-5 h-5 border border-slate-300 rounded-full"></div>
+                </div>
+                <span className="text-[10px] font-bold text-slate-600 uppercase tracking-wider">Selected</span>
+              </div>
             </div>
           </div>
         </div>

@@ -19,7 +19,7 @@ export function Sidebar() {
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
-    toast.success('System session terminated');
+    toast.success('Sign out successful');
     router.push('/login');
   };
 
@@ -33,23 +33,23 @@ export function Sidebar() {
   ];
 
   return (
-    <aside className="h-screen w-64 fixed left-0 top-0 flex flex-col bg-surface-container-low dark:bg-slate-900 font-['Inter'] antialiased tracking-tight z-50">
+    <aside className="h-screen w-64 fixed left-0 top-0 flex flex-col bg-[#f2f4f6] font-['Inter'] antialiased tracking-tight z-50 transition-all duration-300">
       <div className="flex flex-col h-full py-8">
         
-        {/* Branding Hub */}
+        {/* Logo Hub */}
         <div className="px-8 mb-12">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-primary-container rounded-lg flex items-center justify-center text-on-primary shadow-sm shadow-primary/20">
+            <div className="w-10 h-10 bg-primary-container rounded-lg flex items-center justify-center text-on-primary">
               <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>analytics</span>
             </div>
             <div>
-              <h1 className="text-xl font-bold tracking-tighter text-[#191c1e] dark:text-slate-100">Precision</h1>
+              <h1 className="text-xl font-bold tracking-tighter text-[#191c1e]">LogiFlow</h1>
               <p className="text-[10px] uppercase tracking-[0.2em] text-on-surface-variant font-bold leading-none">Editorial Logistics</p>
             </div>
           </div>
         </div>
 
-        {/* Tactical Navigation */}
+        {/* Navigation Core */}
         <nav className="flex-1 space-y-1">
           {navItems.map((item) => {
             const active = pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href));
@@ -58,37 +58,38 @@ export function Sidebar() {
                 key={item.href}
                 href={item.href}
                 className={`${
-                  active ? 'text-primary font-bold' : 'text-on-surface-variant font-medium'
-                } flex items-center gap-3 py-3.5 px-8 transition-all duration-300 hover:text-primary scale-100 active:scale-95 group`}
+                  active ? 'text-[#493ee5] font-semibold' : 'text-[#464555] font-medium'
+                } flex items-center gap-3 py-3 px-8 transition-all duration-300 hover:text-[#493ee5] scale-100 active:scale-95`}
               >
-                <span className={`material-symbols-outlined transition-transform duration-500 ${active ? 'fill-1' : 'group-hover:rotate-12'}`}>{item.icon}</span>
-                <span className="tracking-tight">{item.name}</span>
-                {active && <div className="absolute left-0 w-1 h-6 bg-primary rounded-r-full" />}
+                <span className="material-symbols-outlined">{item.icon}</span>
+                <span>{item.name}</span>
               </Link>
             );
           })}
+          
+          <div className="px-8 mt-6">
+            <Link href="/ai-chat" className="w-full bg-primary text-on-primary font-semibold flex items-center justify-center gap-2 py-3 rounded-xl shadow-sm hover:opacity-90 active:scale-95 transition-all duration-300 text-sm">
+              <span className="material-symbols-outlined">forum</span>
+              <span>Chat Support</span>
+            </Link>
+          </div>
         </nav>
 
-        {/* Global Action & Status */}
+        {/* System & Session */}
         <div className="px-8 mt-auto space-y-4">
-          <Link href="/ai-chat" className="w-full bg-primary text-on-primary font-bold flex items-center justify-center gap-2 py-3.5 rounded-xl shadow-lg shadow-primary/10 hover:opacity-95 active:scale-95 transition-all duration-300 text-xs">
-            <span className="material-symbols-outlined text-sm">forum</span>
-            <span className="uppercase tracking-widest">Chat Support</span>
-          </Link>
-
-          <div className="p-4 bg-surface-container rounded-2xl border border-white/40">
-            <p className="text-[10px] font-black uppercase tracking-widest text-on-surface mb-2">System Status</p>
+          <div className="p-4 bg-surface-container rounded-2xl">
+            <p className="text-xs font-semibold text-on-surface mb-2">System Status</p>
             <div className="flex items-center gap-2">
               <span className="status-pulse bg-primary"></span>
-              <span className="text-[11px] text-on-surface-variant font-bold tracking-tight">Active Node Sync</span>
+              <span className="text-[11px] text-on-surface-variant font-medium">All systems operational</span>
             </div>
           </div>
           
           <button 
             onClick={handleLogout}
-            className="w-full py-2 text-[10px] uppercase tracking-[0.3em] font-black text-on-surface-variant/40 hover:text-error transition-colors text-center"
+            className="w-full py-2 text-[10px] uppercase tracking-[0.2em] font-black text-on-surface-variant/40 hover:text-error transition-colors text-center"
           >
-            Sign Out Session
+            Terminal Logout
           </button>
         </div>
       </div>

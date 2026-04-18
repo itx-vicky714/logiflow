@@ -1,17 +1,18 @@
 @import "tailwindcss";
 
 /* ============================================================
-   PRECISION EDITORIAL DESIGN SYSTEM — The Curated Void
+   LOGIFLOW PRECISION EDITORIAL — LIGHT THEME (STRICT REPLICATION)
    ============================================================ */
 
 @theme {
   --font-sans: "Inter", "system-ui", "sans-serif";
   --font-headline: "Inter", "system-ui", "sans-serif";
 
-  /* Brand Palette - Precision Editorial */
+  /* Color Palette exactly from Reference HTML */
   --color-primary: #493ee5;
   --color-primary-container: #635bff;
   --color-on-primary: #ffffff;
+  --color-on-primary-container: #fefaff;
   --color-primary-fixed: #e2dfff;
   --color-primary-fixed-dim: #c3c0ff;
   
@@ -31,7 +32,6 @@
   --color-surface-dim: #d8dadc;
   --color-surface-variant: #e0e3e5;
   
-  /* Structural Surfaces per Reference */
   --color-surface-container-lowest: #ffffff;
   --color-surface-container-low: #f2f4f6;
   --color-surface-container: #eceef0;
@@ -53,23 +53,24 @@
 }
 
 /* ─────────────────────────────────── */
-/* Base & Typography                   */
+/* Base & Typography (LIGHT)           */
 /* ─────────────────────────────────── */
 
 html, body {
   overflow-x: hidden;
   scroll-behavior: smooth;
+  height: 100%;
 }
 
 body {
   color: #191c1e;
-  background-color: #f7f9fb;
+  background-color: #f7f9fb; /* bg-surface */
   font-family: "Inter", sans-serif;
   -webkit-font-smoothing: antialiased;
 }
 
 /* ─────────────────────────────────── */
-/* The Curated Void Utility Classes    */
+/* Utility Classes from Reference      */
 /* ─────────────────────────────────── */
 
 .glass-panel {
@@ -82,11 +83,7 @@ body {
   box-shadow: 0 4px 24px rgba(25, 28, 30, 0.04);
 }
 
-.floating-shadow {
-  box-shadow: 0 12px 40px rgba(25, 28, 30, 0.06);
-}
-
-/* Status Pulse indicator */
+/* Status Pulse */
 .status-pulse {
   position: relative;
   display: inline-block;
@@ -114,10 +111,7 @@ body {
   100% { transform: scale(1); opacity: 0; }
 }
 
-/* ─────────────────────────────────── */
-/* Charting & Interaction              */
-/* ─────────────────────────────────── */
-
+/* Bar Chart */
 .bar-container:hover .tooltip {
   opacity: 1;
   transform: translateY(-8px);
@@ -132,16 +126,10 @@ body {
   background: linear-gradient(180deg, #635bff 0%, rgba(99, 91, 255, 0.4) 100%);
 }
 
-/* ─────────────────────────────────── */
-/* Material Symbols Integration         */
-/* ─────────────────────────────────── */
+/* Material Symbols */
 .material-symbols-outlined {
   font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
 }
-
-/* ─────────────────────────────────── */
-/* Overrides                           */
-/* ─────────────────────────────────── */
 
 .custom-scrollbar::-webkit-scrollbar {
   width: 4px;
@@ -151,24 +139,7 @@ body {
   border-radius: 10px;
 }
 
-.leaflet-container {
-  background: #f7f9fb !important;
-}
-
-.leaflet-control-zoom {
-  border: none !important;
-  border-radius: 0.75rem !important;
-  overflow: hidden;
-  box-shadow: 0 4px 24px rgba(25, 28, 30, 0.04) !important;
-}
-
-.leaflet-control-zoom a {
-  background: white !important;
-  color: #191c1e !important;
-  border: none !important;
-}
-
 :focus-visible {
   outline: none;
-  box-shadow: 0 0 0 3px rgba(73, 62, 229, 0.2);
+  box-shadow: 0 0 0 3px rgba(73, 62, 229, 0.1);
 }

@@ -112,8 +112,7 @@ export default function MapLayout({ shipments, highlighted }: Props) {
       >
         <TileLayer
           attribution='&copy; <a href="https://carto.com/attributions">CARTO</a>'
-          url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
-          className="neon-map-tiles"
+          url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
         />
         <FitBounds shipments={shipments} />
 
@@ -224,8 +223,8 @@ export default function MapLayout({ shipments, highlighted }: Props) {
         })}
 
         <div className="leaflet-bottom leaflet-right" style={{ zIndex: 1000, margin: '20px' }}>
-          <div className="leaflet-control bg-slate-900/40 backdrop-blur-md border border-white/10 rounded-2xl p-3 shadow-2xl transition-opacity duration-300 pointer-events-none" style={{ opacity: isFocusMode ? 0.2 : 0.8 }}>
-            <div className="text-[9px] font-black text-blue-400 uppercase tracking-[0.2em] mb-3 flex items-center gap-2">
+          <div className="leaflet-control bg-white/80 backdrop-blur-md border border-slate-200 rounded-2xl p-3 shadow-sm transition-opacity duration-300 pointer-events-none" style={{ opacity: isFocusMode ? 0.2 : 0.8 }}>
+            <div className="text-[9px] font-black text-[#3b82f6] uppercase tracking-[0.2em] mb-3 flex items-center gap-2">
               <div className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse"/> GRID TELEMETRY
             </div>
             <div className="space-y-2">
@@ -240,7 +239,7 @@ export default function MapLayout({ shipments, highlighted }: Props) {
                     {item.type === 'dashed' && <div className="absolute inset-0 border-b-[2px]" style={{ borderColor: item.color, borderStyle: 'dashed' }} />}
                     {item.type === 'dotted' && <div className="absolute inset-0 border-b-[3px]" style={{ borderColor: item.color, borderStyle: 'dotted' }} />}
                   </div>
-                  <span className="text-[9px] font-bold text-slate-300 tracking-wider uppercase">{item.label}</span>
+                  <span className="text-[9px] font-bold text-slate-500 tracking-wider uppercase">{item.label}</span>
                 </div>
               ))}
             </div>

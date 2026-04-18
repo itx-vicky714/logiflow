@@ -81,7 +81,7 @@ export function Sidebar() {
       ${collapsed ? 'w-[64px]' : 'w-[248px]'}
     `}>
       {/* ── Logo ── */}
-      <div className={`flex items-center border-b border-white/[0.06] shrink-0 ${collapsed ? 'justify-center h-20' : 'px-6 h-20 justify-between'}`}>
+      <div className={`flex items-center border-b border-slate-100 shrink-0 ${collapsed ? 'justify-center h-20' : 'px-6 h-20 justify-between'}`}>
         {!collapsed ? (
           <>
             <Link href="/dashboard" className="flex items-center gap-3 min-w-0 group">
@@ -89,13 +89,13 @@ export function Sidebar() {
                 <Zap size={18} className="text-white" />
               </div>
               <div className="flex flex-col">
-                <div className="text-[17px] font-black tracking-tight text-white leading-none">
-                  Logi<span className="text-cyan-400">Flow</span>
+                <div className="text-[17px] font-black tracking-tight text-slate-800 leading-none">
+                  Logi<span className="text-primary">Flow</span>
                 </div>
-                <div className="text-[9px] text-white/30 font-black tracking-[0.3em] uppercase mt-1">Enterprise</div>
+                <div className="text-[9px] text-slate-400 font-black tracking-[0.3em] uppercase mt-1">Enterprise</div>
               </div>
             </Link>
-            <button onClick={toggle} className="p-2 rounded-xl text-white/20 hover:text-white hover:bg-white/5 transition-all shrink-0">
+            <button onClick={toggle} className="p-2 rounded-xl text-slate-400 hover:text-slate-800 hover:bg-slate-100 transition-all shrink-0">
               <ChevronLeft size={16} />
             </button>
           </>
@@ -107,10 +107,10 @@ export function Sidebar() {
       </div>
 
       {/* ── User Card ── */}
-      <Link href="/settings" className={`flex items-center gap-3 border-b border-white/[0.06] hover:bg-white/5 transition-all shrink-0 ${collapsed ? 'justify-center px-2 py-3.5' : 'px-4 py-3.5'}`}>
+      <Link href="/settings" className={`flex items-center gap-3 border-b border-slate-100 hover:bg-slate-50 transition-all shrink-0 ${collapsed ? 'justify-center px-2 py-3.5' : 'px-4 py-3.5'}`}>
         <div className="relative shrink-0">
           {profile?.avatar_url ? (
-            <img src={profile.avatar_url} alt="" className="w-8 h-8 rounded-full object-cover ring-2 ring-white/20" />
+            <img src={profile.avatar_url} alt="" className="w-8 h-8 rounded-full object-cover ring-2 ring-slate-100" />
           ) : (
             <div className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-400 to-cyan-400 flex items-center justify-center text-white text-xs font-black shadow-inner">
               {initials}
@@ -120,8 +120,8 @@ export function Sidebar() {
         </div>
         {!collapsed && (
           <div className="flex-1 min-w-0">
-            <div className="text-[13px] font-semibold text-white truncate leading-tight">{displayName}</div>
-            <div className="text-[11px] text-white/40 truncate mt-0.5">{displayCompany}</div>
+            <div className="text-[13px] font-semibold text-slate-800 truncate leading-tight">{displayName}</div>
+            <div className="text-[11px] text-slate-400 truncate mt-0.5">{displayCompany}</div>
           </div>
         )}
       </Link>
@@ -131,7 +131,7 @@ export function Sidebar() {
         {NAV_SECTIONS.map(section => (
           <div key={section.label}>
             {!collapsed && (
-              <div className="text-[9px] font-black text-white/25 tracking-[0.2em] uppercase px-3 mb-2">
+              <div className="text-[9px] font-black text-slate-400 tracking-[0.2em] uppercase px-3 mb-2">
                 {section.label}
               </div>
             )}
@@ -150,21 +150,21 @@ export function Sidebar() {
                       ${collapsed ? 'justify-center px-2 py-2.5' : 'px-3 py-2.5'}
                       ${active
                         ? item.accent
-                          ? 'bg-gradient-to-r from-[#3b5bdb] to-[#0ea5e9] text-white shadow-lg shadow-blue-900/30'
-                          : 'bg-white/10 text-white'
-                        : 'text-white/50 hover:text-white hover:bg-white/[0.06]'
+                          ? 'bg-gradient-to-r from-[#3b82f6] to-[#0ea5e9] text-white shadow-md'
+                          : 'bg-indigo-50 text-[#3b82f6]'
+                        : 'text-slate-500 hover:text-slate-800 hover:bg-slate-50'
                       }
                     `}
                   >
                     {/* Active indicator bar */}
                     {active && !collapsed && (
-                      <div className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 rounded-r-full bg-[#60a5fa]" />
+                      <div className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 rounded-r-full bg-[#3b82f6]" />
                     )}
 
                     <Icon size={16} className={`shrink-0 transition-colors ${
                       active
-                        ? 'text-white'
-                        : 'text-white/40 group-hover:text-white/70'
+                        ? (item.accent ? 'text-white' : 'text-[#3b82f6]')
+                        : 'text-slate-400 group-hover:text-slate-600'
                     }`} />
 
                     {!collapsed && (
@@ -185,11 +185,11 @@ export function Sidebar() {
       </nav>
 
       {/* ── Logout ── */}
-      <div className={`border-t border-white/[0.06] ${collapsed ? 'p-2' : 'p-3'}`}>
+      <div className={`border-t border-slate-100 ${collapsed ? 'p-2' : 'p-3'}`}>
         <button
           onClick={handleLogout}
           title={collapsed ? 'Sign Out' : undefined}
-          className={`flex items-center gap-3 w-full rounded-xl text-[13px] font-semibold text-white/40 hover:text-rose-400 hover:bg-rose-500/10 transition-all ${collapsed ? 'justify-center px-2 py-2.5' : 'px-3 py-2.5'}`}
+          className={`flex items-center gap-3 w-full rounded-xl text-[13px] font-semibold text-slate-500 hover:text-rose-500 hover:bg-rose-50 transition-all ${collapsed ? 'justify-center px-2 py-2.5' : 'px-3 py-2.5'}`}
         >
           <LogOut size={16} className="shrink-0" />
           {!collapsed && <span>Sign Out</span>}

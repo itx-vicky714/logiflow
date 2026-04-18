@@ -286,7 +286,7 @@ export default function LogiBot() {
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     className={`max-w-[85%] px-4 py-3 rounded-2xl text-[14px] leading-relaxed shadow-sm ${
                       m.role === 'user'
-                        ? 'bg-slate-900 text-white rounded-br-none font-bold'
+                        ? 'bg-[#3b82f6] text-white rounded-br-none font-bold shadow-[0_2px_10px_rgba(59,130,246,0.2)]'
                         : 'bg-white text-slate-800 border border-slate-200/60 rounded-bl-none font-medium'
                     }`}
                   >
@@ -294,7 +294,7 @@ export default function LogiBot() {
                       ? <div className="custom-markdown space-y-2" dangerouslySetInnerHTML={{ __html: formatContent(m.content) }} />
                       : <div className="whitespace-pre-wrap">{m.content}</div>
                     }
-                    <div className={`text-[9px] mt-1.5 font-black uppercase tracking-widest opacity-60 ${
+                    <div className={`text-[9px] mt-1.5 font-black uppercase tracking-widest opacity-80 ${
                       m.role === 'user' ? 'text-blue-100 text-right' : 'text-slate-400'
                     }`}>
                       {m.timestamp.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}

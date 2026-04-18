@@ -32,6 +32,8 @@ export default function LoginPage() {
     checkSession();
   }, []);
 
+  const [showPassword, setShowPassword] = useState(false);
+
   const onSubmit = async (data: LoginForm) => {
     setLoading(true);
     try {
@@ -41,9 +43,17 @@ export default function LoginPage() {
       });
       if (error) throw error;
       toast.success('System Access Authorized');
-      window.location.href = window.location.origin + '/dashboard';
+      window.location.replace('/dashboard');
     } catch (err: any) {
-      toast.error('Authentication Sequence Failed');
+      console.error('Auth failure:', err);
+      // Handle professional error codes
+      if (err.code === 'invalid_credentials' || err.message?.includes('Invalid login credentials')) {
+        toast.error('Identity Mismatch: Invalid credentials provided');
+      } else if (err.status === 400 || err.message?.includes('400')) {
+        toast.error('Protocol Error: Check input format');
+      } else {
+        toast.error('Terminal Error: ' + (err.message || 'Authentication Sequence Failed'));
+      }
       setLoading(false);
     }
   };
@@ -97,10 +107,19 @@ export default function LoginPage() {
                     <span className="material-symbols-outlined absolute left-6 top-1/2 -translate-y-1/2 text-on-surface-variant group-focus-within/input:text-[#493ee5] transition-colors text-[18px]">lock</span>
                     <input 
                       {...register('password')}
-                      type="password" 
+                      type={showPassword ? 'text' : 'password'} 
                       placeholder="••••••••••••"
-                      className="w-full bg-surface-container-low border-none rounded-2xl py-4.5 pl-14 pr-6 text-[14px] text-on-surface font-bold transition-all shadow-inner outline-none placeholder-on-surface-variant/20 focus:ring-4 focus:ring-[#493ee5]/5"
+                      className="w-full bg-surface-container-low border-none rounded-2xl py-4.5 pl-14 pr-14 text-[14px] text-on-surface font-bold transition-all shadow-inner outline-none placeholder-on-surface-variant/20 focus:ring-4 focus:ring-[#493ee5]/5"
                     />
+                    <button 
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-6 top-1/2 -translate-y-1/2 text-on-surface-variant hover:text-[#493ee5] transition-colors"
+                    >
+                      <span className="material-symbols-outlined text-[20px]">
+                        {showPassword ? 'visibility_off' : 'visibility'}
+                      </span>
+                    </button>
                   </div>
                   {errors.password && <p className="text-[10px] font-black text-error mt-2 uppercase tracking-wider ml-1">{errors.password.message}</p>}
                 </div>

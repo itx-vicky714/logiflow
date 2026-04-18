@@ -13,10 +13,12 @@ const ShipmentDetailModal = dynamic(() => import('@/components/ShipmentDetailMod
 const TABS = ['All', 'Active', 'Delivered', 'Delayed'] as const;
 type Tab = typeof TABS[number];
 
+import { useSearch } from '@/context/SearchContext';
+
 export default function ShipmentsPage() {
   const [shipments, setShipments] = useState<Shipment[]>([]);
   const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState('');
+  const { query: search, setQuery: setSearch } = useSearch();
   const [tab, setTab] = useState<Tab>('All');
   const [selected, setSelected] = useState<Shipment | null>(null);
   const [checked, setChecked] = useState<Set<string>>(new Set());

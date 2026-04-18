@@ -132,21 +132,34 @@ export default function ReportsPage() {
   const downloadPDF = async () => {
     if (!report) return;
     toast.info('Initiating PDF Protocol...');
+    setGenerating('pdf');
     try {
-      const { default: jsPDF } = await import('jspdf');
-      const { default: autoTable } = await import('jspdf-autotable');
+      // Dynamic import to reduce initial bundle size and TTI
+      const [jsPDFMod, autoTableMod] = await Promise.all([
+        import('jspdf'),
+        import('jspdf-autotable')
+      ]);
+      
+      const jsPDF = jsPDFMod.default;
+      const autoTable = autoTableMod.default;
+      
       const doc = new jsPDF();
       doc.setFontSize(22); doc.text('LogiFlow Intelligence', 14, 20);
       doc.setFontSize(12); doc.text(report.title.toUpperCase(), 14, 30);
       doc.text(`Generated: ${format(report.generatedAt, 'dd MMM yyyy, HH:mm')}`, 14, 38);
+      
       autoTable(doc, {
         startY: 50, head: [['Identifier', 'Route', 'Mode', 'Risk']],
         body: report.tableRows.slice(0, 20).map(s => [s.shipment_code, `${s.origin}→${s.destination}`, s.mode, `${s.risk_score}%`]),
       });
+      
       doc.save(`LogiFlow_Audit_${report.id}.pdf`);
       toast.success('PDF Protocol Downloaded');
-    } catch {
+    } catch (err) {
+      console.error(err);
       toast.error('PDF Export Error');
+    } finally {
+      setGenerating(null);
     }
   };
 

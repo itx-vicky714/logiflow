@@ -1,8 +1,9 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
+import { List } from 'react-window';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -25,15 +26,18 @@ export default function AIChatPage() {
   ]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
-  const scrollRef = useRef<HTMLDivElement>(null);
+  const listRef = useRef<any>(null);
 
+  // Stabilize scroll with requestAnimationFrame to avoid layout thrashing
   useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    if (listRef.current) {
+      requestAnimationFrame(() => {
+        listRef.current?.scrollToRow({ index: messages.length - 1, align: 'end' });
+      });
     }
   }, [messages]);
 
-  const handleSend = async (text?: string) => {
+  const handleSend = useCallback(async (text?: string) => {
     const userMsg = text || input.trim();
     if (!userMsg || loading) return;
 
@@ -67,13 +71,36 @@ export default function AIChatPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [input, loading, messages]);
+
+  // Message Row for Virtualization 2.x API
+  const MessageRow = useCallback(({ index, style }: { index: number, style: React.CSSProperties }) => {
+    const m = messages[index];
+    if (!m) return null;
+    return (
+      <div style={style} className={`flex px-12 py-4 ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+        <div className={`max-w-[75%] p-6 rounded-3xl text-[14px] font-bold leading-relaxed shadow-sm ${
+          m.role === 'user' 
+            ? 'bg-on-surface text-inverse-on-surface rounded-tr-none' 
+            : 'bg-surface-container-low text-on-surface border border-white/50 rounded-tl-none italic'
+        }`}>
+          {m.content.split('\n').map((line, idx) => (
+            <p key={idx} className={idx > 0 ? 'mt-4' : ''}>
+               {line.split('**').map((part, pIdx) => (
+                 pIdx % 2 === 1 ? <span key={pIdx} className="text-primary font-black">{part}</span> : part
+               ))}
+            </p>
+          ))}
+        </div>
+      </div>
+    );
+  }, [messages]);
 
   return (
     <div className="flex flex-col h-[calc(100vh-10rem)] max-w-5xl mx-auto font-['Inter'] antialiased tracking-tight animate-in fade-in slide-in-from-bottom-4 duration-700">
       
       {/* Header Segment */}
-      <div className="mb-8 flex items-center justify-between">
+      <div className="mb-8 flex items-center justify-between shrink-0">
          <div className="flex items-center gap-5">
             <div className="w-14 h-14 rounded-2xl bg-on-surface text-inverse-on-surface flex items-center justify-center shadow-2xl">
                <span className="material-symbols-outlined text-[28px]">psychology</span>
@@ -88,39 +115,24 @@ export default function AIChatPage() {
          </div>
       </div>
 
-      {/* Main Chat Core */}
-      <div className="flex-1 bg-surface-container-lowest border border-white/50 rounded-[3rem] curated-shadow flex flex-col overflow-hidden relative">
+      {/* Main Chat Core with Layout Containment */}
+      <div className="flex-1 bg-surface-container-lowest border border-white/50 rounded-[3rem] curated-shadow flex flex-col overflow-hidden relative" style={{ contain: 'layout' }}>
         <div className="absolute inset-0 bg-gradient-to-b from-surface-container-low/10 to-transparent pointer-events-none" />
         
-        {/* Scrollable Transcript */}
-        <div 
-          ref={scrollRef}
-          className="flex-1 overflow-y-auto p-12 space-y-8 scrollbar-hide relative z-10"
-        >
-          {messages.map((m, i) => (
-            <motion.div 
-              key={i}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}
-            >
-              <div className={`max-w-[75%] p-6 rounded-3xl text-[14px] font-bold leading-relaxed shadow-sm ${
-                m.role === 'user' 
-                  ? 'bg-on-surface text-inverse-on-surface rounded-tr-none' 
-                  : 'bg-surface-container-low text-on-surface border border-white/50 rounded-tl-none italic'
-              }`}>
-                {m.content.split('\n').map((line, idx) => (
-                  <p key={idx} className={idx > 0 ? 'mt-4' : ''}>
-                     {line.split('**').map((part, pIdx) => (
-                       pIdx % 2 === 1 ? <span key={pIdx} className="text-primary font-black">{part}</span> : part
-                     ))}
-                  </p>
-                ))}
-              </div>
-            </motion.div>
-          ))}
+        {/* Virtualized Scrollable Transcript */}
+        <div className="flex-1 min-h-0 relative z-10 py-8">
+          <List<{}>
+            listRef={listRef}
+            rowCount={messages.length}
+            rowHeight={140}
+            rowComponent={MessageRow}
+            rowProps={{}}
+            style={{ height: 500, width: '100%' }}
+            className="scrollbar-hide"
+          />
+          
           {loading && (
-            <div className="flex justify-start">
+            <div className="flex justify-start px-12 mt-4">
               <div className="bg-surface-container-low p-6 rounded-3xl rounded-tl-none border border-white/50 text-on-surface-variant italic text-[12px] font-black flex items-center gap-4">
                  <span className="status-pulse bg-primary w-2 h-2" /> 
                  <span className="animate-pulse">Synthesizing supply chain logic...</span>
@@ -130,9 +142,8 @@ export default function AIChatPage() {
         </div>
 
         {/* Input & Directive Control */}
-        <div className="p-10 border-t border-surface-container bg-surface-container-low/30 relative z-20">
+        <div className="p-10 border-t border-surface-container bg-surface-container-low/30 relative z-20 shrink-0">
           
-          {/* Suggestion Chips */}
           <div className="flex flex-wrap gap-3 mb-8">
             {SUGGESTIONS.map(s => (
                <button 

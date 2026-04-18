@@ -18,6 +18,22 @@ const ShipmentDetailModal = dynamic(() => import('@/components/ShipmentDetailMod
 const HIGH_RISK_THRESHOLD = 70;
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
+// Memoized KPI Component to prevent re-renders durante initial hydration
+const KPICard = React.memo(({ title, value, change, icon, iconColor, isError }: { 
+  title: string; value: string | number; change: string; icon: string; iconColor: string; isError?: boolean 
+}) => (
+  <div className="bg-surface-container-lowest p-8 rounded-3xl curated-shadow border border-white/60 min-h-[170px] flex flex-col justify-between group hover:border-primary/20 transition-all">
+    <p className="text-on-surface-variant text-[11px] font-bold uppercase tracking-widest leading-none">{title}</p>
+    <div>
+      <h2 className={`text-4xl font-bold tracking-tighter ${isError ? 'text-error' : 'text-on-surface'} mb-1`}>{value}</h2>
+      <div className={`flex items-center gap-1 ${isError ? 'text-error' : 'text-[#493ee5]'} text-[10px] font-bold`}>
+        <span className="material-symbols-outlined text-xs">{icon}</span>
+        <span>{change}</span>
+      </div>
+    </div>
+  </div>
+));
+
 export default function DashboardPage() {
   const router = useRouter();
   const [shipments, setShipments] = useState<Shipment[]>([]);
@@ -29,14 +45,13 @@ export default function DashboardPage() {
   const [dbAlerts, setDbAlerts] = useState<any[]>([]);
 
   const fetchData = useCallback(async () => {
-    // 1. Yield-to-main-thread optimization: Wrap heavy bootstrapping in idle callback
     const performHeavyLogic = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
       
       sessionStorage.setItem('logiflow_user', JSON.stringify(user));
       
-      // Parallelize background tasks but yield during execution
+      // Seed shipments in background
       await seedShipments(user.id);
       
       const { data } = await supabase
@@ -45,20 +60,23 @@ export default function DashboardPage() {
         .order('created_at', { ascending: false });
         
       if (data) {
-        setShipments(data);
-        const total      = data.length;
-        const inTransit  = data.filter(s => s.status === 'in_transit').length;
-        const onTime     = data.filter(s => s.status === 'on_time').length;
-        const delayed    = data.filter(s => s.status === 'delayed').length;
-        const atRisk     = data.filter(s => s.risk_score >= HIGH_RISK_THRESHOLD).length;
-        const avgRisk    = total > 0 ? Math.round(data.reduce((a, b) => a + b.risk_score, 0) / total) : 0;
-        const revenue    = data
-          .filter(s => s.status === 'delivered' || s.status === 'on_time' || s.status === 'in_transit')
-          .reduce((sum, s) => sum + estimateRevenue(s), 0);
-        
-        const newKpi = { total, inTransit, onTime, delayed, atRisk, avgRisk, revenue };
-        setKpi(newKpi);
-        sessionStorage.setItem('logiflow_kpi', JSON.stringify(newKpi));
+        // BREAK UP DATA PARSING (Long Task Mitigation)
+        setTimeout(() => {
+          const total      = data.length;
+          const inTransit  = data.filter(s => s.status === 'in_transit').length;
+          const onTime     = data.filter(s => s.status === 'on_time' || s.status === 'delivered').length;
+          const delayed    = data.filter(s => s.status === 'delayed').length;
+          const atRisk     = data.filter(s => s.risk_score >= HIGH_RISK_THRESHOLD).length;
+          const avgRisk    = total > 0 ? Math.round(data.reduce((a, b) => a + b.risk_score, 0) / total) : 0;
+          const revenue    = data
+            .filter(s => s.status === 'delivered' || s.status === 'on_time' || s.status === 'in_transit')
+            .reduce((sum, s) => sum + estimateRevenue(s), 0);
+          
+          const newKpi = { total, inTransit, onTime, delayed, atRisk, avgRisk, revenue };
+          setKpi(newKpi);
+          setShipments(data);
+          sessionStorage.setItem('logiflow_kpi', JSON.stringify(newKpi));
+        }, 0);
       }
 
       const { data: alertsData } = await supabase
@@ -70,7 +88,6 @@ export default function DashboardPage() {
       setLoading(false);
     };
 
-    // Optimistic UI: Initial Delivery from Cache
     const cachedKpi = sessionStorage.getItem('logiflow_kpi');
     if (cachedKpi) {
        setKpi(JSON.parse(cachedKpi));
@@ -96,7 +113,6 @@ export default function DashboardPage() {
   }, {} as Record<string, number>);
 
   const barData = MONTHS.map((m, i) => {
-    // REAL DATA: Filter shipments by month (using created_at or eta)
     const monthShipments = shipments.filter(s => {
       const date = new Date(s.created_at || s.eta);
       return date.getMonth() === i;
@@ -125,46 +141,10 @@ export default function DashboardPage() {
         <div className="col-span-12 lg:col-span-9">
           {/* KPI Cards Row (Increased Spacing & Width) */}
           <div className="grid grid-cols-4 gap-10">
-             <div className="bg-surface-container-lowest p-8 rounded-3xl curated-shadow border border-white/60 min-h-[170px] flex flex-col justify-between group hover:border-primary/20 transition-all">
-               <p className="text-on-surface-variant text-[11px] font-bold uppercase tracking-widest leading-none">Total Shipments</p>
-               <div>
-                <h2 className="text-4xl font-bold tracking-tighter text-on-surface mb-1">{kpi.total.toLocaleString()}</h2>
-                <div className="flex items-center gap-1 text-[#493ee5] text-[10px] font-bold">
-                  <span className="material-symbols-outlined text-xs">trending_up</span>
-                  <span>+14.2%</span>
-                </div>
-               </div>
-             </div>
-             <div className="bg-surface-container-lowest p-8 rounded-3xl curated-shadow border border-white/60 min-h-[170px] flex flex-col justify-between group hover:border-primary/20 transition-all">
-               <p className="text-on-surface-variant text-[11px] font-bold uppercase tracking-widest leading-none">In Transit</p>
-               <div>
-                <h2 className="text-4xl font-bold tracking-tighter text-on-surface mb-1">{kpi.inTransit.toLocaleString()}</h2>
-                <div className="flex items-center gap-1 text-on-surface-variant text-[10px] font-bold">
-                  <span className="material-symbols-outlined text-xs">sync</span>
-                  <span>Active now</span>
-                </div>
-               </div>
-             </div>
-             <div className="bg-surface-container-lowest p-8 rounded-3xl curated-shadow border border-white/60 min-h-[170px] flex flex-col justify-between group hover:border-primary/20 transition-all">
-               <p className="text-on-surface-variant text-[11px] font-bold uppercase tracking-widest leading-none">On Time</p>
-               <div>
-                <h2 className="text-4xl font-bold tracking-tighter text-on-surface mb-1">98.4%</h2>
-                <div className="flex items-center gap-1 text-[#493ee5] text-[10px] font-bold">
-                  <span className="material-symbols-outlined text-xs">verified</span>
-                  <span>Target met</span>
-                </div>
-               </div>
-             </div>
-             <div className="bg-surface-container-lowest p-8 rounded-3xl curated-shadow border border-white/60 min-h-[170px] flex flex-col justify-between group hover:border-primary/20 transition-all">
-               <p className="text-on-surface-variant text-[11px] font-bold uppercase tracking-widest leading-none">Delayed</p>
-               <div>
-                <h2 className="text-4xl font-bold tracking-tighter text-error mb-1">{kpi.delayed.toLocaleString()}</h2>
-                <div className="flex items-center gap-1 text-error text-[10px] font-bold">
-                  <span className="material-symbols-outlined text-xs">warning</span>
-                  <span>Critical action</span>
-                </div>
-               </div>
-             </div>
+             <KPICard title="Total Shipments" value={kpi.total.toLocaleString()} change="+14.2%" icon="trending_up" iconColor="#493ee5" />
+             <KPICard title="In Transit" value={kpi.inTransit.toLocaleString()} change="Active now" icon="sync" iconColor="on-surface-variant" />
+             <KPICard title="On Time" value="98.4%" change="Target met" icon="verified" iconColor="#493ee5" />
+             <KPICard title="Delayed" value={kpi.delayed.toLocaleString()} change="Critical action" icon="warning" iconColor="error" isError />
           </div>
 
           {/* Revenue Graph Area (Increased bar gap and container padding) */}

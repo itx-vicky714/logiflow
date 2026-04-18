@@ -3,6 +3,7 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
+  turbopack: {},
   webpack: (config, { isServer }) => {
     if (!isServer) {
       config.optimization.splitChunks = {

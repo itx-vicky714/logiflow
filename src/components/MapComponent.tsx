@@ -78,15 +78,13 @@ export default function MapComponent({ shipments }: { shipments: ShipmentMarker[
         scrollWheelZoom={true} 
         style={{ height: '100%', width: '100%', background: '#0F172A' }}
       >
-        {/* Dark mode styled map tiles (CartoDB Dark Matter) */}
+        {/* Light mode styled map tiles (CartoDB Light) */}
         <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
-          url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+          attribution='&copy; <a href="https://carto.com/attributions">CARTO</a>'
+          url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
         />
         
         {shipments.map((shipment) => {
-          // Put the marker on the origin if it's new, or somewhere in midway? 
-          // Simplified: We'll place the marker at Current Location (we pretend it's reached destination if delivered, origin if at start)
           const loc = shipment.status === 'delivered' ? shipment.dest : shipment.origin;
           const coords = cityCoords[loc];
           if(!coords) return null;

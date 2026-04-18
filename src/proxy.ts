@@ -79,19 +79,17 @@ export default async function proxy(request: NextRequest) {
     return NextResponse.redirect(new URL('/dashboard', request.url));
   }
 
+  // Performance Optimization: RSC Header Normalization
+  const isRscRequest = request.headers.get('rsc') === '1' || request.nextUrl.searchParams.has('_rsc');
+  if (isRscRequest) {
+    response.headers.set('Vary', 'Accept, rsc, next-router-state-tree, next-router-prefetch, next-url');
+  }
+
   return response;
 }
 
 export const config = {
   matcher: [
-    '/dashboard/:path*', 
-    '/shipments/:path*', 
-    '/analytics/:path*', 
-    '/reports/:path*', 
-    '/map/:path*', 
-    '/ai-chat/:path*', 
-    '/settings/:path*',
-    '/login',
-    '/signup'
+    '/((?!api|_next/static|_next/image|favicon.ico).*)',
   ],
 };

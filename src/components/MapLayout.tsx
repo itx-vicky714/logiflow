@@ -105,7 +105,19 @@ export default function MapLayout({ shipments, highlighted }: { shipments: Shipm
           if (!oCoords || !dCoords) return null;
 
           const isHighlighted = s.id === highlighted;
-          const statusCol = s.status === 'delayed' ? '#ba1a1a' : s.risk_score > 60 ? '#f59e0b' : '#493ee5';
+          const statusCol = s.status === 'delayed' ? '#ba1a1a' : s.risk_score > 60 ? '#f59e0b' : '#10b981';
+
+          // Calculate "Live Position" for in-transit shipments
+          let liveCoords: [number, number] | null = null;
+          if (s.status === 'in_transit') {
+            // Deterministic pseudo-progress based on ID hash
+            const seed = s.id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+            const progress = 0.2 + (seed % 60) / 100; // between 0.2 and 0.8
+            liveCoords = [
+              oCoords[0] + (dCoords[0] - oCoords[0]) * progress,
+              oCoords[1] + (dCoords[1] - oCoords[1]) * progress
+            ];
+          }
 
           return (
             <React.Fragment key={s.id}>
@@ -116,6 +128,8 @@ export default function MapLayout({ shipments, highlighted }: { shipments: Shipm
                 opacity={isHighlighted ? 0.9 : 0.3}
                 dashArray={s.mode === 'air' ? '10 10' : s.mode === 'sea' ? '5 15' : undefined}
               />
+              
+              {/* Origin Marker */}
               <Marker position={oCoords} icon={createVehicleIcon(isHighlighted, s.status, s.risk_score)}>
                 <Popup className="precision-popup">
                   <div className="p-1">
@@ -124,6 +138,36 @@ export default function MapLayout({ shipments, highlighted }: { shipments: Shipm
                   </div>
                 </Popup>
               </Marker>
+
+              {/* Live Position Marker (If In Transit) */}
+              {liveCoords && (
+                <Marker 
+                  position={liveCoords} 
+                  icon={L.divIcon({ 
+                    html: `
+                      <div class="relative flex items-center justify-center" style="width: 32px; height: 32px;">
+                        <div class="absolute inset-0 rounded-full bg-[#10b981]/20 animate-ping"></div>
+                        <div class="absolute inset-2 rounded-full bg-white shadow-xl flex items-center justify-center">
+                          <div class="w-2.5 h-2.5 rounded-full bg-[#10b981]"></div>
+                        </div>
+                      </div>
+                    `,
+                    className: 'bg-transparent border-0',
+                    iconSize: [0, 0],
+                    iconAnchor: [0, 0]
+                  })}
+                >
+                  <Popup className="precision-popup">
+                    <div className="p-1">
+                      <p className="text-[9px] font-black text-on-surface-variant uppercase tracking-widest border-b border-surface-container pb-1 mb-1">Live Location</p>
+                      <p className="text-xs font-black text-on-surface">{s.shipment_code}</p>
+                      <p className="text-[9px] text-on-surface-variant font-bold uppercase mt-1">In Transit</p>
+                    </div>
+                  </Popup>
+                </Marker>
+              )}
+
+              {/* Destination Marker */}
               <Marker position={dCoords} icon={createVehicleIcon(isHighlighted, s.status, s.risk_score)}>
                 <Popup className="precision-popup">
                   <div className="p-1">
@@ -142,7 +186,7 @@ export default function MapLayout({ shipments, highlighted }: { shipments: Shipm
         <h4 className="text-[10px] font-black text-on-surface uppercase tracking-widest mb-4">Operational Status</h4>
         <div className="space-y-3">
           {[
-            { label: 'Optimal', color: '#493ee5' },
+            { label: 'Optimal', color: '#10b981' },
             { label: 'At Risk', color: '#f59e0b' },
             { label: 'Delayed', color: '#ba1a1a' }
           ].map(item => (

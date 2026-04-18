@@ -25,6 +25,7 @@ export function Sidebar() {
 
   const navItems = [
     { name: 'Dashboard', href: '/dashboard', icon: 'dashboard' },
+    { name: 'Live Map', href: '/map', icon: 'map' },
     { name: 'Add Shipment', href: '/shipments/new', icon: 'add' },
     { name: 'Shipments', href: '/shipments', icon: 'local_shipping' },
     { name: 'Analytics', href: '/analytics', icon: 'analytics' },

@@ -92,7 +92,7 @@ export default function DashboardPage() {
     <div className="animate-in fade-in slide-in-from-bottom-4 duration-1000">
       
       {/* Top Section: Dashboard KPIs & Sidebar Panels (9+3 Enforced) */}
-      <section className="grid grid-cols-12 gap-10 mb-10">
+      <section className="grid grid-cols-12 gap-10 mt-10 mb-6">
         <div className="col-span-12 lg:col-span-9">
           {/* KPI Cards Row (Increased Spacing & Width) */}
           <div className="grid grid-cols-4 gap-10">
@@ -223,7 +223,7 @@ export default function DashboardPage() {
         <div className="col-span-12 lg:col-span-9 bg-surface-container-lowest rounded-3xl curated-shadow border border-white/60 overflow-hidden">
           <div className="p-12 border-b border-surface-container">
             <div className="flex items-center justify-between">
-              <h4 className="text-sm font-bold uppercase tracking-widest text-on-surface">Operations Registry</h4>
+              <h4 className="text-sm font-bold uppercase tracking-widest text-on-surface">Recent Shipments</h4>
               <button className="text-[12px] font-bold text-primary flex items-center gap-1 hover:underline decoration-1 underline-offset-4">
                 View Expanded Fleet <span className="material-symbols-outlined text-sm">chevron_right</span>
               </button>
@@ -285,7 +285,7 @@ export default function DashboardPage() {
         {/* Transport Breakdown Area */}
         <div className="col-span-12 lg:col-span-3 flex flex-col gap-10">
           <div className="bg-surface-container-lowest p-12 rounded-3xl curated-shadow border border-white/60 flex-1 flex flex-col group overflow-hidden relative">
-            <h4 className="text-sm font-bold uppercase tracking-widest text-on-surface mb-12">Distribution Matrix</h4>
+            <h4 className="text-sm font-bold uppercase tracking-widest text-on-surface mb-12">Logistics Distribution</h4>
             <div className="relative w-48 h-48 mx-auto mb-12 transition-transform duration-1000 group-hover:scale-105">
               <svg className="w-full h-full transform -rotate-90 rounded-full" viewBox="0 0 100 100">
                 <circle cx="50" cy="50" fill="transparent" r="40" stroke="#f2f4f6" strokeWidth="12" />

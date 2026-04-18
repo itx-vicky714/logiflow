@@ -26,7 +26,7 @@ export default function LoginPage() {
     const checkSession = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (session) {
-        window.location.href = '/dashboard';
+        window.location.href = window.location.origin + '/dashboard';
       }
     };
     checkSession();
@@ -41,7 +41,7 @@ export default function LoginPage() {
       });
       if (error) throw error;
       toast.success('System Access Authorized');
-      window.location.href = '/dashboard';
+      window.location.href = window.location.origin + '/dashboard';
     } catch (err: any) {
       toast.error('Authentication Sequence Failed');
       setLoading(false);

@@ -123,6 +123,16 @@ export default function NewShipmentPage() {
       });
 
       if (error) throw error;
+
+      // Log Tactical Notification
+      await supabase.from('notifications').insert({
+        user_id: user.id,
+        type: 'system',
+        title: 'New Manifest Deployed',
+        message: `🚢 ${form.mode.toUpperCase()} shipment #${generateShipmentCode().split('-').pop()} initialized: ${form.origin} ⇾ ${form.destination}.`,
+        metadata: { shipment_code: generateShipmentCode() }
+      });
+
       toast.success('Manifest Protocol Deployed');
       router.push('/shipments');
     } catch (err: any) {

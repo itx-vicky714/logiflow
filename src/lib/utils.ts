@@ -189,25 +189,34 @@ export async function seedShipments(userId: string): Promise<void> {
     .eq('user_id', userId);
 
   if (inserted) {
-    const alertsToInsert = inserted.flatMap(s => {
-      const alerts = [];
+    const notificationsToInsert = inserted.flatMap(s => {
+      const notifications = [];
       if (s.status === 'delayed') {
-        alerts.push({ shipment_id: s.id, user_id: userId, type: 'delay', severity: 'high',
-          message: `⚠️ ${s.origin}→${s.destination} shipment is delayed. Estimated impact: 12-24 hours.` });
+        notifications.push({ 
+          shipment_id: s.id, user_id: userId, type: 'delay', 
+          title: 'Shipment Delayed', 
+          message: `⚠️ ${s.origin}→${s.destination} shipment is delayed. Estimated impact: 12-24 hours.`
+        });
       }
       if (s.risk_score > 70) {
-        alerts.push({ shipment_id: s.id, user_id: userId, type: 'risk', severity: 'critical',
-          message: `🔴 High risk score (${s.risk_score}/100) detected on ${s.origin}→${s.destination} (${s.mode}). Immediate review required.` });
+        notifications.push({ 
+          shipment_id: s.id, user_id: userId, type: 'risk', 
+          title: 'High Risk Detected',
+          message: `🔴 High risk score (${s.risk_score}/100) detected on ${s.origin}→${s.destination} (${s.mode}). Immediate review required.`
+        });
       }
       if (s.mode === 'sea') {
-        alerts.push({ shipment_id: s.id, user_id: userId, type: 'weather', severity: 'medium',
-          message: `🌊 Sea route ${s.origin}→${s.destination}: Cyclone watch active in Bay of Bengal. Monitor ETA closely.` });
+        notifications.push({ 
+          shipment_id: s.id, user_id: userId, type: 'weather', 
+          title: 'Weather Watch',
+          message: `🌊 Sea route ${s.origin}→${s.destination}: Cyclone watch active in Bay of Bengal. Monitor ETA closely.`
+        });
       }
-      return alerts;
+      return notifications;
     });
 
-    if (alertsToInsert.length > 0) {
-      await supabase.from('alerts').insert(alertsToInsert);
+    if (notificationsToInsert.length > 0) {
+      await supabase.from('notifications').insert(notificationsToInsert);
     }
   }
 }

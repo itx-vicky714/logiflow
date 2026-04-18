@@ -11,12 +11,15 @@ import type { Shipment, KPIData } from '@/types';
 import dynamic from 'next/dynamic';
 import { format } from 'date-fns';
 
+import { useRouter } from 'next/navigation';
+
 const ShipmentDetailModal = dynamic(() => import('@/components/ShipmentDetailModal'), { ssr: false });
 
 const HIGH_RISK_THRESHOLD = 70;
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
 export default function DashboardPage() {
+  const router = useRouter();
   const [shipments, setShipments] = useState<Shipment[]>([]);
   const [loading, setLoading] = useState(true);
   const [kpi, setKpi] = useState<KPIData>({
@@ -68,19 +71,20 @@ export default function DashboardPage() {
   }, {} as Record<string, number>);
 
   const barData = MONTHS.map((m, i) => {
-    const weights = [0.05, 0.08, 0.06, 0.09, 0.07, 0.1, 0.04, 0.12, 0.08, 0.11, 0.1, 0.1];
-    return { name: m, value: Math.round(kpi.revenue * weights[i]) };
+    // REAL DATA: Filter shipments by month (using created_at or eta)
+    const monthShipments = shipments.filter(s => {
+      const date = new Date(s.created_at || s.eta);
+      return date.getMonth() === i;
+    });
+    const monthlyRevenue = monthShipments.reduce((sum, s) => sum + estimateRevenue(s), 0);
+    return { name: m, value: monthlyRevenue };
   });
 
   const seaPercent = Math.round(((modeCounts['sea'] || 0) / Math.max(1, shipments.length)) * 100) || 45;
   const airPercent = Math.round(((modeCounts['air'] || 0) / Math.max(1, shipments.length)) * 100) || 32;
   const roadPercent = Math.round(((modeCounts['road'] || 0) / Math.max(1, shipments.length)) * 100) || 23;
 
-  const alerts = dbAlerts.length > 0 ? dbAlerts.slice(0, 3) : [
-    { title: "Vessel Delay: Evergreen A1", message: "Port of Rotterdam clearance issues. Estimated +12h delay.", type: "risk" },
-    { title: "Inventory Optimization", message: "Berlin Hub showing 94% capacity. Suggesting diversion to Munich.", type: "info" },
-    { title: "New Route Active", message: "Shanghai to LA Express Route now online. 15% faster transit.", type: "system" }
-  ];
+  const alerts = dbAlerts.length > 0 ? dbAlerts.slice(0, 3) : [];
 
   if (loading) return (
     <div className="flex items-center justify-center min-h-[60vh]">
@@ -181,16 +185,21 @@ export default function DashboardPage() {
               </span>
             </div>
             <div className="space-y-10">
-              {alerts.map((a, i) => (
+              {alerts.length > 0 ? alerts.map((a, i) => (
                 <div key={i} className="flex gap-6 group">
-                  <div className={`w-[3px] h-12 ${a.type === 'risk' ? 'bg-error' : a.type === 'info' ? 'bg-primary' : 'bg-tertiary-container'} rounded-full transition-transform group-hover:scale-y-125`}></div>
+                  <div className={`w-[3px] h-12 ${a.type === 'risk' || a.type === 'delay' ? 'bg-error' : a.type === 'info' ? 'bg-primary' : 'bg-tertiary-container'} rounded-full transition-transform group-hover:scale-y-125`}></div>
                   <div>
                     <p className="text-[13px] font-semibold text-on-surface tracking-tight leading-none uppercase">{a.title}</p>
                     <p className="text-[11px] text-on-surface-variant mt-2 leading-relaxed font-medium">{a.message}</p>
-                    <button className="text-[10px] font-bold text-primary mt-3 uppercase tracking-tighter hover:underline decoration-1 underline-offset-4">Reroute Shipment</button>
+                    <button className="text-[10px] font-bold text-primary mt-3 uppercase tracking-tighter hover:underline decoration-1 underline-offset-4">Details Protocol</button>
                   </div>
                 </div>
-              ))}
+              )) : (
+                <div className="py-10 text-center space-y-4">
+                  <span className="material-symbols-outlined text-4xl text-on-surface-variant/20 block">notifications_none</span>
+                  <p className="text-[10px] font-black text-on-surface-variant uppercase tracking-widest">No Recent Disruptions</p>
+                </div>
+              )}
             </div>
           </div>
 
@@ -224,7 +233,10 @@ export default function DashboardPage() {
           <div className="p-12 border-b border-surface-container">
             <div className="flex items-center justify-between">
               <h4 className="text-sm font-bold uppercase tracking-widest text-on-surface">Recent Shipments</h4>
-              <button className="text-[12px] font-bold text-primary flex items-center gap-1 hover:underline decoration-1 underline-offset-4">
+              <button 
+                onClick={() => router.push('/shipments')}
+                className="text-[12px] font-bold text-primary flex items-center gap-1 hover:underline decoration-1 underline-offset-4"
+              >
                 View Expanded Fleet <span className="material-symbols-outlined text-sm">chevron_right</span>
               </button>
             </div>

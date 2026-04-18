@@ -229,7 +229,7 @@ export default function DashboardPage() {
 
       {/* Bottom Section: Operations Registry & Transport Modal (9+3 Enforced) */}
       <section className="grid grid-cols-12 gap-10">
-        <div className="col-span-12 lg:col-span-9 bg-surface-container-lowest rounded-3xl curated-shadow border border-white/60 overflow-hidden">
+        <div className="col-span-12 lg:col-span-9 bg-surface-container-lowest rounded-3xl curated-shadow border border-white/60 overflow-hidden" style={{ contentVisibility: 'auto', containIntrinsicSize: '0 500px' }}>
           <div className="p-12 border-b border-surface-container">
             <div className="flex items-center justify-between">
               <h4 className="text-sm font-bold uppercase tracking-widest text-on-surface">Recent Shipments</h4>
@@ -295,7 +295,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Transport Breakdown Area */}
-        <div className="col-span-12 lg:col-span-3 flex flex-col gap-10">
+        <div className="col-span-12 lg:col-span-3 flex flex-col gap-10" style={{ contentVisibility: 'auto', containIntrinsicSize: '0 400px' }}>
           <div className="bg-surface-container-lowest p-12 rounded-3xl curated-shadow border border-white/60 flex-1 flex flex-col group overflow-hidden relative">
             <h4 className="text-sm font-bold uppercase tracking-widest text-on-surface mb-12">Logistics Distribution</h4>
             <div className="relative w-48 h-48 mx-auto mb-12 transition-transform duration-1000 group-hover:scale-105">

@@ -241,7 +241,10 @@ export async function POST(req: Request) {
     const tryModel = async (model: string) => {
       return fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
         signal: AbortSignal.timeout(15000),
         body: JSON.stringify(geminiBody)
       });

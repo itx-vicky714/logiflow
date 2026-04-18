@@ -3,11 +3,15 @@ import { Inter } from "next/font/google";
 import { Toaster } from "sonner";
 import "./globals.css";
 
-const inter = Inter({ subsets: ["latin"] });
+const inter = Inter({ 
+  subsets: ["latin"],
+  display: "swap",
+  preload: true,
+});
 
 export const metadata: Metadata = {
-  title: "LogiFlow - B2B Logistics Management",
-  description: "AI-powered B2B logistics and supply chain management platform.",
+  title: "LogiFlow - Precision Control Tower",
+  description: "AI-powered B2B logistics and supply chain management platform with orbital intelligence.",
 };
 
 export default function RootLayout({
@@ -18,7 +22,15 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
-        <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+        <link 
+          rel="preload" 
+          href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" 
+          as="style" 
+        />
+        <link 
+          href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" 
+          rel="stylesheet" 
+        />
       </head>
       <body className={inter.className}>
         {children}

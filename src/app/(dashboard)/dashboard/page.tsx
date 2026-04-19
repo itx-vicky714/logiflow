@@ -82,65 +82,67 @@ export default function DashboardPage() {
   const handleSimulate = async () => {
     if (simulating) return;
     setSimulating(true);
-
-    const cities = ['Mumbai', 'Delhi', 'Chennai', 'Bangalore',
-      'Kolkata', 'Hyderabad', 'Pune', 'Ahmedabad'];
-    const modes = ['road', 'rail', 'air', 'sea'];
-    const statuses = ['on_time', 'delayed', 'at_risk', 'in_transit'];
-    const cargos = ['Electronics', 'Textiles', 'Pharmaceuticals',
-      'Automotive Parts', 'FMCG Goods'];
-    const suppliers = ['Tata Motors', 'Reliance Industries',
-      'Mahindra Supply Co', 'Flipkart Commerce'];
+    console.log('SIMULATE: started');
 
     try {
-      // Delete previous simulated shipments first
-      await supabase
+      // Delete previous
+      const { error: deleteError } = await supabase
         .from('shipments')
         .delete()
         .eq('is_simulated', true);
+      
+      console.log('SIMULATE: delete result', deleteError);
 
       const sampleShipments = Array.from({ length: 6 }, () => {
+        const cities = ['Mumbai', 'Delhi', 'Chennai', 'Bangalore',
+          'Kolkata', 'Hyderabad', 'Pune', 'Ahmedabad'];
+        const modes = ['road', 'rail', 'air', 'sea'];
+        const statuses = ['on_time', 'delayed', 'at_risk', 'in_transit'];
         const originIdx = Math.floor(Math.random() * cities.length);
         let destIdx = Math.floor(Math.random() * cities.length);
-        while (destIdx === originIdx) {
-          destIdx = Math.floor(Math.random() * cities.length);
-        }
+        while (destIdx === originIdx) destIdx = Math.floor(Math.random() * cities.length);
         const eta = new Date();
         eta.setHours(eta.getHours() + Math.floor(Math.random() * 48) + 6);
-
         return {
           origin: cities[originIdx],
           destination: cities[destIdx],
           transport_mode: modes[Math.floor(Math.random() * modes.length)],
           status: statuses[Math.floor(Math.random() * statuses.length)],
-          cargo_type: cargos[Math.floor(Math.random() * cargos.length)],
-          supplier: suppliers[Math.floor(Math.random() * suppliers.length)],
-          weight: Math.floor(Math.random() * 5000) + 500,
-          declared_value: Math.floor(Math.random() * 500000) + 50000,
+          cargo_type: 'Electronics',
+          supplier: 'Tata Motors',
+          weight: 1200,
+          declared_value: 150000,
           risk_score: Math.floor(Math.random() * 100),
           estimated_delivery: eta.toISOString(),
-          priority: Math.random() > 0.7 ? 'high' : 'normal',
+          priority: 'normal',
           is_simulated: true,
         };
       });
 
-      const { error } = await supabase
+      console.log('SIMULATE: inserting', sampleShipments.length, 'shipments');
+
+      const { data: insertData, error: insertError } = await supabase
         .from('shipments')
-        .insert(sampleShipments);
+        .insert(sampleShipments)
+        .select();
 
-      if (error) throw error;
+      console.log('SIMULATE: insert result', insertData, insertError);
 
-      // Refresh data
-      const { data } = await supabase
+      if (insertError) throw insertError;
+
+      const { data: freshData, error: fetchError } = await supabase
         .from('shipments')
         .select('*')
         .order('created_at', { ascending: false });
-      setShipments(data || []);
 
-      toast.success('6 sample shipments generated!', { duration: 3000 });
+      console.log('SIMULATE: fresh fetch', freshData?.length, fetchError);
+
+      setShipments(freshData || []);
+      toast.success('6 shipments generated!', { duration: 3000 });
+
     } catch (err) {
-      console.error('Simulate error:', err);
-      toast.error('Simulation failed — check console for details');
+      console.error('SIMULATE ERROR:', err);
+      toast.error('Failed: ' + (err as Error).message);
     } finally {
       setSimulating(false);
     }

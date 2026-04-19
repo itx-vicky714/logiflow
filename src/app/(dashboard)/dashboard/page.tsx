@@ -258,7 +258,10 @@ export default function DashboardPage() {
             </button>
             <button 
               type="button"
-              onClick={handleSimulate}
+              onClick={() => {
+                console.log('SIMULATE CLICKED');
+                handleSimulate();
+              }}
               disabled={simulating}
               className={`bg-surface-container-lowest text-on-surface py-2.5 px-6 text-[11px] font-black uppercase tracking-widest rounded-xl border border-white/60 curated-shadow hover:bg-surface-container transition-all active:scale-95 flex items-center gap-2 ${simulating ? 'opacity-60 cursor-not-allowed' : ''}`}
             >

@@ -8,8 +8,12 @@ import { AuthProvider } from "@/context/AuthContext";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "LogiFlow - LogiFlow LogiFlow Dashboard",
-  description: "AI-powered B2B logistics and supply chain management platform with Air intelligence.",
+  title: "LogiFlow | Next-Gen AI Logistics Control Tower",
+  description: "Control every shipment from one place with LogiFlow. AI-powered visibility, delay prediction, and route risk management for modern logistics teams.",
+  authors: [{ name: "Vicky Kumar" }],
+  other: {
+    "copyright": "© 2026 Vicky Kumar. LogiFlow. All rights reserved.",
+  }
 };
 
 export default function RootLayout({

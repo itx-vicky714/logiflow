@@ -24,7 +24,7 @@ export default function NewShipmentPage() {
   const router = useRouter();
 
   return (
-    <div className="space-y-12 max-w-[1400px] mx-auto font-['Inter'] antialiased tracking-tight text-[#191c1e] animate-in fade-in slide-in-from-bottom-4 duration-700">
+    <div className="pt-16 space-y-12 max-w-[1400px] mx-auto font-['Inter'] antialiased tracking-tight text-[#191c1e] animate-in fade-in slide-in-from-bottom-4 duration-700">
       {/* Page Header */}
       <div className="flex items-center justify-between">
          <div className="flex items-center gap-6">

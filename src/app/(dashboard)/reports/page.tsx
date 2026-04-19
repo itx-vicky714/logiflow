@@ -158,7 +158,7 @@ export default function ReportsPage() {
   };
 
   return (
-    <div className="space-y-12 max-w-[1400px] mx-auto font-['Inter'] antialiased tracking-tight text-[#191c1e] animate-in fade-in slide-in-from-bottom-4 duration-700 pb-20">
+    <div className="pt-16 space-y-12 max-w-[1400px] mx-auto font-['Inter'] antialiased tracking-tight text-[#191c1e] animate-in fade-in slide-in-from-bottom-4 duration-700 pb-20">
       
       {/* Strategic Vision Header */}
       <div className="bg-on-surface rounded-3xl p-10 text-inverse-on-surface relative overflow-hidden shadow-2xl border border-white/10 flex flex-col lg:flex-row lg:items-center justify-between gap-10">

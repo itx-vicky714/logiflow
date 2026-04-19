@@ -106,7 +106,7 @@ export default function SettingsPage() {
   const initials = profile.full_name?.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) || user?.email?.[0]?.toUpperCase() || 'U';
 
   return (
-    <div className="max-w-5xl space-y-12 pb-20 font-['Inter'] antialiased tracking-tight text-[#191c1e] animate-in fade-in slide-in-from-bottom-4 duration-700">
+    <div className="pt-16 max-w-5xl space-y-12 pb-20 font-['Inter'] antialiased tracking-tight text-[#191c1e] animate-in fade-in slide-in-from-bottom-4 duration-700">
       
       {/* Strategic Page Header */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">

@@ -1,14 +1,19 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { supabase } from '@/lib/supabase';
 import type { Shipment, Driver, DispatchRoute } from '@/types';
 import { statusConfig, modeIcon, modeLabel, riskColor, riskLabel, formatCurrency, estimateRevenue, CITY_COORDS } from '@/lib/utils';
 import { getRouteWeatherRisk, getWeatherRiskColor } from '@/lib/weather';
-import { X, Loader2, MapPin, Shield, Truck, GitBranch, Mail, MessageSquare, CheckCircle, AlertTriangle, Send, ChevronRight, Clock, CloudLightning, Package, IndianRupee, Zap, User, Sparkles, ArrowRight, TrendingUp, Info } from 'lucide-react';
+import { 
+  X, Loader2, MapPin, Shield, Truck, GitBranch, Mail, MessageSquare, CheckCircle, 
+  AlertTriangle, Send, ChevronRight, Clock, CloudLightning, Package, IndianRupee, 
+  Zap, User, Sparkles, ArrowRight, TrendingUp, Info, Map as MapIcon, ExternalLink 
+} from 'lucide-react';
 import { toast } from 'sonner';
-import { format, addHours } from 'date-fns';
+import { format, addHours, differenceInHours } from 'date-fns';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useRouter } from 'next/navigation';
 
 interface Props {
   shipment: Shipment;
@@ -17,6 +22,22 @@ interface Props {
 }
 
 type Tab = 'overview' | 'risk' | 'vehicle' | 'routes';
+
+function calculateDistance(origin: string, destination: string): number {
+  const coords = CITY_COORDS as Record<string, [number, number]>;
+  const normalize = (c: string) => 
+    Object.keys(coords).find(k => k.toLowerCase() === c?.toLowerCase()) || c;
+  const o = coords[normalize(origin)];
+  const d = coords[normalize(destination)];
+  if (!o || !d) return 0;
+  const R = 6371;
+  const dLat = (d[0]-o[0]) * Math.PI/180;
+  const dLon = (d[1]-o[1]) * Math.PI/180;
+  const a = Math.sin(dLat/2)**2 + 
+    Math.cos(o[0]*Math.PI/180) * Math.cos(d[0]*Math.PI/180) * 
+    Math.sin(dLon/2)**2;
+  return Math.round(R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)));
+}
 
 export default function ShipmentDetailModal({ shipment: initialShipment, onClose, onUpdate }: Props) {
   const [shipment, setShipment] = useState(initialShipment);
@@ -28,114 +49,51 @@ export default function ShipmentDetailModal({ shipment: initialShipment, onClose
   const [assigning, setAssigning] = useState(false);
   const [selectedDriverId, setSelectedDriverId] = useState('');
 
-  const sc = statusConfig(shipment.status);
-  const weatherRisk = getRouteWeatherRisk(shipment.origin, shipment.destination);
-  const createdAt = new Date(shipment.created_at);
-  const etaDate = new Date(shipment.eta);
+  const router = useRouter();
 
-  // Calculate KM based on coordinates
-  const getDistanceKm = () => {
-    const start = CITY_COORDS[shipment.origin] || [12.9716, 77.5946];
-    const end = CITY_COORDS[shipment.destination] || [19.0760, 72.8777];
-    const R = 6371; // km
-    const dLat = (end[0] - start[0]) * Math.PI / 180;
-    const dLon = (end[1] - start[1]) * Math.PI / 180;
-    const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-              Math.cos(start[0] * Math.PI / 180) * Math.cos(end[0] * Math.PI / 180) * 
-              Math.sin(dLon/2) * Math.sin(dLon/2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-    return Math.round(R * c);
-  };
-
-  const distanceKm = getDistanceKm();
-
-  const calculateProgress = () => {
-    if (shipment.status === 'delivered') return 100;
-    if (shipment.status === 'pending') return 0;
-    const start = new Date(shipment.created_at).getTime();
-    const end = new Date(shipment.eta).getTime();
+  const progressPercent = useMemo(() => {
+    const created = new Date(shipment.created_at).getTime();
+    const eta = new Date(shipment.eta).getTime();
     const now = Date.now();
-    if (now >= end) return 95;
-    const total = end - start;
-    const current = now - start;
-    return Math.min(Math.max(Math.round((current / total) * 100), 10), 98);
-  };
+    return Math.min(100, Math.max(0, 
+      Math.round(((now - created) / (eta - created)) * 100)
+    ));
+  }, [shipment]);
 
-  const progress = calculateProgress();
+  const totalDistance = useMemo(() => 
+    calculateDistance(shipment.origin, shipment.destination), 
+  [shipment]);
 
-  useEffect(() => {
-    if (tab === 'risk' && !aiRisk) {
-      setAiLoading(true);
-      fetch('/api/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          message: `Analyze risk for shipment ${shipment.shipment_code} from ${shipment.origin} to ${shipment.destination}. Weight: ${shipment.weight_kg}kg, Mode: ${shipment.mode}. Current risk score: ${shipment.risk_score}. Use plain English.`,
-          history: [] 
-        })
-      })
-      .then(res => res.json())
-      .then(data => setAiRisk(data.text || 'Unable to generate AI analysis at this time.'))
-      .catch(() => setAiRisk('Connection error while fetching AI analysis.'))
-      .finally(() => setAiLoading(false));
-    }
-  }, [tab, shipment, aiRisk]);
-
-  useEffect(() => {
-    if (tab === 'vehicle') {
-        const fetchFleet = async () => {
-            const { data: dData } = await supabase.from('drivers').select('*').eq('status', 'available');
-            if (dData) setDrivers(dData);
-            const { data: dispData } = await supabase.from('dispatch_routes').select('*, drivers(*)').eq('shipment_id', shipment.id).single();
-            if (dispData) setActiveDispatch(dispData);
-        };
-        fetchFleet();
-    }
-  }, [tab, shipment.id]);
-
-  const handleAssignDriver = async () => {
-    const selectedDriver = drivers.find(d => d.id === selectedDriverId);
-    if (!selectedDriver) return;
-    setAssigning(true);
-    try {
-        const startCoord = CITY_COORDS[shipment.origin] || [20, 78];
-        const endCoord = CITY_COORDS[shipment.destination] || [21, 79];
-        const { data, error } = await supabase.from('dispatch_routes').insert({
-            shipment_id: shipment.id,
-            driver_id: selectedDriverId,
-            status: 'active',
-            stops: [
-                { lat: startCoord[0], lng: startCoord[1], label: shipment.origin },
-                { lat: endCoord[0], lng: endCoord[1], label: shipment.destination }
-            ],
-            current_stop_index: 0
-        }).select('*, drivers(*)').single();
-        if (error) throw error;
-        await supabase.from('drivers').update({ status: 'on_trip' }).eq('id', selectedDriverId);
-        setActiveDispatch(data);
-        toast.success('Vehicle and driver assigned');
-        onUpdate();
-    } catch (err: unknown) {
-        toast.error((err as Error).message || 'Assignment failed');
-    } finally {
-        setAssigning(false);
-    }
-  };
+  const coveredKm = Math.round(totalDistance * (progressPercent / 100));
+  const hoursLeft = Math.max(0, Math.round((new Date(shipment.eta).getTime() - Date.now()) / 3600000));
+  const minutesAgo = Math.round((Date.now() - new Date(shipment.created_at).getTime()) / 60000);
 
   const tabs: { id: Tab; label: string; icon: React.ElementType }[] = [
     { id: 'overview', label: 'Overview', icon: MapPin },
-    { id: 'risk',     label: 'Risk Analysis', icon: Shield },
-    { id: 'vehicle',  label: 'Vehicle & Crew',    icon: Truck },
-    { id: 'routes',   label: 'Route History', icon: GitBranch },
+    { id: 'risk',     label: 'Risk Analysis', icon: AlertTriangle },
+    { id: 'vehicle',  label: 'Vehicle & Driver',    icon: Truck },
+    { id: 'routes',   label: 'Alt Routes', icon: GitBranch },
   ];
 
+  const getStatusColor = (s: string) => {
+    switch(s) {
+      case 'delivered': return 'bg-green-100 text-green-700';
+      case 'delayed': return 'bg-red-100 text-red-700';
+      case 'in_transit': return 'bg-green-100 text-green-700';
+      case 'pending': return 'bg-slate-100 text-slate-700';
+      default: return 'bg-amber-100 text-amber-700';
+    }
+  };
+
+  const modeEmojis = { road: '🚛', rail: '🚂', air: '✈️', sea: '🚢' };
+
   return (
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 md:p-6">
+    <div className="fixed inset-0 z-[10000] flex items-center justify-center p-4">
       <motion.div 
         initial={{ opacity: 0 }} 
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" 
+        className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" 
         onClick={onClose} 
       />
       
@@ -143,38 +101,38 @@ export default function ShipmentDetailModal({ shipment: initialShipment, onClose
         initial={{ opacity: 0, scale: 0.95, y: 20 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.95, y: 20 }}
-        className="relative bg-white rounded-[2.5rem] shadow-2xl w-full max-w-5xl h-[90vh] md:h-[85vh] flex flex-col overflow-hidden border border-slate-200"
+        className="relative bg-white rounded-[2rem] shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden"
       >
-        {/* Header Section */}
-        <div className="p-8 md:p-10 pb-6 shrink-0 flex items-start justify-between border-b border-slate-50">
-           <div>
-              <div className="flex items-center gap-2 mb-2">
-                 <span className="text-[10px] font-black text-indigo-600 uppercase tracking-[0.2em] bg-indigo-50 px-3 py-1 rounded-full">Shipment Details</span>
-                 {shipment.status === 'in_transit' && <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />}
+        {/* HEADER SECTION */}
+        <div className="p-6 md:p-8 shrink-0 border-b border-slate-50 flex items-start justify-between">
+           <div className="flex gap-4">
+              <div className="w-12 h-12 rounded-2xl bg-indigo-600 text-white flex items-center justify-center text-2xl shadow-lg shrink-0">
+                 {modeEmojis[shipment.mode] || '📦'}
               </div>
-              <div className="flex flex-wrap items-center gap-3 md:gap-4">
-                 <h2 className="text-3xl md:text-4xl font-black text-slate-800 tracking-tighter uppercase">{shipment.shipment_code}</h2>
-                 <div className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest ${sc.bg} ${sc.text} border border-white shadow-sm`}>
-                    {sc.label}
+              <div className="space-y-2">
+                 <h2 className="text-xl md:text-2xl font-black text-slate-800 tracking-tight">
+                    {shipment.origin} <span className="text-slate-300 mx-1">→</span> {shipment.destination}
+                 </h2>
+                 <div className="flex flex-wrap gap-2">
+                    <span className={`px-2 py-0.5 rounded-lg text-[10px] font-black uppercase tracking-widest ${getStatusColor(shipment.status)}`}>
+                       {shipment.status.replace('_', ' ')}
+                    </span>
+                    <span className="px-2 py-0.5 rounded-lg border border-indigo-200 text-indigo-600 text-[10px] font-black uppercase tracking-widest">
+                       {shipment.mode}
+                    </span>
+                    <span className={`px-2 py-0.5 rounded-lg text-[10px] font-black uppercase tracking-widest ${shipment.risk_score >= 70 ? 'bg-red-50 text-red-600' : 'bg-slate-100 text-slate-500'}`}>
+                       {shipment.risk_score >= 70 ? 'High Priority' : 'Normal Priority'}
+                    </span>
                  </div>
-                 <div className="px-4 py-1.5 bg-slate-100 rounded-full text-[10px] font-black uppercase tracking-widest text-slate-600 border border-slate-200 flex items-center gap-2">
-                    {modeIcon(shipment.mode)} {modeLabel(shipment.mode)}
-                 </div>
-              </div>
-              <div className="mt-4 flex items-center gap-3 text-slate-800 font-bold text-lg md:text-xl italic">
-                 <span>{shipment.origin}</span>
-                 <ArrowRight size={20} className="text-slate-300" />
-                 <span>{shipment.destination}</span>
               </div>
            </div>
-           
-           <button onClick={onClose} className="w-10 h-10 md:w-12 md:h-12 rounded-2xl bg-slate-100 flex items-center justify-center hover:bg-slate-200 transition-all text-slate-600">
+           <button onClick={onClose} className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400 hover:text-slate-900 hover:bg-slate-100 transition-all">
               <X size={20} />
            </button>
         </div>
 
-        {/* Tab Navigation */}
-        <div className="px-8 md:px-10 flex gap-6 md:gap-10 border-b border-slate-100 shrink-0 overflow-x-auto scrollbar-hide">
+        {/* TAB NAVIGATION */}
+        <div className="px-6 md:px-8 border-b border-slate-50 flex gap-6 shrink-0 overflow-x-auto no-scrollbar">
            {tabs.map(t => {
              const Icon = t.icon;
              const active = tab === t.id;
@@ -182,285 +140,235 @@ export default function ShipmentDetailModal({ shipment: initialShipment, onClose
                <button 
                  key={t.id} 
                  onClick={() => setTab(t.id)}
-                 className={`py-4 text-[11px] font-black uppercase tracking-[0.2em] relative flex items-center gap-2.5 transition-all whitespace-nowrap ${active ? 'text-indigo-600' : 'text-slate-400 hover:text-slate-800'}`}
+                 className={`py-4 text-[11px] font-black uppercase tracking-widest relative flex items-center gap-2 transition-all whitespace-nowrap ${active ? 'text-indigo-600' : 'text-slate-400 hover:text-slate-600'}`}
                >
-                 <Icon size={14} className={active ? 'text-indigo-600' : 'text-slate-300'} />
+                 <Icon size={14} />
                  {t.label}
-                 {active && <motion.div layoutId="modal-tab-active" className="absolute bottom-0 left-0 right-0 h-1 bg-indigo-600 rounded-full" />}
+                 {active && <motion.div layoutId="modal-tab-active" className="absolute bottom-0 left-0 right-0 h-0.5 bg-indigo-600 rounded-full" />}
                </button>
              );
            })}
         </div>
 
-        {/* Content Area */}
-        <div className="flex-1 overflow-y-auto p-6 md:p-10 bg-slate-50/50">
+        {/* CONTENT AREA */}
+        <div className="flex-1 overflow-y-auto p-6 md:p-8 custom-scrollbar">
            <AnimatePresence mode="wait">
               {tab === 'overview' && (
-                <motion.div key="overview" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-8">
-                   <div className="bg-white rounded-[2rem] p-8 md:p-10 shadow-sm border border-slate-100">
-                      <div className="flex justify-between items-end mb-6 font-black italic uppercase text-[10px] md:text-[11px] tracking-widest">
-                         <span className="text-indigo-600">{shipment.origin}</span>
-                         <span className="text-slate-400">Shipment Progress {progress}%</span>
-                         <span className="text-indigo-600">{shipment.destination}</span>
-                      </div>
-                      <div className="relative h-3 bg-slate-100 rounded-full overflow-hidden mb-12">
-                         <motion.div 
-                           initial={{ width: 0 }} animate={{ width: `${progress}%` }}
-                           className="absolute inset-y-0 left-0 bg-indigo-600 rounded-full shadow-[0_0_15px_rgba(79,70,229,0.4)]" />
-                      </div>
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12">
-                         <div>
-                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Expected Delivery</p>
-                            <p className="text-lg md:text-xl font-black text-slate-800 tracking-tight italic uppercase">{format(etaDate, 'dd MMM, HH:mm')}</p>
+                <motion.div key="overview" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-10">
+                   
+                   {/* A) LIVE LOCATION & PROGRESS */}
+                   <section className="space-y-6">
+                      <h4 className="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
+                        <MapPin size={12} className="text-indigo-600" /> Live Location & Progress
+                      </h4>
+                      <div className="bg-slate-50 rounded-3xl p-6 border border-slate-100">
+                         <div className="flex justify-between items-center mb-4 text-[11px] font-black text-slate-800 uppercase tracking-tight">
+                            <span>{shipment.origin}</span>
+                            <span className="text-indigo-600">{progressPercent}% COVERED</span>
+                            <span>{shipment.destination}</span>
                          </div>
-                         <div>
-                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Cargo Weight</p>
-                            <p className="text-lg md:text-xl font-black text-slate-800 tracking-tight italic uppercase">{shipment.weight_kg?.toLocaleString()} KG</p>
+                         <div className="relative h-3 bg-slate-200 rounded-full mb-4">
+                            <motion.div 
+                              initial={{ width: 0 }} 
+                              animate={{ width: `${progressPercent}%` }}
+                              className={`h-full rounded-full relative ${
+                                shipment.status === 'delayed' ? 'bg-red-500' : 
+                                shipment.risk_score >= 40 ? 'bg-amber-500' : 'bg-green-500'
+                              }`} 
+                            >
+                               <div className="absolute right-0 top-1/2 -translate-y-1/2 w-4 h-4 bg-white border-2 border-current rounded-full shadow-lg" />
+                            </motion.div>
                          </div>
-                         <div>
-                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Transit Distance</p>
-                            <p className="text-lg md:text-xl font-black text-slate-800 tracking-tight italic uppercase">~{distanceKm} KM</p>
+                         <div className="flex justify-between text-[10px] font-bold text-slate-400 uppercase">
+                            <span>~{coveredKm} km covered</span>
+                            <span>~{hoursLeft}h remaining</span>
                          </div>
                       </div>
-                   </div>
+                   </section>
 
-                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                      <div className="bg-white rounded-[2rem] p-8 border border-slate-100 shadow-sm">
-                         <h4 className="text-[11px] font-black text-slate-800 uppercase tracking-[0.2em] mb-6 flex items-center gap-3">
-                            <Package size={16} className="text-indigo-600" /> Cargo Details
-                         </h4>
-                         <div className="space-y-4">
-                            {[
-                              { label: 'Type', value: shipment.cargo_type },
-                              { label: 'Estimated Value', value: shipment.declared_value ? formatCurrency(shipment.declared_value) : 'Not Disclosed' },
-                              { label: 'Supplier Name', value: shipment.supplier_name },
-                              { label: 'Bill of Lading', value: shipment.eway_bill || 'In Progress' }
-                            ].map(row => (
-                              <div key={row.label} className="flex justify-between py-3 border-b border-slate-50 last:border-0">
-                                 <span className="text-[11px] font-black text-slate-400 uppercase tracking-widest">{row.label}</span>
-                                 <span className="text-[13px] font-bold text-slate-700 tracking-tight italic uppercase">{row.value}</span>
-                              </div>
-                            ))}
-                         </div>
-                      </div>
+                   {/* B) SHIPMENT METRICS */}
+                   <section className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                      {[
+                        { label: 'ETA Hours', val: `${hoursLeft}h`, color: 'text-slate-800' },
+                        { label: 'Weight (kg)', val: shipment.weight_kg?.toLocaleString('en-IN') || '—', color: 'text-slate-800' },
+                        { label: 'Route KM', val: `${totalDistance} km`, color: 'text-slate-800' },
+                        { 
+                          label: 'Risk Score', 
+                          val: shipment.risk_score, 
+                          style: shipment.risk_score >= 70 ? 'bg-red-50 border-red-200 text-red-600' : 
+                                 shipment.risk_score >= 40 ? 'bg-amber-50 border-amber-200 text-amber-600' : 
+                                 'bg-green-50 border-green-200 text-green-600'
+                        }
+                      ].map((box, i) => (
+                        <div key={i} className={`rounded-xl p-4 border text-center ${box.style || 'bg-white border-slate-100'}`}>
+                           <p className="text-2xl font-black tracking-tighter">{box.val}</p>
+                           <p className="text-[9px] font-black uppercase tracking-widest text-slate-450 mt-1">{box.label}</p>
+                        </div>
+                      ))}
+                   </section>
 
-                      <div className="bg-slate-900 rounded-[2rem] p-8 text-white flex flex-col justify-between shadow-xl">
-                         <div>
-                            <h4 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] mb-6 flex items-center gap-2">
-                               <Info size={14} className="text-indigo-400" /> Status Notes
-                            </h4>
-                            <p className="text-sm md:text-[15px] leading-relaxed font-bold italic opacity-90">
-                               {shipment.notes || "No notes added yet. All systems are being monitored for any issues."}
-                            </p>
+                   {/* C) ROUTE TIMELINE */}
+                   <section className="space-y-6">
+                      <h4 className="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
+                        <GitBranch size={12} className="text-indigo-600" /> Route Timeline
+                      </h4>
+                      <div className="relative pl-10 space-y-12 before:absolute before:left-3.5 before:top-2 before:bottom-2 before:w-0.5 before:bg-slate-100 before:border-l before:border-dashed before:border-slate-300">
+                         {/* Origin */}
+                         <div className="relative">
+                            <div className="absolute -left-10 top-1.5 w-7 h-7 bg-green-500 rounded-full border-4 border-white shadow-md z-10 flex items-center justify-center">
+                               <CheckCircle size={12} className="text-white" />
+                            </div>
+                            <div className="flex justify-between items-start">
+                               <div>
+                                  <p className="text-sm font-black text-slate-800 uppercase italic tracking-tight">{shipment.origin}</p>
+                                  <p className="text-[10px] font-bold text-slate-400">Shipment Departed</p>
+                               </div>
+                               <span className="px-2 py-0.5 rounded-full bg-green-50 text-green-600 text-[9px] font-black uppercase tracking-widest">Departed ✓</span>
+                            </div>
                          </div>
-                         <button className="w-full py-4 mt-8 bg-white/10 border border-white/20 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] hover:bg-white/20 transition-all">
-                            Add Status Update
-                         </button>
+
+                         {/* Current */}
+                         <div className="relative">
+                            <div className="absolute -left-10 top-1.5 w-7 h-7 bg-indigo-600 rounded-full border-4 border-white shadow-xl z-10 animate-pulse" />
+                            <div className="flex justify-between items-start">
+                               <div>
+                                  <p className="text-sm font-black text-slate-800 uppercase italic tracking-tight">Current Position — ~{coveredKm} km</p>
+                                  <p className="text-[10px] font-bold text-slate-400">Live GPS · {minutesAgo} min ago</p>
+                               </div>
+                               <span className="px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-600 text-[9px] font-black uppercase tracking-widest">{hoursLeft}h to destination</span>
+                            </div>
+                         </div>
+
+                         {/* Destination */}
+                         <div className="relative">
+                            <div className="absolute -left-10 top-1.5 w-7 h-7 bg-white rounded-full border-2 border-slate-200 z-10" />
+                            <div className="flex justify-between items-start">
+                               <div>
+                                  <p className="text-sm font-black text-slate-800 uppercase italic tracking-tight">{shipment.destination}</p>
+                                  <p className="text-[10px] font-bold text-slate-400">ETA ~{hoursLeft}h</p>
+                               </div>
+                               <span className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest ${
+                                 shipment.status === 'delayed' ? 'bg-red-50 text-red-600' : 
+                                 shipment.risk_score >= 40 ? 'bg-amber-50 text-amber-600' : 'bg-green-50 text-green-600'
+                               }`}>
+                                 {shipment.status === 'delayed' ? 'Delayed Arrival' : shipment.risk_score >= 40 ? 'At Risk' : 'On-time delivery'}
+                               </span>
+                            </div>
+                         </div>
                       </div>
-                   </div>
+                   </section>
+
+                   {/* D) CARGO & SUPPLIER GRID */}
+                   <section className="space-y-6 pb-20 md:pb-0">
+                      <h4 className="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
+                        <Package size={12} className="text-indigo-600" /> Cargo & Supplier
+                      </h4>
+                      <div className="grid grid-cols-2 gap-4">
+                         {[
+                           { label: 'Cargo Type', val: shipment.cargo_type || '--' },
+                           { label: 'Supplier', val: shipment.supplier_name || '--' },
+                           { label: 'Weight', val: `${shipment.weight_kg?.toLocaleString('en-IN')} kg` },
+                           { label: 'Highway / Route', val: shipment.reference_number || 'NH-48 Corridor' },
+                           { label: 'Transport Mode', val: shipment.mode.toUpperCase(), icon: modeEmojis[shipment.mode] },
+                           { label: 'Status', val: shipment.status.toUpperCase(), color: getStatusColor(shipment.status) },
+                         ].map((cell, i) => (
+                           <div key={i} className="bg-slate-50 rounded-xl p-4 border border-slate-100/50">
+                              <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">{cell.label}</p>
+                              <p className={`text-[12px] font-black tracking-tight mt-1 flex items-center gap-2 ${cell.color || 'text-slate-800'}`}>
+                                 {cell.icon} {cell.val}
+                              </p>
+                           </div>
+                         ))}
+                      </div>
+                   </section>
                 </motion.div>
               )}
 
               {tab === 'risk' && (
-                <motion.div key="risk" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-8">
-                   <div className="bg-white rounded-[2.5rem] p-10 shadow-sm border border-slate-100 flex flex-col md:flex-row gap-10 items-center">
-                      <div className="relative shrink-0">
-                         <div className={`w-36 h-36 md:w-40 md:h-40 rounded-full border-[10px] flex items-center justify-center transition-all ${
-                           shipment.risk_score < 30 ? 'border-emerald-500' : shipment.risk_score < 70 ? 'border-amber-500' : 'border-rose-500'
-                         }`}>
-                           <div className="text-center">
-                             <div className={`text-4xl md:text-5xl font-black italic tracking-tighter ${riskColor(shipment.risk_score)}`}>{shipment.risk_score}</div>
-                             <div className="text-[9px] font-black uppercase tracking-widest text-slate-400 mt-1">AI Risk Score</div>
-                           </div>
-                         </div>
-                         <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 px-4 py-1.5 bg-slate-900 text-white rounded-full text-[9px] font-black uppercase tracking-widest shadow-lg">
-                            {riskLabel(shipment.risk_score)}
-                         </div>
-                      </div>
-                      
-                      <div className="flex-1 bg-indigo-50/50 border border-indigo-100 rounded-[2rem] p-8">
-                         <div className="flex items-center gap-2 mb-4">
-                            <Sparkles size={16} className="text-indigo-600" />
-                            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-indigo-900 italic">LogiFlow AI Analysis</span>
-                         </div>
-                         {aiLoading ? (
-                            <div className="flex flex-col items-center justify-center py-6 gap-3">
-                               <Loader2 size={24} className="animate-spin text-indigo-600" />
-                               <span className="text-[10px] font-black uppercase tracking-widest text-indigo-400">Analyzing live data...</span>
-                            </div>
-                         ) : (
-                            <p className="text-[14px] md:text-[15px] italic font-bold text-indigo-900/80 leading-relaxed uppercase tracking-tight">
-                               {aiRisk}
-                            </p>
-                         )}
-                      </div>
+                <motion.div key="risk" className="space-y-8">
+                   <div className="p-6 bg-rose-50 border border-red-100 rounded-2xl flex items-center justify-between">
+                      <span className="text-[11px] font-black uppercase text-red-700">Live Risk analysis Score</span>
+                      <span className="text-2xl font-black text-red-700">{shipment.risk_score}%</span>
                    </div>
-
-                   <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                      <div className="bg-white border border-slate-100 rounded-[2rem] p-8 flex gap-6 shadow-sm">
-                         <div className={`w-3 h-3 rounded-full mt-1.5 shrink-0 ${weatherRisk.overallRisk > 60 ? 'bg-rose-500 animate-pulse' : 'bg-emerald-500'}`} />
-                         <div>
-                            <h5 className="text-[11px] font-black text-slate-800 uppercase tracking-widest mb-2">Weather Conditions</h5>
-                            <p className="text-[13px] font-bold text-slate-500 italic uppercase tracking-tight leading-snug">
-                               Hazard: {weatherRisk.primaryHazard}. Risk level is {weatherRisk.overallRisk >= 70 ? 'critical' : weatherRisk.overallRisk >= 40 ? 'elevated' : 'normal'}.
-                            </p>
-                         </div>
-                      </div>
-                      <div className="bg-white border border-slate-100 rounded-[2rem] p-8 flex gap-6 shadow-sm">
-                         <div className={`w-3 h-3 rounded-full mt-1.5 shrink-0 ${shipment.mode === 'road' ? 'bg-amber-500' : 'bg-emerald-500'}`} />
-                         <div>
-                            <h5 className="text-[11px] font-black text-slate-800 uppercase tracking-widest mb-2">Carrier Reliability</h5>
-                            <p className="text-[13px] font-bold text-slate-500 italic uppercase tracking-tight leading-snug">
-                               Transport via {modeLabel(shipment.mode)} is showing {shipment.mode === 'road' ? 'standard traffic delays' : 'high reliability ratings'}.
-                            </p>
-                         </div>
+                   <div className="h-4 w-full bg-slate-100 rounded-full overflow-hidden mb-8">
+                      <motion.div 
+                        initial={{ width: 0 }} 
+                        animate={{ width: `${shipment.risk_score}%` }} 
+                        className={`h-full ${shipment.risk_score >= 70 ? 'bg-red-500' : 'bg-amber-500'}`} 
+                      />
+                   </div>
+                   <div className="space-y-4">
+                      <h5 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Risk Factors</h5>
+                      <div className="bg-white border border-slate-100 rounded-2xl p-6 shadow-sm">
+                         <p className="text-sm font-bold text-slate-700 leading-relaxed italic uppercase tracking-tight">
+                            {aiRisk || 'AI analysis is currently unavailable for this specific route quadrant. Standard operational parameters are active.'}
+                         </p>
                       </div>
                    </div>
                 </motion.div>
               )}
 
               {tab === 'vehicle' && (
-                <motion.div key="vehicle" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-8">
-                   {activeDispatch ? (
-                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                        <div className="lg:col-span-2 space-y-8">
-                           <div className="bg-slate-900 rounded-[2.5rem] p-10 text-white relative overflow-hidden">
-                               <div className="relative z-10">
-                                   <div className="flex items-center gap-3 mb-8">
-                                       <div className="w-3 h-3 rounded-full bg-emerald-500 shadow-[0_0_12px_rgba(16,185,129,0.5)] animate-pulse" />
-                                       <span className="text-[10px] font-black uppercase tracking-[0.3em] text-emerald-400">Assigned Transit Unit</span>
-                                   </div>
-                                   <div className="flex items-center gap-6 md:gap-8">
-                                       <div className="w-16 h-16 md:w-20 md:h-20 bg-white/10 border border-white/20 rounded-3xl flex items-center justify-center text-3xl md:text-4xl font-black italic uppercase">
-                                          {activeDispatch.drivers?.full_name?.[0]}
-                                       </div>
-                                       <div>
-                                          <h3 className="text-2xl md:text-3xl font-black italic tracking-tighter uppercase mb-1">{activeDispatch.drivers?.full_name}</h3>
-                                          <p className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em]">{activeDispatch.drivers?.license_number} • {activeDispatch.drivers?.phone}</p>
-                                       </div>
-                                   </div>
-                               </div>
-                           </div>
-
-                           <div className="bg-white border border-slate-100 rounded-[2.5rem] p-8 md:p-10 shadow-sm">
-                              <h4 className="text-[11px] font-black text-slate-800 uppercase tracking-[0.2em] mb-8">Journey Milestone Progress</h4>
-                              <div className="space-y-4">
-                                 {activeDispatch.stops?.map((stop: any, idx: number) => (
-                                   <div key={idx} className="flex items-center gap-6 md:gap-8 p-5 bg-slate-50/50 rounded-2xl border border-transparent hover:border-slate-100 transition-all">
-                                      <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-[12px] font-black border ${idx <= (activeDispatch.current_stop_index || 0) ? 'bg-indigo-600 border-indigo-600 text-white shadow-md' : 'bg-white border-slate-200 text-slate-300'}`}>
-                                         {idx === (activeDispatch.current_stop_index || 0) ? <Zap size={14} className="fill-white" /> : idx + 1}
-                                      </div>
-                                      <div>
-                                         <p className="text-[14px] font-black text-slate-800 uppercase italic tracking-tight">{stop.label}</p>
-                                         <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mt-1">
-                                            {idx < (activeDispatch.current_stop_index || 0) ? 'Completed' : idx === (activeDispatch.current_stop_index || 0) ? 'Current Hub' : 'Upcoming'}
-                                         </p>
-                                      </div>
-                                   </div>
-                                 ))}
-                              </div>
-                           </div>
-                        </div>
-
-                        <div className="space-y-8">
-                           <div className="bg-white border border-slate-200 rounded-[2.5rem] p-8 shadow-sm">
-                              <h5 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-6">Status Overview</h5>
-                              <div className="space-y-5">
-                                 {[
-                                   { label: 'Carrier Score', v: activeDispatch.drivers?.rating ? `${activeDispatch.drivers.rating}/5.0` : '4.8/5.0', color: 'text-slate-800' },
-                                   { label: 'Vehicle Number', v: shipment.vehicle_number || 'TBA', color: 'text-slate-800' },
-                                   { label: 'Transit Mode', v: modeLabel(shipment.mode), color: 'text-indigo-600' }
-                                 ].map(st => (
-                                   <div key={st.label} className="flex justify-between border-b border-slate-50 pb-4 last:border-0 last:pb-0">
-                                      <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{st.label}</span>
-                                      <span className={`text-[12px] font-black uppercase tracking-tight italic ${st.color}`}>{st.v}</span>
-                                   </div>
-                                 ))}
-                              </div>
-                           </div>
-                           <button className="w-full py-5 bg-slate-900 text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] shadow-xl hover:bg-black transition-all flex items-center justify-center gap-2">
-                              <MessageSquare size={16} /> Send Alert to Driver
-                           </button>
-                        </div>
+                <motion.div key="vehicle" className="flex flex-col items-center justify-center py-20 text-center space-y-6">
+                   <div className="w-20 h-20 rounded-full bg-slate-50 flex items-center justify-center text-slate-300">
+                      <Truck size={40} />
+                   </div>
+                   {shipment.vehicle_number ? (
+                     <div>
+                        <p className="text-xl font-black text-slate-800 uppercase italic">{shipment.vehicle_number}</p>
+                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">Assigned Unit — {shipment.transporter_name || 'In-house Fleet'}</p>
                      </div>
                    ) : (
-                     <div className="max-w-xl mx-auto py-12 text-center space-y-10">
-                        <div className="w-24 h-24 bg-slate-100 rounded-[2.5rem] mx-auto flex items-center justify-center text-slate-300 shadow-inner">
-                           <Truck size={40} strokeWidth={1.5} />
-                        </div>
-                        <div>
-                           <h3 className="text-3xl font-black text-slate-800 tracking-tighter italic uppercase">Vehicle Assignment</h3>
-                           <p className="text-[11px] font-bold text-slate-400 uppercase tracking-[0.2em] mt-3">Select a vehicle and driver for this shipment</p>
-                        </div>
-                        
-                        <div className="space-y-5 max-w-sm mx-auto">
-                           <div className="relative">
-                              <User className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-                              <select 
-                                value={selectedDriverId}
-                                onChange={(e) => setSelectedDriverId(e.target.value)}
-                                className="w-full bg-white border-2 border-slate-100 rounded-2xl py-5 pl-14 pr-6 text-[12px] font-black italic text-slate-800 uppercase tracking-tight focus:outline-none focus:border-indigo-600 focus:ring-4 focus:ring-indigo-50 transition-all appearance-none cursor-pointer"
-                              >
-                                <option value="">Select Available Driver</option>
-                                {drivers.map(d => (
-                                  <option key={d.id} value={d.id}>{d.full_name} ({d.license_number})</option>
-                                ))}
-                              </select>
-                           </div>
-                           <button 
-                             onClick={handleAssignDriver}
-                             disabled={!selectedDriverId || assigning}
-                             className="w-full py-5 bg-indigo-600 text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] shadow-lg hover:bg-indigo-700 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
-                           >
-                              {assigning ? <Loader2 className="animate-spin" size={16} /> : (
-                                <>Assign Vehicle & Pilot <ArrowRight size={14} /></>
-                              )}
-                           </button>
-                        </div>
-                     </div>
+                     <p className="text-[11px] font-black text-slate-400 uppercase tracking-widest">No vehicle assigned to this cluster yet</p>
                    )}
                 </motion.div>
               )}
 
               {tab === 'routes' && (
-                <motion.div key="routes" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="bg-white rounded-[2.5rem] p-8 md:p-12 border border-slate-100 shadow-sm relative overflow-hidden">
-                   <div className="absolute left-[3.2rem] md:left-[3.75rem] top-24 bottom-24 w-1 bg-slate-100 rounded-full" />
-                   <div className="relative z-10 space-y-12">
-                      <h4 className="text-[11px] font-black text-slate-800 uppercase tracking-[0.3em] mb-12 ml-4">Event History Log</h4>
-                      {[
-                        { e: 'Order Created', t: createdAt, s: 'completed' },
-                        { e: 'Processing at Origin', t: addHours(createdAt, 2), s: 'completed' },
-                        { e: 'Transit Started', t: addHours(createdAt, 5), s: shipment.status === 'pending' ? 'pending' : 'completed' },
-                        { e: 'Expected Arrival', t: etaDate, s: shipment.status === 'delivered' ? 'completed' : 'pending' }
-                      ].map((evt, idx) => (
-                        <div key={idx} className="flex gap-8 md:gap-12 items-center">
-                           <div className={`w-8 h-8 rounded-xl border-4 transition-all shrink-0 flex items-center justify-center ${evt.s === 'completed' ? 'bg-indigo-600 border-indigo-100 shadow-lg' : 'bg-white border-slate-100'}`}>
-                              {evt.s === 'completed' && <CheckCircle size={14} className="text-white" />}
-                              {evt.s === 'pending' && <Clock size={14} className="text-slate-300" />}
-                           </div>
-                           <div className="flex-1 pb-2 border-b border-slate-50">
-                              <div className="flex justify-between items-end gap-4">
-                                 <span className={`text-lg md:text-xl font-black italic tracking-tighter uppercase ${evt.s === 'completed' ? 'text-slate-800' : 'text-slate-300'}`}>{evt.e}</span>
-                                 <span className="text-[9px] md:text-[10px] font-black text-slate-400 uppercase tracking-widest">{format(evt.t, 'dd MMM, HH:mm')}</span>
-                              </div>
-                           </div>
-                        </div>
-                      ))}
+                <motion.div key="routes" className="space-y-8">
+                   <div className="p-10 bg-slate-50 rounded-3xl border border-slate-100 border-dashed text-center">
+                       <MapIcon size={32} className="mx-auto mb-4 text-slate-300" />
+                       <p className="text-[11px] font-black text-slate-400 uppercase tracking-widest">AI route analysis unavailable for this quadrant</p>
+                   </div>
+                   <div className="grid grid-cols-2 gap-4 opacity-50">
+                      <div className="p-4 bg-white border border-slate-100 rounded-2xl">
+                         <p className="text-[10px] font-black uppercase text-indigo-600">Suggested Alt 1</p>
+                         <p className="text-sm font-bold mt-1 uppercase italic tracking-tight">NH-48 via Panvel</p>
+                      </div>
+                      <div className="p-4 bg-white border border-slate-100 rounded-2xl">
+                         <p className="text-[10px] font-black uppercase text-indigo-600">Suggested Alt 2</p>
+                         <p className="text-sm font-bold mt-1 uppercase italic tracking-tight">Coastal Corridor</p>
+                      </div>
                    </div>
                 </motion.div>
               )}
            </AnimatePresence>
         </div>
 
-        {/* Footer Actions */}
-        <div className="px-8 md:px-10 py-6 md:py-8 border-t border-slate-100 bg-white shrink-0 flex flex-col md:flex-row gap-4 justify-between items-center">
+        {/* BOTTOM ACTION BUTTONS */}
+        <div className="p-6 md:p-8 sticky bottom-0 bg-white border-t border-slate-50 shrink-0 grid grid-cols-2 md:grid-cols-4 gap-3">
            <button 
-             onClick={() => toast.info('PDF report is being generated.')}
-             className="w-full md:w-auto px-8 py-4 bg-slate-100 border border-slate-200 rounded-2xl text-[10px] font-black text-slate-600 uppercase tracking-[0.2em] flex items-center justify-center gap-2 hover:bg-slate-200 transition-all"
+             onClick={() => toast.success('Reroute approved for ' + shipment.shipment_code)}
+             className="bg-green-600 text-white rounded-xl px-4 py-3 text-[10px] font-black uppercase tracking-widest hover:bg-green-700 transition-all flex items-center justify-center gap-2 shadow-lg shadow-green-100"
            >
-              <Mail size={16} /> Email Details
+              <CheckCircle size={14} /> Approve Reroute
            </button>
-           <button onClick={onClose} className="w-full md:w-auto px-12 py-4 bg-indigo-600 text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] shadow-lg hover:bg-indigo-700 transition-all">
+           <button 
+             onClick={() => window.open('mailto:' + (shipment.supplier_email || '') + '?subject=Shipment Update: ' + shipment.shipment_code)}
+             className="bg-amber-500 text-white rounded-xl px-4 py-3 text-[10px] font-black uppercase tracking-widest hover:bg-amber-600 transition-all flex items-center justify-center gap-2 shadow-lg shadow-amber-100"
+           >
+              <Mail size={14} /> Email Supplier
+           </button>
+           <button 
+             onClick={() => router.push('/ai-chat?shipment=' + shipment.id)}
+             className="bg-indigo-600 text-white rounded-xl px-4 py-3 text-[10px] font-black uppercase tracking-widest hover:bg-indigo-700 transition-all flex items-center justify-center gap-2 shadow-lg shadow-indigo-100"
+           >
+              <MessageSquare size={14} /> Ask LogiBot
+           </button>
+           <button 
+             onClick={onClose}
+             className="bg-slate-100 text-slate-700 rounded-xl px-4 py-3 text-[10px] font-black uppercase tracking-widest hover:bg-slate-200 transition-all flex items-center justify-center gap-2"
+           >
               Close
            </button>
         </div>

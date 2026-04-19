@@ -8,7 +8,18 @@ import { useSearch } from '@/context/SearchContext';
 import { supabase } from '@/lib/supabase';
 import { seedShipments } from '@/lib/utils';
 import { toast } from 'sonner';
-import type { Notification } from '@/types';
+import type { Notification, Shipment } from '@/types';
+
+const SIMULATE_SEQUENCE = [
+  { origin: 'Mumbai', destination: 'Delhi', mode: 'road', status: 'on_time', priority: 'normal', risk_score: 15, cargo_type: 'Electronics', supplier_name: 'Tata Motors', weight_kg: 1200, declared_value: 150000 },
+  { origin: 'Chennai', destination: 'Bangalore', mode: 'rail', status: 'in_transit', priority: 'normal', risk_score: 35, cargo_type: 'Textiles', supplier_name: 'Reliance Industries', weight_kg: 3000, declared_value: 200000 },
+  { origin: 'Kolkata', destination: 'Hyderabad', mode: 'air', status: 'at_risk', priority: 'high', risk_score: 72, cargo_type: 'Pharmaceuticals', supplier_name: 'Sun Pharma Logistics', weight_kg: 500, declared_value: 500000 },
+  { origin: 'Ahmedabad', destination: 'Pune', mode: 'road', status: 'delayed', priority: 'high', risk_score: 85, cargo_type: 'Automotive Parts', supplier_name: 'Mahindra Supply Co', weight_kg: 4500, declared_value: 350000 },
+  { origin: 'Delhi', destination: 'Kolkata', mode: 'rail', status: 'on_time', priority: 'normal', risk_score: 20, cargo_type: 'FMCG Goods', supplier_name: 'Flipkart Commerce', weight_kg: 2000, declared_value: 120000 },
+  { origin: 'Mumbai', destination: 'Chennai', mode: 'sea', status: 'in_transit', priority: 'normal', risk_score: 45, cargo_type: 'Industrial Equipment', supplier_name: 'Larsen & Toubro', weight_kg: 8000, declared_value: 800000 },
+  { origin: 'Bangalore', destination: 'Hyderabad', mode: 'road', status: 'on_time', priority: 'normal', risk_score: 10, cargo_type: 'IT Hardware', supplier_name: 'Infosys Logistics', weight_kg: 800, declared_value: 250000 },
+  { origin: 'Patna', destination: 'Mumbai', mode: 'rail', status: 'at_risk', priority: 'high', risk_score: 68, cargo_type: 'Agricultural Goods', supplier_name: 'ITC Agribusiness', weight_kg: 6000, declared_value: 90000 },
+];
 
 export function TopBar() {
   const { user, signOut } = useAuth();
@@ -34,22 +45,56 @@ export function TopBar() {
   const profileName = (user as { user_metadata?: { full_name?: string } })?.user_metadata?.full_name || user?.email?.split('@')[0]?.replace(/[._]/g, ' ') || 'User';
   const avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(profileName)}&background=493ee5&color=fff&bold=true`;
 
+  const [simulating, setSimulating] = useState(false);
+
   const handleAllClear = () => {
     setQuery('');
     toast.success('Search cleared');
   };
 
+  const handleReset = () => {
+    setQuery('');
+    toast.success('Manifest Grid Refreshed');
+    window.location.reload();
+  };
+
   const handleSimulate = async () => {
-    toast.loading('Generating simulation data...');
+    if (simulating) return;
+    setSimulating(true);
+    const toastId = toast.loading('Synchronizing neural data...');
+
     try {
       const { data: { user: currentUser } } = await supabase.auth.getUser();
-      if (currentUser) {
-        await seedShipments(currentUser.id);
-        toast.success('Simulation complete! Sample shipments generated.');
-        window.location.reload();
-      }
-    } catch {
-      toast.error('Simulation failed');
+      if (!currentUser) throw new Error('Auth required');
+
+      const currentIndex = parseInt(localStorage.getItem('simulate_index') || '0');
+      const shipmentData = SIMULATE_SEQUENCE[currentIndex % SIMULATE_SEQUENCE.length];
+      
+      const eta = new Date();
+      eta.setHours(eta.getHours() + Math.floor(Math.random() * 48) + 6);
+
+      const { error } = await supabase
+        .from('shipments')
+        .insert({
+          ...shipmentData,
+          user_id: currentUser.id,
+          eta: eta.toISOString(),
+          is_simulated: true,
+          shipment_code: `LOG-${Math.random().toString(36).substring(2, 8).toUpperCase()}`,
+        });
+
+      if (error) throw error;
+      
+      localStorage.setItem('simulate_index', String(currentIndex + 1));
+      toast.success(`Active Node: ${shipmentData.origin} → ${shipmentData.destination}`, { id: toastId });
+      
+      // Full refresh to update all dashboard elements
+      window.location.reload();
+    } catch (err) {
+      console.error(err);
+      toast.error('Simulation Failed', { id: toastId });
+    } finally {
+      setSimulating(false);
     }
   };
 
@@ -81,9 +126,11 @@ export function TopBar() {
           </div>
           
           <div className="flex items-center gap-2 shrink-0 hidden md:flex">
-            <button onClick={handleAllClear} className="px-3 h-8 bg-[#493ee5] text-white rounded-lg text-[10px] font-bold uppercase tracking-wider hover:opacity-90 transition-opacity whitespace-nowrap">All Clear</button>
-            <button onClick={() => setQuery('')} className="px-3 h-8 border border-slate-200 text-slate-600 rounded-lg text-[10px] font-bold uppercase tracking-wider hover:bg-slate-50 transition-colors whitespace-nowrap">Reset</button>
-            <button onClick={handleSimulate} className="px-3 h-8 border border-slate-200 text-slate-600 rounded-lg text-[10px] font-bold uppercase tracking-wider hover:bg-slate-50 transition-colors whitespace-nowrap">Simulate</button>
+            <button type="button" onClick={handleAllClear} className="px-3 h-8 bg-[#493ee5] text-white rounded-lg text-[10px] font-bold uppercase tracking-wider hover:opacity-90 transition-opacity whitespace-nowrap">All Clear</button>
+            <button type="button" onClick={handleReset} className="px-3 h-8 border border-slate-200 text-slate-600 rounded-lg text-[10px] font-bold uppercase tracking-wider hover:bg-slate-50 transition-colors whitespace-nowrap">Reset</button>
+            <button type="button" onClick={handleSimulate} disabled={simulating} className="px-3 h-8 border border-slate-200 text-slate-600 rounded-lg text-[10px] font-bold uppercase tracking-wider hover:bg-slate-50 transition-colors whitespace-nowrap disabled:opacity-50">
+              {simulating ? 'Processing...' : 'Simulate'}
+            </button>
           </div>
         </div>
 

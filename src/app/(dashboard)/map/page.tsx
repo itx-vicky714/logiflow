@@ -13,6 +13,7 @@ import {
 import { format } from 'date-fns';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
+import { ModeIcon } from '@/components/ModeIcon';
 
 class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { hasError: boolean }> {
   constructor(props: any) { super(props); this.state = { hasError: false }; }
@@ -230,7 +231,7 @@ export default function MapPage() {
                     {s.origin} <span className="text-slate-300 mx-1">→</span> {s.destination}
                   </div>
                   <div className="text-slate-400 group-hover:text-indigo-600 transition-colors">
-                    {modeIcon(s.mode)}
+                    <ModeIcon mode={s.mode} size={18} />
                   </div>
                 </div>
 
@@ -299,9 +300,7 @@ export default function MapPage() {
             <div className="p-6 border-b border-slate-50 flex items-center justify-between sticky top-0 bg-white z-10 text-slate-900">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center shadow-lg uppercase font-black">
-                  {selectedShipment.mode === 'road' ? <Truck size={18} /> : 
-                   selectedShipment.mode === 'air' ? <Plane size={18} /> :
-                   selectedShipment.mode === 'sea' ? <Ship size={18} /> : <Train size={18} />}
+                   <ModeIcon mode={selectedShipment.mode} size={20} />
                 </div>
                 <div>
                   <h3 className="text-[16px] font-black tracking-tight">{selectedShipment.shipment_code}</h3>

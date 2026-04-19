@@ -11,8 +11,9 @@ import { format, subDays, isAfter, isBefore, endOfDay } from 'date-fns';
 import { 
   TrendingUp, BarChart3, PieChart, Activity, ShieldCheck, 
   RefreshCw, Calendar, ArrowUpRight, ArrowDownRight, Zap, 
-  Ship, Plane, Truck, Train, AlertTriangle, Target, Briefcase, Info
+  Ship, Plane, Truck, Train, AlertTriangle, Target, Briefcase, Info 
 } from 'lucide-react';
+import { PieChart as RePieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
 const Charts = dynamic(() => import('@/components/charts/AnalyticsCharts'), { 
   ssr: false, 
@@ -203,12 +204,51 @@ export default function AnalyticsPage() {
             <button className="text-slate-300 hover:text-indigo-600 transition-colors"><Info size={20} /></button>
           </div>
           <div className="h-[300px]">
-             {/* We'll use the cost chart type but repurpose it for status counts if needed, but let's stick to modePerf for bar view */}
-            <Charts 
-              type="modePerf" 
-              data={statusTypeStats} 
-              tooltipStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 40px rgba(0,0,0,0.08)', fontSize: '11px', fontWeight: 700 }} 
-            />
+             {statusTypeStats.length > 0 ? (
+               <ResponsiveContainer width="100%" height="100%">
+                 <RePieChart>
+                   <Pie
+                     data={statusTypeStats.map(s => ({
+                       ...s,
+                       color: s.name === 'ON TIME' ? '#10B981' : 
+                              s.name === 'DELAYED' ? '#EF4444' : 
+                              s.name === 'IN TRANSIT' ? '#3B82F6' : 
+                              s.name === 'PENDING' ? '#F59E0B' : '#8B5CF6'
+                     }))}
+                     cx="50%"
+                     cy="50%"
+                     innerRadius={60}
+                     outerRadius={100}
+                     paddingAngle={5}
+                     dataKey="count"
+                   >
+                     {statusTypeStats.map((entry, index) => (
+                       <Cell 
+                         key={`cell-${index}`} 
+                         fill={entry.name === 'ON TIME' ? '#10B981' : 
+                               entry.name === 'DELAYED' ? '#EF4444' : 
+                               entry.name === 'IN TRANSIT' ? '#3B82F6' : 
+                               entry.name === 'PENDING' ? '#F59E0B' : '#8B5CF6'} 
+                       />
+                     ))}
+                   </Pie>
+                   <Tooltip 
+                     contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 40px rgba(0,0,0,0.08)' }}
+                     itemStyle={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase' }}
+                   />
+                   <Legend 
+                     verticalAlign="bottom" 
+                     align="center"
+                     iconType="circle"
+                     wrapperStyle={{ fontSize: '10px', fontWeight: 700, textTransform: 'uppercase', paddingTop: '20px' }}
+                   />
+                 </RePieChart>
+               </ResponsiveContainer>
+             ) : (
+               <div className="flex items-center justify-center h-full text-slate-300 text-[11px] font-black uppercase tracking-widest">
+                 Insufficient Stream Data
+               </div>
+             )}
           </div>
         </div>
       </div>

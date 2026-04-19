@@ -7,6 +7,7 @@ import type { Shipment } from '@/types';
 import dynamic from 'next/dynamic';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
+import { ModeIcon } from '@/components/ModeIcon';
 
 const ShipmentDetailModal = dynamic(() => import('@/components/ShipmentDetailModal'), { ssr: false });
 
@@ -101,7 +102,7 @@ export default function ShipmentsPage() {
     <div className="font-['Inter'] antialiased tracking-tight text-[#191c1e] animate-in fade-in slide-in-from-bottom-4 duration-700">
       
       {/* Page Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10">
+      <div className="pt-6 px-6 flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10">
         <div>
           <h1 className="text-3xl font-black text-on-surface tracking-tighter">Manifest Database</h1>
           <div className="flex items-center gap-2 mt-2">
@@ -196,7 +197,7 @@ export default function ShipmentsPage() {
                     <td className="px-8 py-6">
                       <div className="flex items-center gap-4">
                         <div className="w-10 h-10 rounded-xl bg-surface-container-low border border-white/50 flex items-center justify-center text-primary shadow-sm group-hover:bg-surface-container-lowest transition-all">
-                           <span className="text-[16px]">{modeIcon(s.mode)}</span>
+                           <ModeIcon mode={s.mode} size={18} />
                         </div>
                         <div className="font-bold text-[13px] text-on-surface tracking-tight">#{s.shipment_code.split('-').pop()}</div>
                       </div>

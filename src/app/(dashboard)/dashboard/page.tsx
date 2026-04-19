@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
 import {
-  seedShipments, modeIcon, riskColor,
+  seedShipments, riskColor,
   estimateRevenue, formatCurrency, modeLabel
 } from '@/lib/utils';
 import { getCityWeather, KEY_CITIES } from '@/lib/weather';
@@ -13,11 +13,13 @@ import { format } from 'date-fns';
 
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
+import { ModeIcon } from '@/components/ModeIcon';
 
 const ShipmentDetailModal = dynamic(() => import('@/components/ShipmentDetailModal'), { ssr: false });
 
 const HIGH_RISK_THRESHOLD = 70;
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
 
 // Memoized KPI Component to prevent re-renders durante initial hydration
 const KPICard = React.memo(({ title, value, change, icon, iconColor, isError }: { 
@@ -48,105 +50,7 @@ export default function DashboardPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [dateFilter, setDateFilter] = useState('all');
-  const [simulating, setSimulating] = useState(false);
 
-  // ALL CLEAR
-  const handleAllClear = () => {
-    setSearchQuery('');
-    setStatusFilter('all');
-    setDateFilter('all');
-    setSelectedShipment(null);
-    toast.success('All filters cleared', { duration: 2000 });
-  };
-
-  // RESET
-  const handleReset = async () => {
-    setLoading(true);
-    try {
-      const { data, error } = await supabase
-        .from('shipments')
-        .select('*')
-        .order('created_at', { ascending: false });
-      if (error) throw error;
-      setShipments(data || []);
-      toast.success('Dashboard refreshed', { duration: 2000 });
-    } catch (err) {
-      console.error('Reset error:', err);
-      toast.error('Refresh failed');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // SIMULATE
-  const handleSimulate = async () => {
-    if (simulating) return;
-    setSimulating(true);
-    console.log('SIMULATE: started');
-
-    try {
-      // Delete previous
-      const { error: deleteError } = await supabase
-        .from('shipments')
-        .delete()
-        .eq('is_simulated', true);
-      
-      console.log('SIMULATE: delete result', deleteError);
-
-      const sampleShipments = Array.from({ length: 6 }, () => {
-        const cities = ['Mumbai', 'Delhi', 'Chennai', 'Bangalore',
-          'Kolkata', 'Hyderabad', 'Pune', 'Ahmedabad'];
-        const modes = ['road', 'rail', 'air', 'sea'];
-        const statuses = ['on_time', 'delayed', 'at_risk', 'in_transit'];
-        const originIdx = Math.floor(Math.random() * cities.length);
-        let destIdx = Math.floor(Math.random() * cities.length);
-        while (destIdx === originIdx) destIdx = Math.floor(Math.random() * cities.length);
-        const eta = new Date();
-        eta.setHours(eta.getHours() + Math.floor(Math.random() * 48) + 6);
-        return {
-          origin: cities[originIdx],
-          destination: cities[destIdx],
-          transport_mode: modes[Math.floor(Math.random() * modes.length)],
-          status: statuses[Math.floor(Math.random() * statuses.length)],
-          cargo_type: 'Electronics',
-          supplier: 'Tata Motors',
-          weight: 1200,
-          declared_value: 150000,
-          risk_score: Math.floor(Math.random() * 100),
-          estimated_delivery: eta.toISOString(),
-          priority: 'normal',
-          is_simulated: true,
-        };
-      });
-
-      console.log('SIMULATE: inserting', sampleShipments.length, 'shipments');
-
-      const { data: insertData, error: insertError } = await supabase
-        .from('shipments')
-        .insert(sampleShipments)
-        .select();
-
-      console.log('SIMULATE: insert result', insertData, insertError);
-
-      if (insertError) throw insertError;
-
-      const { data: freshData, error: fetchError } = await supabase
-        .from('shipments')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      console.log('SIMULATE: fresh fetch', freshData?.length, fetchError);
-
-      setShipments(freshData || []);
-      toast.success('6 shipments generated!', { duration: 3000 });
-
-    } catch (err) {
-      console.error('SIMULATE ERROR:', err);
-      toast.error('Failed: ' + (err as Error).message);
-    } finally {
-      setSimulating(false);
-    }
-  };
 
   const fetchData = useCallback(async () => {
     try {
@@ -235,45 +139,15 @@ export default function DashboardPage() {
   );
 
   return (
-    <div className="animate-in fade-in slide-in-from-bottom-4 duration-1000">
+    <div className="pt-16 animate-in fade-in slide-in-from-bottom-4 duration-1000">
       
       {/* Top Section: Dashboard KPIs & Sidebar Panels (9+3 Enforced) */}
       <section className="grid grid-cols-12 gap-10 mt-10 mb-6">
         <div className="col-span-12 lg:col-span-9">
-          {/* Dashboard Quick Actions */}
-          <div className="flex items-center gap-3 mb-8">
-            <button 
-              type="button"
-              onClick={handleAllClear}
-              className="bg-primary text-on-primary py-2.5 px-6 text-[11px] font-black uppercase tracking-widest rounded-xl curated-shadow hover:opacity-90 active:scale-95 transition-all shadow-lg shadow-primary/20"
-            >
-              All Clear
-            </button>
-            <button 
-              type="button"
-              onClick={handleReset}
-              className="bg-surface-container-lowest text-on-surface py-2.5 px-6 text-[11px] font-black uppercase tracking-widest rounded-xl border border-white/60 curated-shadow hover:bg-surface-container transition-all active:scale-95"
-            >
-              Reset
-            </button>
-            <button 
-              type="button"
-              onClick={() => {
-                console.log('SIMULATE CLICKED');
-                handleSimulate();
-              }}
-              disabled={simulating}
-              className={`bg-surface-container-lowest text-on-surface py-2.5 px-6 text-[11px] font-black uppercase tracking-widest rounded-xl border border-white/60 curated-shadow hover:bg-surface-container transition-all active:scale-95 flex items-center gap-2 ${simulating ? 'opacity-60 cursor-not-allowed' : ''}`}
-            >
-              {simulating ? (
-                <>
-                  <div className="w-3 h-3 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
-                  Simulating...
-                </>
-              ) : (
-                'Simulate'
-              )}
-            </button>
+          <div className="flex items-center justify-between mb-8">
+            <h3 className="text-xl font-black text-slate-800 tracking-tighter uppercase italic">
+              Network Intelligence Grid
+            </h3>
           </div>
 
           {/* KPI Cards Row (Increased Spacing & Width) */}
@@ -438,6 +312,9 @@ export default function DashboardPage() {
                     </td>
                     <td className="px-12 py-10">
                       <button className="w-12 h-12 rounded-xl flex items-center justify-center hover:bg-surface-container transition-all group-hover:bg-white shadow-sm">
+                        <div className="w-10 h-10 rounded-xl bg-surface-container-low border border-white/50 flex items-center justify-center text-primary shadow-sm group-hover:bg-surface-container-lowest transition-all">
+                           <ModeIcon mode={s.mode} size={18} />
+                        </div>
                         <span className="material-symbols-outlined text-2xl text-on-surface-variant">more_vert</span>
                       </button>
                     </td>

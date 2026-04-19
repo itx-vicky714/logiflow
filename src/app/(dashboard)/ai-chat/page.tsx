@@ -4,7 +4,10 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { format } from 'date-fns';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
-import { AlertCircle, Zap } from 'lucide-react';
+import { useSearchParams } from 'next/navigation';
+import { AlertCircle, Zap, Box, ArrowLeft } from 'lucide-react';
+import { supabase } from '@/lib/supabase';
+import type { Shipment } from '@/types';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -19,6 +22,19 @@ const SUGGESTIONS = [
 ];
 
 export default function AIChatPage() {
+  return (
+    <React.Suspense fallback={
+      <div className="flex flex-col h-[calc(100vh-10rem)] max-w-5xl mx-auto items-center justify-center">
+        <div className="status-pulse bg-primary w-12 h-12" />
+        <p className="mt-4 text-[10px] font-black uppercase tracking-widest text-slate-400">Initializing Neural Link...</p>
+      </div>
+    }>
+      <ChatContainer />
+    </React.Suspense>
+  );
+}
+
+function ChatContainer() {
   const [messages, setMessages] = useState<Message[]>([
     {
       role: 'assistant',
@@ -27,7 +43,24 @@ export default function AIChatPage() {
   ]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
+  const [contextShipment, setContextShipment] = useState<Shipment | null>(null);
+  const searchParams = useSearchParams();
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const shipmentId = searchParams.get('shipment');
+    if (shipmentId) {
+      supabase.from('shipments').select('*').eq('id', shipmentId).single().then(({ data }) => {
+        if (data) {
+          setContextShipment(data);
+          setMessages(prev => [
+            ...prev,
+            { role: 'assistant', content: `Focusing analysis on **${data.shipment_code}** (${data.origin} to ${data.destination}). How can I assist with this specific unit?` }
+          ]);
+        }
+      });
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -52,6 +85,7 @@ export default function AIChatPage() {
         },
         body: JSON.stringify({
           message: userMsg,
+          shipmentId: contextShipment?.id,
           history: messages.map(m => ({
             role: m.role === 'user' ? 'user' : 'model',
             content: m.content
@@ -69,7 +103,7 @@ export default function AIChatPage() {
     } finally {
       setLoading(false);
     }
-  }, [input, loading, messages]);
+  }, [input, loading, messages, contextShipment]);
 
   return (
     <div className="flex flex-col h-[calc(100vh-10rem)] max-w-5xl mx-auto font-['Inter'] antialiased tracking-tight">

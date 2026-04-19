@@ -140,6 +140,51 @@ body {
   border-radius: 10px;
 }
 
+/* ─────────────────────────────────── */
+/* Premium Landing Page Animations      */
+/* ─────────────────────────────────── */
+
+@keyframes hero-gradient {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+@keyframes float-1 {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+@keyframes float-2 {
+  0%, 100% { transform: translateY(-4px); }
+  50% { transform: translateY(4px); }
+}
+
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+.animate-hero-gradient {
+  background-size: 400% 400%;
+  animation: hero-gradient 15s ease infinite;
+}
+
+.animate-marquee {
+  animation: marquee 30s linear infinite;
+}
+
+.perspective-1000 {
+  perspective: 1000px;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
 :focus-visible {
   outline: none;
   box-shadow: 0 0 0 3px rgba(73, 62, 229, 0.1);

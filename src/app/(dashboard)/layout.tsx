@@ -21,7 +21,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           <Sidebar />
           <div className="flex flex-col flex-1 transition-all duration-300 lg:ml-64 min-h-screen">
             <TopBar />
-            <main className="flex-1 pt-20 p-4 lg:p-12">
+            <main className="flex-1 pt-16 p-4 lg:p-12">
               <div className="max-w-[1600px] mx-auto animate-in fade-in slide-in-from-bottom-6 duration-1000">
                 {children}
               </div>
@@ -35,3 +35,4 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     </SidebarProvider>
   );
 }
+

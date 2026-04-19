@@ -126,3 +126,4 @@ export default function MapComponent({ shipments }: { shipments: ShipmentMarker[
     </div>
   );
 }
+

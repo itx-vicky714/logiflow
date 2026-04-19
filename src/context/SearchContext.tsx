@@ -19,3 +19,4 @@ export function SearchProvider({ children }: { children: React.ReactNode }) {
 }
 
 export function useSearch() { return useContext(SearchContext); }
+

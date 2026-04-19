@@ -11,7 +11,7 @@ import { getCityWeather } from '@/lib/weather';
 // Fix Leaflet default icon issue
 delete (L.Icon.Default.prototype as unknown as Record<string, unknown>)._getIconUrl;
 
-// Precision Editorial Vehicle Icons
+// LogiFlow Editorial Vehicle Icons
 const createVehicleIcon = (isHighlighted: boolean, status: string, riskScore: number) => {
   const isRed = status === 'delayed';
   const isYellow = riskScore > 60 && !isRed;
@@ -26,7 +26,7 @@ const createVehicleIcon = (isHighlighted: boolean, status: string, riskScore: nu
   return L.divIcon({ html, className: 'bg-transparent border-0', iconSize: [0, 0], iconAnchor: [0, 0], popupAnchor: [0, -10] });
 };
 
-// Precision Weather Badge
+// LogiFlow Weather Badge
 function createWeatherBadge(cw: ReturnType<typeof getCityWeather>) {
   const isHighRisk = cw.riskLevel === 'high' || cw.riskLevel === 'severe';
   const bgStyle = isHighRisk ? 'background-color: #ba1a1a; color: white;' : 'background-color: white; color: #191c1e;';
@@ -58,7 +58,7 @@ function FitBounds({ shipments }: { shipments: Shipment[] }) {
   return null;
 }
 
-export default function MapLayout({ shipments, highlighted }: { shipments: Shipment[], highlighted: string | null }) {
+export default function MapLayout({ shipments, highlighted, onMarkerClick }: { shipments: Shipment[], highlighted: string | null, onMarkerClick?: (id: string) => void }) {
   const plottedCities = Array.from(new Set(shipments.flatMap(s => [s.origin, s.destination])));
   const activeCitiesWeather = plottedCities.map(city => getCityWeather(city));
 
@@ -84,7 +84,7 @@ export default function MapLayout({ shipments, highlighted }: { shipments: Shipm
           if (!coords) return null;
           return (
             <Marker key={`weather-${cw.city}`} position={coords} icon={createWeatherBadge(cw)}>
-              <Popup className="precision-popup">
+              <Popup className="LogiFlow-popup">
                 <div className="p-2 w-40">
                   <p className="text-[10px] font-black uppercase tracking-widest text-[#493ee5] mb-1">{cw.city} Terminal</p>
                   <div className="flex items-center justify-between">
@@ -129,9 +129,12 @@ export default function MapLayout({ shipments, highlighted }: { shipments: Shipm
                 dashArray={s.mode === 'air' ? '10 10' : s.mode === 'sea' ? '5 15' : undefined}
               />
               
-              {/* Origin Marker */}
-              <Marker position={oCoords} icon={createVehicleIcon(isHighlighted, s.status, s.risk_score)}>
-                <Popup className="precision-popup">
+              <Marker 
+                position={oCoords} 
+                icon={createVehicleIcon(isHighlighted, s.status, s.risk_score)}
+                eventHandlers={{ click: () => onMarkerClick?.(s.id) }}
+              >
+                <Popup className="LogiFlow-popup">
                   <div className="p-1">
                     <p className="text-[9px] font-black text-on-surface-variant uppercase tracking-widest border-b border-surface-container pb-1 mb-1">Origin Node</p>
                     <p className="text-xs font-black text-on-surface">{s.origin}</p>
@@ -156,8 +159,9 @@ export default function MapLayout({ shipments, highlighted }: { shipments: Shipm
                     iconSize: [0, 0],
                     iconAnchor: [0, 0]
                   })}
+                  eventHandlers={{ click: () => onMarkerClick?.(s.id) }}
                 >
-                  <Popup className="precision-popup">
+                  <Popup className="LogiFlow-popup">
                     <div className="p-1">
                       <p className="text-[9px] font-black text-on-surface-variant uppercase tracking-widest border-b border-surface-container pb-1 mb-1">Live Location</p>
                       <p className="text-xs font-black text-on-surface">{s.shipment_code}</p>
@@ -168,8 +172,12 @@ export default function MapLayout({ shipments, highlighted }: { shipments: Shipm
               )}
 
               {/* Destination Marker */}
-              <Marker position={dCoords} icon={createVehicleIcon(isHighlighted, s.status, s.risk_score)}>
-                <Popup className="precision-popup">
+              <Marker 
+                position={dCoords} 
+                icon={createVehicleIcon(isHighlighted, s.status, s.risk_score)}
+                eventHandlers={{ click: () => onMarkerClick?.(s.id) }}
+              >
+                <Popup className="LogiFlow-popup">
                   <div className="p-1">
                     <p className="text-[9px] font-black text-on-surface-variant uppercase tracking-widest border-b border-surface-container pb-1 mb-1">Arrival Terminal</p>
                     <p className="text-xs font-black text-on-surface">{s.destination}</p>
@@ -181,7 +189,7 @@ export default function MapLayout({ shipments, highlighted }: { shipments: Shipm
         })}
       </MapContainer>
       
-      {/* Precision Legend */}
+      {/* LogiFlow Legend */}
       <div className="absolute bottom-12 left-8 z-[1000] bg-surface-container-lowest/80 backdrop-blur-xl border border-white/50 p-6 rounded-2xl curated-shadow">
         <h4 className="text-[10px] font-black text-on-surface uppercase tracking-widest mb-4">Operational Status</h4>
         <div className="space-y-3">
@@ -200,3 +208,4 @@ export default function MapLayout({ shipments, highlighted }: { shipments: Shipm
     </div>
   );
 }
+

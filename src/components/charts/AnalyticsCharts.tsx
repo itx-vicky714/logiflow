@@ -13,7 +13,7 @@ interface Props {
 }
 
 export default function AnalyticsCharts({ type, data, tooltipStyle }: Props) {
-  // Precision Editorial Chart Palette
+  // LogiFlow Editorial Chart Palette
   const colors = {
     primary: '#493ee5',
     secondary: '#635bff',
@@ -99,3 +99,4 @@ export default function AnalyticsCharts({ type, data, tooltipStyle }: Props) {
     </div>
   );
 }
+

@@ -158,7 +158,7 @@ export default function SignupPage() {
                 className="w-full py-5.5 bg-on-surface text-inverse-on-surface rounded-2xl text-[11px] font-black uppercase tracking-[0.3em] transition-all shadow-2xl hover:bg-black active:scale-[0.98] flex items-center justify-center gap-4 disabled:opacity-70 mt-4 group/btn"
               >
                 {loading ? <div className="status-pulse bg-primary w-4 h-4" /> : (
-                  <>Deploy Operational Node <span className="material-symbols-outlined text-[16px] group-hover/btn:translate-x-1 transition-transform">east</span></>
+                  <>Deploy Shipment <span className="material-symbols-outlined text-[16px] group-hover/btn:translate-x-1 transition-transform">east</span></>
                 )}
               </button>
            </form>
@@ -183,3 +183,4 @@ export default function SignupPage() {
     </div>
   );
 }
+

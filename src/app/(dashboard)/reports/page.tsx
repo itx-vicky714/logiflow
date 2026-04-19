@@ -11,7 +11,7 @@ import { format } from 'date-fns';
 interface ReportCard { id: string; title: string; description: string; frequency: string; icon: string; col: string; }
 const REPORT_TYPES: ReportCard[] = [
   { id: 'daily', title: 'Operational Summary', description: 'Snapshot of active manifests, latencies, and fulfillment metrics for current cycle.', frequency: 'Cycle End', icon: 'description', col: 'text-[#493ee5] bg-primary-fixed border-[#493ee5]/10' },
-  { id: 'disruption', title: 'Disruption Matrix', description: 'Root cause analysis of grid anomalies, risk escalations and node failures.', frequency: 'Real-time', icon: 'warning', col: 'text-error bg-error-container border-error/10' },
+  { id: 'disruption', title: 'Delay by Transport Mode', description: 'Root cause analysis of grid anomalies, risk escalations and node failures.', frequency: 'Real-time', icon: 'warning', col: 'text-error bg-error-container border-error/10' },
   { id: 'cost', title: 'Yield Impact Analysis', description: 'Terminal cost breakdown by vector, cargo category, and projected revenue.', frequency: 'Weekly', icon: 'payments', col: 'text-on-surface bg-surface-container-low border-white/50' },
   { id: 'weather', title: 'Atmospheric Forecast', description: 'Predicted weather risk on active Indian corridors for the 72h window.', frequency: '3× Cycle', icon: 'cloud', col: 'text-cyan-600 bg-cyan-50 border-cyan-100' },
   { id: 'mode', title: 'Vector Performance', description: 'Cross-mode evaluation: Road vs Rail vs Air vs Sea efficiency benchmarks.', frequency: 'Monthly', icon: 'hub', col: 'text-indigo-600 bg-indigo-50 border-indigo-100' },
@@ -48,7 +48,7 @@ function buildReport(type: string, shipments: Shipment[], aiText?: string): Gene
       ]};
     case 'disruption':
       const dis = shipments.filter(s => s.status === 'delayed' || s.risk_score > 70);
-      return { ...base, title: 'Disruption Matrix', tableRows: dis, metrics: [
+      return { ...base, title: 'Delay by Transport Mode', tableRows: dis, metrics: [
         { label: 'Disrupted Units', value: String(delayed) },
         { label: 'Critical Risk', value: String(atRisk) },
         { label: 'Revenue at Risk', value: formatCurrency(dis.reduce((a, s) => a + estimateRevenue(s), 0)) },
@@ -165,11 +165,11 @@ export default function ReportsPage() {
         <div className="relative z-10 space-y-4 max-w-2xl">
           <div className="flex items-center gap-3">
              <span className="material-symbols-outlined text-primary text-[32px]">analytics</span>
-             <span className="text-[10px] font-black tracking-[0.4em] uppercase opacity-60">Control Tower Intelligence</span>
+             <span className="text-[10px] font-black tracking-[0.4em] uppercase opacity-60">LogiFlow Dashboard Intelligence</span>
           </div>
           <h1 className="text-4xl font-black uppercase tracking-tighter">Strategic Audit Manifests</h1>
           <p className="text-[15px] font-bold opacity-60 leading-relaxed italic">
-            Synthesize orbital-level operational datasets into tactical intelligence. Powered by Gemini predictive modeling and real-time corridor telemetry.
+            Synthesize Air-level operational datasets into tactical intelligence. Powered by Gemini predictive modeling and real-time corridor telemetry.
           </p>
         </div>
         
@@ -304,3 +304,4 @@ export default function ReportsPage() {
     </div>
   );
 }
+

@@ -114,7 +114,7 @@ export default function SettingsPage() {
           <h1 className="text-4xl font-black text-on-surface tracking-tighter uppercase">System Control</h1>
           <div className="flex items-center gap-2 mt-2">
             <span className="status-pulse bg-primary" />
-            <p className="text-[10px] font-black text-on-surface-variant uppercase tracking-[0.3em]">Operational Node Management HUB</p>
+            <p className="text-[10px] font-black text-on-surface-variant uppercase tracking-[0.3em]">Profile Settings</p>
           </div>
         </div>
         
@@ -156,10 +156,10 @@ export default function SettingsPage() {
                   </div>
                   <div className="flex-1 text-center md:text-left space-y-4">
                     <span className="px-4 py-1.5 bg-primary-fixed text-[#493ee5] rounded-full text-[9px] font-black uppercase tracking-widest border border-[#493ee5]/10 mb-2 inline-block">Enterprise Administrator</span>
-                    <h2 className="text-5xl font-black text-on-surface mb-2 tracking-tighter leading-none italic uppercase">{profile.full_name || 'System User'}</h2>
+                    <h2 className="text-5xl font-black text-on-surface mb-2 tracking-tighter leading-none italic uppercase">{profile.full_name || 'User Profile'}</h2>
                     <p className="text-[14px] font-bold text-on-surface-variant uppercase tracking-widest flex items-center justify-center md:justify-start gap-3">
                        <span className="material-symbols-outlined text-[16px] text-[#493ee5]">corporate_fare</span>
-                       {profile.company || 'Global Logistics Partner'}
+                       {profile.company || 'Logistics Manager'}
                     </p>
                     <div className="flex flex-wrap justify-center md:justify-start gap-6 pt-4">
                        {[
@@ -188,23 +188,23 @@ export default function SettingsPage() {
                <form onSubmit={handleSubmit(onSubmit)} className="space-y-10">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
                     <div>
-                      <label className={labelCls}>Legal Identity Node</label>
+                      <label className={labelCls}>Full Name</label>
                       <input {...register('full_name')} className={fieldCls} placeholder="Supervisor Full Name" />
                     </div>
                     <div>
-                      <label className={labelCls}>Strategic Designation</label>
+                      <label className={labelCls}>Job Title</label>
                       <input {...register('role')} className={fieldCls} placeholder="Operational Role" />
                     </div>
                     <div className="md:col-span-2">
-                       <label className={labelCls}>Enterprise Corporate Entity</label>
+                       <label className={labelCls}>Company Name</label>
                        <input {...register('company')} className={fieldCls} placeholder="LogiFlow Network Hub" />
                     </div>
                     <div>
-                      <label className={labelCls}>Primary Comms Node</label>
+                      <label className={labelCls}>Phone Number</label>
                       <input {...register('phone')} className={fieldCls} placeholder="+91 Protocol Number" />
                     </div>
                     <div>
-                      <label className={labelCls}>Redundant Whatsapp Node</label>
+                      <label className={labelCls}>WhatsApp Number</label>
                       <input {...register('whatsapp')} className={fieldCls} placeholder="+91 Redundant Line" />
                     </div>
                   </div>
@@ -213,8 +213,8 @@ export default function SettingsPage() {
                     <div className="flex items-center gap-6">
                        <span className={`material-symbols-outlined text-[32px] ${emailAlerts ? 'text-[#493ee5]' : 'text-on-surface-variant'}`}>{emailAlerts ? 'notifications_active' : 'notifications_off'}</span>
                        <div>
-                         <h4 className="text-[14px] font-black text-on-surface uppercase tracking-tight italic">Intelligence SMTP Alerts</h4>
-                         <p className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest mt-1">Receive automated drift reports via neural uplink</p>
+                         <h4 className="text-[14px] font-black text-on-surface uppercase tracking-tight italic">Email Alerts</h4>
+                         <p className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest mt-1">Receive automated alert emails</p>
                        </div>
                     </div>
                     <button 
@@ -227,7 +227,7 @@ export default function SettingsPage() {
 
                   <div className="flex justify-end pt-6">
                     <button type="submit" disabled={saving} className="bg-on-surface text-inverse-on-surface py-5 px-12 rounded-2xl text-[11px] font-black uppercase tracking-[0.3em] shadow-2xl hover:opacity-95 active:scale-95 transition-all">
-                      {saving ? 'Synchronizing Cluster...' : 'Deploy Protocol Changes'}
+                      {saving ? 'Synchronizing Cluster...' : 'Save Changes'}
                     </button>
                   </div>
                </form>
@@ -293,7 +293,7 @@ export default function SettingsPage() {
                          <p className="text-[11px] font-bold text-on-surface-variant mt-1 tracking-tight">{user?.email}</p>
                        </div>
                     </div>
-                    <span className="px-3 py-1 bg-primary-fixed text-[#493ee5] text-[9px] font-black uppercase tracking-widest rounded-lg">Operational Node</span>
+                    <span className="px-3 py-1 bg-primary-fixed text-[#493ee5] text-[9px] font-black uppercase tracking-widest rounded-lg">Shipment</span>
                   </div>
                   
                   <div className="flex items-center justify-between p-8 bg-surface-container-low/30 rounded-3xl border border-white/50 hover:bg-surface-container-low/50 transition-all">
@@ -324,3 +324,4 @@ export default function SettingsPage() {
     </div>
   );
 }
+

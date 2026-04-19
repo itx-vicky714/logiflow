@@ -60,12 +60,12 @@ export function Sidebar() {
       {/* Logo Hub */}
       <div className="px-8 mb-12">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-on-surface text-inverse-on-surface rounded-lg flex items-center justify-center">
+          <div className="w-10 h-10 bg-[#493ee5] text-white rounded-lg flex items-center justify-center">
             <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>analytics</span>
           </div>
           <div>
             <h1 className="text-xl font-bold tracking-tighter text-[#191c1e]">LogiFlow</h1>
-            <p className="text-[10px] uppercase tracking-[0.2em] text-on-surface-variant font-bold leading-none">Editorial Logistics</p>
+            <p className="text-[10px] uppercase tracking-[0.2em] text-[#493ee5] font-bold leading-none">B2B Logistics Hub</p>
           </div>
         </div>
       </div>
@@ -111,7 +111,7 @@ export function Sidebar() {
           onClick={handleLogout}
           className="w-full py-2 text-[10px] uppercase tracking-[0.2em] font-black text-on-surface-variant/40 hover:text-error transition-colors text-center"
         >
-          Terminal Logout
+          Logout
         </button>
       </div>
     </div>
@@ -148,3 +148,4 @@ export function Sidebar() {
     </>
   );
 }
+

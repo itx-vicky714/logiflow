@@ -240,3 +240,4 @@ export function getWeatherRiskBadge(risk: string): string {
     default:       return 'bg-green-500';
   }
 }
+

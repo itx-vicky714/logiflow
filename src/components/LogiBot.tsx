@@ -14,7 +14,7 @@ export default function LogiBot() {
   const [messages, setMessages] = useState<Message[]>([
     {
       role: 'assistant',
-      content: 'Namaste! 🙏 I am **LogiBot**, your orbital intelligence node.\n\nI process real-time telemetry across the India corridor. Ask me for risk profiles, manifest audits, or weather impact reports.'
+      content: 'Hello! 👋 I am **LogiBot**, your AI logistics assistant.\n\nI provide real-time tracking across all transport modes. Ask me for risk scores, shipment details, or weather updates.'
     }
   ]);
   const [input, setInput] = useState('');
@@ -55,7 +55,7 @@ export default function LogiBot() {
       if (data.error) throw new Error(data.text);
 
       setMessages(prev => [...prev, { role: 'assistant', content: data.text }]);
-    } catch (err: any) {
+    } catch (err: unknown) {
       toast.error('Neural Link Interrupted');
       setMessages(prev => [...prev, { role: 'assistant', content: "⚠️ System error: Neural uplink failed. Please retry transmission." }]);
     } finally {
@@ -70,7 +70,7 @@ export default function LogiBot() {
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
         onClick={() => setIsOpen(!isOpen)}
-        className="fixed bottom-8 right-8 w-16 h-16 bg-on-surface text-inverse-on-surface rounded-full shadow-2xl z-50 flex items-center justify-center border border-white/10 group overflow-hidden"
+        className="fixed bottom-8 right-8 w-16 h-16 bg-[#493ee5] text-white rounded-full shadow-2xl z-50 flex items-center justify-center border border-white/10 group overflow-hidden"
       >
         <span className="material-symbols-outlined text-[28px] group-hover:rotate-12 transition-transform duration-500">
            {isOpen ? 'close' : 'bolt'}
@@ -93,7 +93,7 @@ export default function LogiBot() {
             {/* Header */}
             <div className="p-8 border-b border-surface-container bg-surface-container-low/30">
                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-2xl bg-on-surface text-inverse-on-surface flex items-center justify-center shadow-lg">
+                  <div className="w-12 h-12 rounded-2xl bg-[#493ee5] text-white flex items-center justify-center shadow-lg">
                      <span className="material-symbols-outlined text-[24px]">psychology</span>
                   </div>
                   <div>
@@ -115,8 +115,8 @@ export default function LogiBot() {
                 <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                   <div className={`max-w-[85%] p-5 rounded-3xl text-[13px] font-bold leading-relaxed shadow-sm ${
                     m.role === 'user' 
-                      ? 'bg-on-surface text-inverse-on-surface rounded-tr-none' 
-                      : 'bg-surface-container-low text-on-surface border border-white/50 rounded-tl-none italic'
+                      ? 'bg-[#493ee5] text-white rounded-tr-none' 
+                      : 'bg-slate-50 text-slate-800 border border-slate-100 rounded-tl-none italic'
                   }`}>
                     {m.content.split('\n').map((line, idx) => (
                       <p key={idx} className={idx > 0 ? 'mt-3' : ''}>
@@ -151,7 +151,7 @@ export default function LogiBot() {
                   <button 
                     onClick={handleSend}
                     disabled={!input.trim() || loading}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 bg-on-surface text-inverse-on-surface rounded-xl flex items-center justify-center shadow-lg active:scale-90 transition-all disabled:opacity-30"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 bg-[#493ee5] text-white rounded-xl flex items-center justify-center shadow-lg active:scale-90 transition-all disabled:opacity-30"
                   >
                     <span className="material-symbols-outlined text-[18px]">send</span>
                   </button>
@@ -164,3 +164,4 @@ export default function LogiBot() {
     </>
   );
 }
+

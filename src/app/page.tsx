@@ -1,238 +1,197 @@
 import React from 'react';
 import Link from 'next/link';
-import { ChevronRight, Globe, Zap, BarChart3, ArrowRight, PlayCircle, CheckCircle, Package, Shield, Activity, Truck } from 'lucide-react';
+import { ChevronRight, Globe, Zap, BarChart3, ArrowRight, PlayCircle, CheckCircle, Package, Shield, Activity, Truck, Search, Map, Bell, Smartphone } from 'lucide-react';
 
 export default function LandingPage() {
   return (
-    <div className="min-h-screen bg-surface text-on-surface font-sans selection:bg-primary-fixed selection:text-on-primary-fixed overflow-x-hidden">
+    <div className="min-h-screen bg-slate-50 text-slate-900 font-sans selection:bg-indigo-100 selection:text-indigo-900 overflow-x-hidden">
       
-      {/* ── Navigation ── */}
-      <nav className="fixed top-0 w-full z-[100] px-8 py-6">
-        <div className="max-w-7xl mx-auto flex items-center justify-between px-10 py-5 glass-panel border border-white rounded-[2.5rem] shadow-xl shadow-slate-200/50 animate-in slide-in-from-top duration-700">
-          <div className="flex items-center gap-4">
-            <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center text-on-primary shadow-sm">
-              <BarChart3 size={20} />
+      {/* Navigation */}
+      <nav className="fixed top-0 w-full z-[100] px-6 py-6 transition-all">
+        <div className="max-w-7xl mx-auto flex items-center justify-between px-8 py-4 bg-white/80 backdrop-blur-lg border border-slate-200 rounded-[2rem] shadow-lg shadow-slate-200/40 animate-in slide-in-from-top duration-700">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-indigo-200">
+              <Truck size={20} />
             </div>
             <div>
-              <h1 className="text-xl font-bold tracking-tighter text-on-surface leading-none">Precision</h1>
-              <p className="text-[9px] uppercase tracking-[0.2em] text-on-surface-variant font-bold mt-1">Editorial Logistics</p>
+              <h1 className="text-xl font-black tracking-tighter text-slate-900 leading-none">LogiFlow</h1>
+              <p className="text-[9px] uppercase tracking-[0.2em] text-indigo-600 font-black mt-1">Enterprise Logistics</p>
             </div>
           </div>
           
-          <div className="hidden lg:flex items-center gap-12">
-            {['Platform', 'Intelligence', 'Fleet', 'Enterprise'].map(item => (
-              <a key={item} href={`#${item.toLowerCase()}`} className="text-[11px] font-bold text-on-surface-variant hover:text-primary transition-all uppercase tracking-[0.2em]">{item}</a>
+          <div className="hidden lg:flex items-center gap-10">
+            {['Solutions', 'Features', 'Network', 'Pricing'].map(item => (
+              <a key={item} href={`#${item.toLowerCase()}`} className="text-[11px] font-bold text-slate-500 hover:text-indigo-600 transition-all uppercase tracking-widest">{item}</a>
             ))}
           </div>
 
           <div className="flex items-center gap-4">
-            <Link href="/login" className="px-8 py-3 bg-on-surface text-surface text-[12px] font-bold rounded-2xl hover:opacity-90 transition-all uppercase tracking-widest">
-              Launch Deck
+            <Link href="/login" className="px-8 py-3 bg-slate-900 text-white text-[12px] font-black rounded-2xl hover:bg-black transition-all uppercase tracking-widest shadow-xl">
+              Log In
             </Link>
           </div>
         </div>
       </nav>
 
-      {/* ── Hero Section ── */}
-      <section className="relative pt-64 pb-32">
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[140%] aspect-square bg-gradient-to-b from-primary-fixed/30 via-transparent to-transparent rounded-full -translate-y-1/2 blur-[120px] opacity-50" />
+      {/* Hero Section */}
+      <section className="relative pt-60 pb-32">
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[120%] aspect-square bg-gradient-to-b from-indigo-100/50 via-transparent to-transparent rounded-full -translate-y-1/2 blur-[100px] opacity-60" />
         
-        <div className="max-w-7xl mx-auto px-12 relative z-10 text-center">
-          <div className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-white border border-slate-100 mb-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <span className="status-pulse bg-primary" />
-            <span className="text-[10px] font-bold text-on-surface-variant uppercase tracking-[0.3em]">Operational Protocol v4.0.2</span>
+        <div className="max-w-7xl mx-auto px-6 md:px-12 relative z-10 text-center">
+          <div className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-indigo-50 border border-indigo-100 mb-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <div className="w-2 h-2 rounded-full bg-indigo-600 animate-pulse" />
+            <span className="text-[10px] font-black text-indigo-900 uppercase tracking-[0.3em]">Next Generation Logistics Platform</span>
           </div>
           
-          <h1 className="text-display-lg mb-10 animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-100">
-            Flow with <br />
-            <span className="text-primary italic">Neural</span> Precision.
+          <h1 className="text-5xl md:text-8xl font-black text-slate-900 mb-10 tracking-tighter leading-[0.9] animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-100">
+            Shipping made <br />
+            <span className="text-indigo-600 italic">Intelligent.</span>
           </h1>
           
-          <p className="text-xl text-on-surface-variant font-medium leading-relaxed max-w-2xl mx-auto mb-14 animate-in fade-in slide-in-from-bottom-12 duration-1000 delay-200">
-            LogiFlow is the standardized control tower for global supply chains. 
-            We enable enterprise teams to maintain 100% manifest visibility through 
-            deterministic intelligence and real-time fleet orchestration.
+          <p className="text-lg md:text-xl text-slate-500 font-bold leading-relaxed max-w-2xl mx-auto mb-14 animate-in fade-in slide-in-from-bottom-12 duration-1000 delay-200">
+            Manage your entire supply chain with real-time tracking, AI-powered risk analysis, and automated vehicle dispatching. Built for modern B2B enterprises.
           </p>
 
           <div className="flex flex-wrap items-center justify-center gap-6 animate-in fade-in slide-in-from-bottom-16 duration-1000 delay-300">
-            <Link href="/login" className="btn-precision-primary">
-              Start Deployment
+            <Link href="/login" className="px-12 py-6 bg-slate-900 text-white rounded-[2rem] text-[13px] font-black uppercase tracking-[0.2em] shadow-2xl shadow-indigo-200 hover:bg-black transition-all hover:scale-105 active:scale-95">
+              Get Started for Free
             </Link>
-            <button className="btn-precision-secondary flex items-center gap-3">
-              <PlayCircle size={20} /> Watch Protocol
+            <button className="px-12 py-6 bg-white text-slate-700 border border-slate-200 rounded-[2rem] text-[13px] font-black uppercase tracking-[0.2em] flex items-center gap-3 hover:bg-slate-50 transition-all">
+              <PlayCircle size={20} className="text-indigo-600" /> Watch Demo
             </button>
           </div>
         </div>
 
-        {/* Dashboard Preview */}
-        <div className="mt-32 px-12 animate-in fade-in zoom-in-95 duration-1000 delay-500">
-          <div className="max-w-6xl mx-auto rounded-[3.5rem] overflow-hidden border-[12px] border-white shadow-2xl aspect-[16/10] bg-surface-container-low relative">
-            <div className="absolute inset-0 bg-gradient-to-tr from-primary/5 to-transparent p-16">
-               <div className="flex gap-4">
-                 <div className="w-16 h-2 rounded-full bg-primary/20" />
-                 <div className="w-10 h-2 rounded-full bg-slate-200" />
-                 <div className="w-24 h-2 rounded-full bg-slate-100" />
-               </div>
-               <div className="mt-32 space-y-8">
-                 <div className="w-1/2 h-16 rounded-[2rem] bg-white border border-slate-100 curated-shadow" />
-                 <div className="w-1/3 h-10 rounded-2xl bg-primary/10 border border-primary/20" />
-               </div>
-            </div>
-            <div className="absolute inset-0 flex items-center justify-center">
-               <div className="w-28 h-28 rounded-full bg-white glass-panel flex items-center justify-center shadow-xl cursor-pointer hover:scale-110 transition-transform duration-500">
-                  <ArrowRight size={32} className="text-primary" />
-               </div>
-            </div>
+        {/* Mockup Preview */}
+        <div className="mt-32 px-6 md:px-12 animate-in fade-in zoom-in-95 duration-1000 delay-500">
+          <div className="max-w-6xl mx-auto rounded-[3rem] overflow-hidden border-[8px] md:border-[16px] border-white shadow-2xl aspect-[16/10] bg-slate-100 relative group">
+             <div className="absolute inset-0 bg-gradient-to-tr from-indigo-600/10 to-transparent p-8 md:p-16">
+                <div className="flex gap-4 mb-12">
+                  <div className="w-20 h-3 rounded-full bg-indigo-600/20" />
+                  <div className="w-12 h-3 rounded-full bg-slate-200" />
+                  <div className="w-28 h-3 rounded-full bg-slate-100" />
+                </div>
+                <div className="grid grid-cols-2 gap-8 md:gap-12">
+                   <div className="space-y-8">
+                     <div className="h-32 rounded-3xl bg-white border border-slate-200 shadow-sm" />
+                     <div className="h-48 rounded-3xl bg-white border border-slate-200 shadow-sm" />
+                   </div>
+                   <div className="space-y-8">
+                     <div className="h-48 rounded-3xl bg-slate-900 shadow-xl" />
+                     <div className="h-32 rounded-3xl bg-white border border-slate-200 shadow-sm" />
+                   </div>
+                </div>
+             </div>
+             <div className="absolute inset-0 flex items-center justify-center">
+                <div className="w-24 h-24 md:w-32 md:h-32 rounded-full bg-white/40 backdrop-blur-md flex items-center justify-center shadow-2xl cursor-pointer hover:scale-110 transition-transform duration-500 border border-white/50">
+                   <ArrowRight size={40} className="text-indigo-600" />
+                </div>
+             </div>
           </div>
         </div>
       </section>
 
-      {/* ── Features Grid ── */}
-      <section id="platform" className="py-48 bg-white">
-        <div className="max-w-7xl mx-auto px-12">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12">
+      {/* Features Grid */}
+      <section id="features" className="py-48 bg-white">
+        <div className="max-w-7xl mx-auto px-6 md:px-12">
+          <div className="text-center mb-24">
+             <p className="text-[10px] font-black text-indigo-600 uppercase tracking-[0.3em] mb-4">Enterprise Grade</p>
+             <h2 className="text-4xl md:text-6xl font-black text-slate-800 tracking-tighter uppercase italic">Built for Scale</h2>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-12">
             {[
               { 
                 icon: Shield, 
-                title: 'Predictive Safety', 
-                desc: 'Neural risk analysis detects anomalies before they impact your delivery window.'
+                title: 'Smart Risk Analysis', 
+                desc: 'Our AI identifies potential delays and weather hazards before they affect your shipments.'
               },
               { 
-                icon: Zap, 
-                title: 'Real-time Telemetry', 
-                desc: 'Live orbital GPS tracking with millisecond latency across every node in your manifest.'
+                icon: Map, 
+                title: 'Live Map Tracking', 
+                desc: 'See exactly where your cargo is with real-time GPS synchronization and status updates.'
               },
               { 
                 icon: BarChart3, 
-                title: 'Executive Insights', 
-                desc: 'Multi-dimensional analytics mapping cost efficiency and corridor health.'
+                title: 'Detailed Analytics', 
+                desc: 'Get deep insights into your logistics performance, on-time rates, and cost efficiency.'
+              },
+              { 
+                icon: Zap, 
+                title: 'Rapid Dispatch', 
+                desc: 'Assign drivers and vehicles in seconds with our automated fleet management system.'
+              },
+              { 
+                icon: Bell, 
+                title: 'Instant Alerts', 
+                desc: 'Receive critical updates via WhatsApp and SMS the moment a shipment reaches a hub.'
+              },
+              { 
+                icon: Smartphone, 
+                title: 'Mobile Companion', 
+                desc: 'Manage your operations on the go with our fully responsive mobile dashboard.'
               }
             ].map((f, i) => (
-              <div key={i} className="group p-12 rounded-[3.5rem] bg-surface-container-low hover:bg-white border border-transparent hover:border-surface-container shadow-sm hover:floating-shadow transition-all duration-500">
-                <div className="w-16 h-16 rounded-2xl bg-white border border-slate-100 flex items-center justify-center mb-10 group-hover:bg-primary group-hover:text-white transition-all duration-500 shadow-sm">
+              <div key={i} className="group p-10 md:p-12 rounded-[2.5rem] bg-slate-50 hover:bg-white border border-transparent hover:border-slate-100 transition-all duration-500 hover:shadow-xl">
+                <div className="w-16 h-16 rounded-2xl bg-white border border-slate-200 flex items-center justify-center mb-10 group-hover:bg-indigo-600 group-hover:text-white transition-all duration-500 shadow-sm">
                   <f.icon size={24} />
                 </div>
-                <h3 className="text-2xl font-black mb-6 tracking-tight">{f.title}</h3>
-                <p className="text-on-surface-variant font-medium leading-relaxed">{f.desc}</p>
+                <h3 className="text-2xl font-black mb-6 tracking-tight text-slate-800 uppercase italic">{f.title}</h3>
+                <p className="text-slate-500 font-bold leading-relaxed">{f.desc}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ── Intelligence Section ── */}
-      <section id="intelligence" className="py-48 bg-surface">
-        <div className="max-w-7xl mx-auto px-12">
-          <div className="flex flex-col lg:flex-row items-center justify-between gap-24">
-             <div className="flex-1">
-                <p className="text-label-md text-primary mb-6">Deterministic Intelligence</p>
-                <h2 className="text-headline-lg mb-10">AI-driven Risk Mitigation.</h2>
-                <p className="text-lg text-on-surface-variant font-medium leading-relaxed mb-10">
-                  Stop reacting to delays and start predicting them. Our neural models analyze atmospheric patterns, route congestion, and historical drift to calculate risk scores for every point in your manifest.
-                </p>
-                <div className="space-y-4">
-                  {['Automated rerouting protocols', 'Predictive ETA adjustments', 'Anomaly detection clustering'].map((item, i) => (
-                    <div key={i} className="flex items-center gap-4 font-bold text-on-surface">
-                      <div className="w-6 h-6 rounded-full bg-primary-fixed text-primary flex items-center justify-center"><CheckCircle size={14}/></div>
-                      {item}
-                    </div>
-                  ))}
-                </div>
-             </div>
-             <div className="flex-1 w-full">
-                <div className="bg-white rounded-[3.5rem] p-12 curated-shadow border border-slate-50 relative overflow-hidden">
-                   <div className="absolute top-0 right-0 w-80 h-80 bg-primary/5 rounded-full blur-[80px]" />
-                   <div className="relative space-y-6">
-                      {[1, 2, 3].map(i => (
-                         <div key={i} className="bg-surface-container-low rounded-2xl p-6 border border-white flex justify-between items-center">
-                            <div className="w-1/2 h-4 bg-slate-200 rounded-full" />
-                            <div className="w-16 h-8 bg-primary/10 rounded-xl" />
-                         </div>
-                      ))}
-                   </div>
-                </div>
-             </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ── Fleet Section ── */}
-      <section id="fleet" className="py-48 bg-white">
-        <div className="max-w-7xl mx-auto px-12">
-          <div className="flex flex-col lg:flex-row-reverse items-center justify-between gap-24">
-             <div className="flex-1">
-                <p className="text-label-md text-primary mb-6">Operations Center</p>
-                <h2 className="text-headline-lg mb-10">Autonomous Dispatch.</h2>
-                <p className="text-lg text-on-surface-variant font-medium leading-relaxed mb-10">
-                  Manage fleet units, dispatch corridors, and real-time operational constraints across thousands of concurrent shipments. Our automated allocation logic minimizes idle time and maximizes fuel efficiency.
-                </p>
-                <div className="grid grid-cols-2 gap-8">
-                  <div className="p-8 bg-surface-container-low rounded-[2rem] border border-white shadow-sm">
-                    <div className="text-4xl font-black mb-2">99.9%</div>
-                    <div className="text-xs font-bold text-on-surface-variant uppercase tracking-widest">Protocol Uptime</div>
-                  </div>
-                  <div className="p-8 bg-surface-container-low rounded-[2rem] border border-white shadow-sm">
-                    <div className="text-4xl font-black mb-2">3.2x</div>
-                    <div className="text-xs font-bold text-on-surface-variant uppercase tracking-widest">Efficiency Multiplier</div>
-                  </div>
-                </div>
-             </div>
-             <div className="flex-1 w-full grid grid-cols-2 gap-6">
-                {[1, 2, 3, 4].map(i => (
-                   <div key={i} className={`h-48 rounded-[3rem] ${i%2===0 ? 'bg-primary-fixed/30 border-primary-fixed' : 'bg-surface-container-low border-slate-100'} border p-8`} />
-                ))}
-             </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ── Enterprise Quote ── */}
-      <section id="enterprise" className="py-64 bg-on-surface text-surface relative overflow-hidden">
-        <div className="absolute bottom-0 right-0 w-1/2 h-full bg-gradient-to-l from-primary/10 to-transparent" />
-        <div className="max-w-7xl mx-auto px-12 relative z-10">
+      {/* Social Proof Section */}
+      <section className="py-48 bg-slate-900 text-white relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-1/3 h-full bg-gradient-to-l from-indigo-600/10 to-transparent" />
+        <div className="max-w-7xl mx-auto px-6 md:px-12 relative z-10">
           <div className="max-w-4xl">
-             <Globe size={64} className="text-primary-fixed opacity-40 mb-16" />
-             <blockquote className="text-5xl font-black italic tracking-tight leading-[1.1] mb-16">
-               &ldquo;LogiFlow transformed our logistics from a cost center into a strategic competitive advantage. We now see the world through a single, intelligent pane of glass.&rdquo;
+             <div className="w-20 h-20 bg-indigo-600 rounded-3xl flex items-center justify-center mb-16 shadow-2xl">
+                <Globe size={40} className="text-white" />
+             </div>
+             <blockquote className="text-4xl md:text-6xl font-black italic tracking-tighter leading-[1] mb-16">
+               &ldquo;LogiFlow gave us a single, intelligent view of our entire world. It&apos;s no longer about where things are, but where they will be tomorrow.&rdquo;
              </blockquote>
-             <div className="flex items-center gap-8">
-                <div className="w-20 h-20 rounded-full bg-surface-container-highest/20 border border-white/10" />
+             <div className="flex items-center gap-6">
+                <div className="w-20 h-20 rounded-full bg-white/10 border border-white/20" />
                 <div>
-                  <p className="font-black text-2xl tracking-tighter">Vikram Singh</p>
-                  <p className="text-slate-500 font-bold uppercase tracking-[0.2em] text-[11px] mt-1">V.P. Global Logistics, Enterprise Group</p>
+                  <p className="font-black text-2xl tracking-tighter">Vikram Mehta</p>
+                  <p className="text-indigo-400 font-bold uppercase tracking-[0.2em] text-[11px] mt-1">VP of Global Logistics</p>
                 </div>
              </div>
           </div>
         </div>
       </section>
 
-      {/* ── CTA Footer ── */}
-      <footer className="py-32 bg-surface">
-        <div className="max-w-7xl mx-auto px-12 text-center">
-          <h2 className="text-headline-lg mb-16">
-            Ready to <span className="text-primary">Sync</span>?
+      {/* CTA Footer */}
+      <footer className="py-32 bg-white">
+        <div className="max-w-7xl mx-auto px-6 md:px-12 text-center">
+          <h2 className="text-5xl md:text-7xl font-black text-slate-800 mb-16 tracking-tighter uppercase italic">
+            Ready to <span className="text-indigo-600">Grow</span>?
           </h2>
           <div className="flex flex-col md:flex-row items-center justify-center gap-8 mb-32">
-            <Link href="/login" className="btn-precision-primary px-16 py-6 text-base">
-              Establish Protocol
+            <Link href="/login" className="px-16 py-6 bg-indigo-600 text-white rounded-[2rem] text-[15px] font-black uppercase tracking-[0.2em] shadow-2xl shadow-indigo-200 hover:bg-indigo-700 transition-all hover:scale-105 active:scale-95">
+              Get Started Now
             </Link>
-            <button className="btn-precision-secondary px-16 py-6 text-base border border-slate-200">
-              Inquire Sales
+            <button className="px-16 py-6 bg-white text-slate-700 border border-slate-200 rounded-[2rem] text-[15px] font-black uppercase tracking-[0.2em] flex items-center gap-3 hover:bg-slate-50 transition-all">
+              Contact Sales
             </button>
           </div>
           
-          <div className="flex flex-col lg:flex-row items-center justify-between pt-16 border-t border-slate-200 gap-12">
+          <div className="flex flex-col lg:flex-row items-center justify-between pt-16 border-t border-slate-100 gap-12">
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center text-on-primary">
-                <BarChart3 size={16} />
+              <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white">
+                <Truck size={20} />
               </div>
-              <span className="font-black text-lg tracking-tighter">Precision</span>
+              <span className="font-black text-xl tracking-tighter text-slate-800">LogiFlow</span>
             </div>
-            <p className="text-[11px] font-bold text-on-surface-variant uppercase tracking-[0.3em]">&copy; 2026 LOGIFLOW SYSTEMS INC. ALL RIGHTS RESERVED.</p>
-            <div className="flex gap-10 text-[11px] font-bold text-on-surface-variant uppercase tracking-widest">
-               <a href="#" className="hover:text-primary">Privacy</a>
-               <a href="#" className="hover:text-primary">Compliance</a>
-               <a href="#" className="hover:text-primary">Terminal Status</a>
+            <p className="text-[11px] font-bold text-slate-400 uppercase tracking-[0.3em]">&copy; 2026 LOGIFLOW SYSTEMS INC. ALL RIGHTS RESERVED.</p>
+            <div className="flex gap-10 text-[11px] font-bold text-slate-400 uppercase tracking-widest">
+               <a href="#" className="hover:text-indigo-600 transition-colors">Privacy Policy</a>
+               <a href="#" className="hover:text-indigo-600 transition-colors">Term of Service</a>
             </div>
           </div>
         </div>

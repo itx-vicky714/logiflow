@@ -184,7 +184,7 @@ export async function seedShipments(userId: string): Promise<void> {
 
   await supabase.from('shipments').insert(toInsert);
 
-  // Generate smart alerts based on status
+  // Generate AI Alerts based on status
   const { data: inserted } = await supabase
     .from('shipments').select('id, status, origin, destination, risk_score, mode')
     .eq('user_id', userId);
@@ -257,3 +257,4 @@ export function generateDynamicAlerts(shipments: Shipment[]): Array<{
 
   return alerts.slice(0, 5);
 }
+

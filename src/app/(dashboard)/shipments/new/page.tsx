@@ -38,7 +38,7 @@ export default function NewShipmentPage() {
                <h1 className="text-4xl font-black text-on-surface tracking-tighter uppercase">Initialize Manifest</h1>
                <div className="flex items-center gap-2 mt-2">
                   <span className="status-pulse bg-primary" />
-                  <p className="text-[10px] font-black text-on-surface-variant uppercase tracking-[0.3em]">Protocol Stable</p>
+                  <p className="text-[10px] font-black text-on-surface-variant uppercase tracking-[0.3em]">System Online</p>
                </div>
             </div>
          </div>
@@ -50,3 +50,4 @@ export default function NewShipmentPage() {
     </div>
   );
 }
+

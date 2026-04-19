@@ -37,7 +37,10 @@ export default function ShipmentsPage() {
   }, []);
 
   useEffect(() => {
-    fetchData();
+    const run = async () => {
+        await fetchData();
+    };
+    run();
   }, [fetchData]);
 
   const filtered = shipments.filter(s => {
@@ -265,3 +268,4 @@ export default function ShipmentsPage() {
 }
 
 const HIGH_RISK_THRESHOLD = 70;
+

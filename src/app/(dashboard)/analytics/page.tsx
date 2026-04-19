@@ -2,16 +2,21 @@
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { supabase } from '@/lib/supabase';
-import { seedShipments, estimateRevenue, formatCurrency, modeIcon } from '@/lib/utils';
+import { seedShipments, estimateRevenue, formatCurrency, statusConfig } from '@/lib/utils';
 import type { Shipment } from '@/types';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import dynamic from 'next/dynamic';
 import { format, subDays, isAfter, isBefore, endOfDay } from 'date-fns';
+import { 
+  TrendingUp, BarChart3, PieChart, Activity, ShieldCheck, 
+  RefreshCw, Calendar, ArrowUpRight, ArrowDownRight, Zap, 
+  Ship, Plane, Truck, Train, AlertTriangle, Target, Briefcase, Info
+} from 'lucide-react';
 
 const Charts = dynamic(() => import('@/components/charts/AnalyticsCharts'), { 
   ssr: false, 
-  loading: () => <div className="h-64 animate-pulse bg-surface-container-low rounded-2xl" /> 
+  loading: () => <div className="h-64 animate-pulse bg-slate-50 rounded-2xl border border-slate-100" /> 
 });
 
 type TimeFilter = '7d' | '30d' | '90d';
@@ -22,22 +27,16 @@ export default function AnalyticsPage() {
   const [loading, setLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
-  const mountedRef = React.useRef(true);
-  useEffect(() => {
-    return () => { mountedRef.current = false; };
-  }, []);
-
   const fetchData = useCallback(async () => {
     setIsRefreshing(true);
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user || !mountedRef.current) return;
+    if (!user) return;
+    
     await seedShipments(user.id);
     const { data } = await supabase.from('shipments').select('*').eq('user_id', user.id);
-    if (data && mountedRef.current) setShipments(data);
-    if (mountedRef.current) setLoading(false);
-    setTimeout(() => {
-      if (mountedRef.current) setIsRefreshing(false);
-    }, 500);
+    if (data) setShipments(data);
+    setLoading(false);
+    setTimeout(() => setIsRefreshing(false), 600);
   }, []);
 
   useEffect(() => { 
@@ -54,14 +53,14 @@ export default function AnalyticsPage() {
     };
   }, [shipments, timeFilter]);
 
-  const totalRevenue = filtered.reduce((a, s) => a + estimateRevenue(s), 0);
+  // Calculations
+  const totalRevenue = useMemo(() => filtered.reduce((a, s) => a + estimateRevenue(s) * 0.025, 0), [filtered]);
   const onTimeCount = filtered.filter(s => s.status === 'on_time' || s.status === 'delivered').length;
   const onTimePct = filtered.length > 0 ? Math.round((onTimeCount / filtered.length) * 100) : 0;
   const avgRisk = filtered.length > 0 ? Math.round(filtered.reduce((a, s) => a + s.risk_score, 0) / filtered.length) : 0;
 
   const volumeTrend = useMemo(() => {
     const points = daysCount === 7 ? 7 : 12;
-    const step = Math.ceil(daysCount / points);
     return Array.from({ length: points }, (_, i) => {
       const d = subDays(new Date(), points - 1 - i);
       const start = subDays(d, 1);
@@ -72,57 +71,61 @@ export default function AnalyticsPage() {
       return { 
         date: format(d, daysCount > 7 ? 'dd MMM' : 'EEE'), 
         shipments: bin.length, 
-        revenue: bin.reduce((a,s) => a + estimateRevenue(s), 0),
-        forecast: Math.round(bin.length * 1.1) // Simple forecast
+        revenue: bin.reduce((a,s) => a + estimateRevenue(s) * 0.025, 0),
+        forecast: Math.round(bin.length * (1.1 + (Math.random() * 0.2))) // Random dynamic forecast
       };
     });
   }, [filtered, daysCount]);
 
-  const modeStats = (['road', 'rail', 'air', 'sea'] as const).map(m => {
+  const modeStats = useMemo(() => (['road', 'rail', 'air', 'sea'] as const).map(m => {
     const ms = filtered.filter(s => s.mode === m);
     return {
-      name: m.charAt(0).toUpperCase() + m.slice(1),
+      name: m === 'road' ? 'Truck' : m === 'rail' ? 'Rail' : m === 'air' ? 'Air' : 'Sea',
       count: ms.length,
-      revenue: ms.reduce((a, s) => a + estimateRevenue(s), 0),
+      revenue: ms.reduce((a, s) => a + estimateRevenue(s) * 0.025, 0),
       delayed: ms.filter(s => s.status === 'delayed').length,
       on_time: ms.filter(s => s.status === 'on_time' || s.status === 'delivered').length,
       atRisk: ms.filter(s => s.risk_score > 70).length
     };
-  });
+  }), [filtered]);
 
-  const disruptionData = modeStats.map(m => ({
-    name: m.name,
-    delayed: m.delayed,
-    on_time: m.on_time,
-    atRisk: m.atRisk
-  }));
+  const statusTypeStats = useMemo(() => {
+    const statuses = ['pending', 'in_transit', 'delayed', 'delivered'];
+    return statuses.map(st => ({
+      name: st.replace('_', ' ').toUpperCase(),
+      count: filtered.filter(s => s.status === st).length
+    }));
+  }, [filtered]);
 
   if (loading) return (
     <div className="flex items-center justify-center min-h-[calc(100vh-12rem)]">
-      <div className="status-pulse bg-primary w-12 h-12"></div>
+      <div className="status-pulse bg-indigo-600 w-12 h-12"></div>
     </div>
   );
 
   return (
-    <div className="font-['Inter'] antialiased tracking-tight text-[#191c1e] animate-in fade-in slide-in-from-bottom-4 duration-700">
+    <div className="max-w-[1400px] mx-auto pb-20 mt-4 animate-in fade-in slide-in-from-bottom-2 duration-500">
       
-      {/* Page Header */}
+      {/* Analytics Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
         <div>
-          <h1 className="text-3xl font-black text-on-surface tracking-tighter uppercase">Intelligence Hub</h1>
-          <div className="flex items-center gap-2 mt-2">
-            <span className="status-pulse bg-primary"></span>
-            <p className="text-[10px] font-black text-on-surface-variant uppercase tracking-[0.3em]">{filtered.length} Protocol nodes analyzed</p>
+          <div className="flex items-center gap-2 mb-2">
+             <span className="text-[10px] font-black text-indigo-600 uppercase tracking-widest bg-indigo-50 px-3 py-1 rounded-full">Reporting & Insights</span>
           </div>
+          <h1 className="text-3xl md:text-4xl font-black text-slate-800 tracking-tighter uppercase italic">Operations Review</h1>
+          <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mt-2 flex items-center gap-2">
+             <Activity size={12} className="text-emerald-500" /> Analyzing {filtered.length} active cargo streams
+          </p>
         </div>
-        <div className="flex items-center gap-3">
-          <div className="flex bg-surface-container p-1 rounded-xl">
+
+        <div className="flex items-center gap-4 bg-white p-2 rounded-2xl shadow-sm border border-slate-100">
+          <div className="flex bg-slate-100 p-1 rounded-xl">
             {(['7d', '30d', '90d'] as TimeFilter[]).map(t => (
               <button 
                 key={t} 
                 onClick={() => setTimeFilter(t)}
                 className={`px-5 py-2 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all ${
-                  timeFilter === t ? 'bg-surface-container-lowest shadow-sm text-[#493ee5]' : 'text-on-surface-variant hover:text-on-surface'
+                  timeFilter === t ? 'bg-white shadow-sm text-indigo-600' : 'text-slate-400 hover:text-slate-600'
                 }`}
               >
                 {t}
@@ -131,71 +134,121 @@ export default function AnalyticsPage() {
           </div>
           <button 
             onClick={fetchData} 
-            className="w-12 h-12 flex items-center justify-center bg-surface-container-lowest border border-white/50 curated-shadow rounded-2xl text-on-surface-variant hover:text-primary transition-all active:scale-90"
+            disabled={isRefreshing}
+            className="w-10 h-10 flex items-center justify-center bg-white border border-slate-200 rounded-xl text-slate-400 hover:text-indigo-600 transition-all active:scale-95"
           >
-            <span className={`material-symbols-outlined ${isRefreshing ? 'animate-spin' : ''}`}>refresh</span>
+            <RefreshCw size={18} className={isRefreshing ? 'animate-spin text-indigo-600' : ''} />
           </button>
         </div>
       </div>
 
-      {/* Impact Score Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+      {/* Primary KPI Row */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
         {[
-          { label: 'Network Reliability', val: `${onTimePct}%`, icon: 'verified_user', sub: 'Protocol standard met', col: 'text-[#493ee5]' },
-          { label: 'Gross Revenue', val: formatCurrency(totalRevenue), icon: 'payments', sub: 'Invoiced manifest', col: 'text-on-surface' },
-          { label: 'Operational Safety', val: `${100 - avgRisk}/100`, icon: 'shield_with_heart', sub: 'Risk vector minimum', col: 'text-[#493ee5]' },
-          { label: 'Active Fleet', val: filtered.length, icon: 'hub', sub: 'Moving across grid', col: 'text-on-surface' },
+          { label: 'On-Time Delivery', val: `${onTimePct}%`, icon: ShieldCheck, sub: 'Protocol Accuracy', color: 'text-indigo-600', iconBg: 'bg-indigo-50', trend: '+2.4%' },
+          { label: 'Revenue Forecast', val: formatCurrency(totalRevenue), icon: TrendingUp, sub: '2.5% Net Yield', color: 'text-slate-800', iconBg: 'bg-slate-100', trend: '+14%'},
+          { label: 'Network Safety', val: `${100 - avgRisk}/100`, icon: Activity, sub: 'Risk Mitigation', color: 'text-emerald-600', iconBg: 'bg-emerald-50', trend: 'Stable' },
+          { label: 'Active Fleet', val: filtered.length, icon: Truck, sub: 'Live Units', color: 'text-slate-800', iconBg: 'bg-slate-100', trend: '+8 units' },
         ].map((card, i) => (
-          <div key={i} className="bg-surface-container-lowest p-8 rounded-3xl border border-white/50 curated-shadow group hover:-translate-y-1 transition-all duration-300">
-            <div className="w-12 h-12 bg-surface-container-low rounded-2xl flex items-center justify-center mb-6 text-primary group-hover:scale-110 transition-transform">
-              <span className="material-symbols-outlined text-[24px]">{card.icon}</span>
+          <div key={i} className="bg-white p-8 rounded-[2rem] border border-slate-100 shadow-sm group hover:shadow-md transition-all duration-300">
+            <div className={`w-12 h-12 ${card.iconBg} rounded-2xl flex items-center justify-center mb-6 text-indigo-600 group-hover:scale-110 transition-transform`}>
+              <card.icon size={24} />
             </div>
-            <div className={`text-3xl font-black ${card.col} mb-2 tracking-tighter`}>{card.val}</div>
-            <div className="text-[10px] font-black text-on-surface-variant uppercase tracking-widest">{card.label}</div>
-            <p className="text-[9px] text-on-surface-variant/40 mt-1 font-bold uppercase tracking-tighter">{card.sub}</p>
+            <div className="flex justify-between items-end mb-1">
+               <div className={`text-3xl font-black ${card.color} tracking-tighter`}>{card.val}</div>
+               <div className={`text-[10px] font-black uppercase ${card.trend.includes('-') ? 'text-rose-500' : 'text-emerald-500'}`}>{card.trend}</div>
+            </div>
+            <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{card.label}</div>
+            <p className="text-[9px] text-slate-300 mt-1 font-bold uppercase tracking-tighter">{card.sub}</p>
           </div>
         ))}
       </div>
 
-      {/* Charts Visualization Section */}
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-8 mb-10">
-        
-        {/* volume trend */}
-        <div className="bg-surface-container-lowest p-10 rounded-3xl border border-white/50 curated-shadow">
-          <div className="mb-10">
-            <p className="text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2">Temporal Analysis</p>
-            <h3 className="text-2xl font-black text-on-surface tracking-tighter">Volume & Flow Sync</h3>
+      {/* Main Charts Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
+        {/* Mode Distribution */}
+        <div className="bg-white p-10 rounded-[2.5rem] border border-slate-100 shadow-sm relative overflow-hidden group">
+          <div className="mb-10 flex justify-between items-start">
+            <div>
+              <p className="text-[10px] font-black text-indigo-600 uppercase tracking-widest mb-2 flex items-center gap-2">
+                 <BarChart3 size={12} /> Resource Allocation
+              </p>
+              <h3 className="text-2xl font-black text-slate-800 tracking-tighter uppercase italic">Shipment Mode Data</h3>
+            </div>
+            <button className="text-slate-300 hover:text-indigo-600 transition-colors"><Info size={20} /></button>
           </div>
           <div className="h-[300px]">
-            <Charts type="volume" data={volumeTrend} tooltipStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 40px rgba(0,0,0,0.08)', fontSize: '11px', fontWeight: 700 }} />
+            <Charts 
+              type="modePerf" 
+              data={modeStats.map(m => ({
+                name: m.name,
+                on_time: m.count, // Using overall count for simpler visualization
+                delayed: m.delayed,
+                atRisk: m.atRisk
+              }))} 
+              tooltipStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 40px rgba(0,0,0,0.08)', fontSize: '11px', fontWeight: 700 }} 
+            />
           </div>
         </div>
 
-        {/* disruption analysis */}
-        <div className="bg-surface-container-lowest p-10 rounded-3xl border border-white/50 curated-shadow">
-          <div className="mb-10">
-            <p className="text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2">Protocol Health</p>
-            <h3 className="text-2xl font-black text-on-surface tracking-tighter">Disruption Matrix</h3>
+        {/* Status Breakdown */}
+        <div className="bg-white p-10 rounded-[2.5rem] border border-slate-100 shadow-sm relative overflow-hidden group">
+          <div className="mb-10 flex justify-between items-start">
+            <div>
+              <p className="text-[10px] font-black text-indigo-600 uppercase tracking-widest mb-2 flex items-center gap-2">
+                 <PieChart size={12} /> Stream Health
+              </p>
+              <h3 className="text-2xl font-black text-slate-800 tracking-tighter uppercase italic">Current Status Split</h3>
+            </div>
+            <button className="text-slate-300 hover:text-indigo-600 transition-colors"><Info size={20} /></button>
           </div>
           <div className="h-[300px]">
-            <Charts type="modePerf" data={disruptionData} tooltipStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 40px rgba(0,0,0,0.08)', fontSize: '11px', fontWeight: 700 }} />
+             {/* We'll use the cost chart type but repurpose it for status counts if needed, but let's stick to modePerf for bar view */}
+            <Charts 
+              type="modePerf" 
+              data={statusTypeStats} 
+              tooltipStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 40px rgba(0,0,0,0.08)', fontSize: '11px', fontWeight: 700 }} 
+            />
           </div>
         </div>
-
       </div>
 
-      {/* Intelligence Directive Banners */}
+      {/* Predictive Analytics Full Width */}
+      <div className="bg-white p-10 md:p-12 rounded-[3rem] border border-slate-100 shadow-sm mb-12">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-12 gap-6">
+            <div>
+              <p className="text-[10px] font-black text-indigo-600 uppercase tracking-widest mb-2 flex items-center gap-2">
+                 <Zap size={14} className="fill-indigo-600" /> AI Forecaster
+              </p>
+              <h3 className="text-3xl font-black text-slate-800 tracking-tighter uppercase italic">Predictive Shipment Volume</h3>
+            </div>
+            <div className="px-6 py-3 bg-slate-50 border border-slate-100 rounded-2xl text-[10px] font-black uppercase tracking-widest text-slate-400">
+               Live Corridor Synthesis: <span className="text-indigo-600">Active</span>
+            </div>
+          </div>
+          <div className="h-[400px]">
+            <Charts 
+               type="volume" 
+               data={volumeTrend} 
+               tooltipStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 40px rgba(0,0,0,0.1)', fontSize: '11px', fontWeight: 700, padding: '12px' }} 
+            />
+          </div>
+      </div>
+
+      {/* Tactical Advisory Banners */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {[
-          { icon: 'bolt', title: 'Operational Efficiency', body: 'Rail corridors show a 24% higher efficiency margin compared to road haulage this period. Recommend increasing rail allocation.', col: 'bg-primary-fixed border-primary/20 text-[#493ee5]' },
-          { icon: 'warning', title: 'Risk Abatement', body: 'Anomalies detected in coastal routes. Weather protocols suggest a 3-hour buffer on all pending maritime nodes.', col: 'bg-error-container border-error/20 text-error' },
-          { icon: 'target', title: 'Financial Target', body: 'Revenue is tracking 12% above quarterly forecast. Standardized protocol optimization has saved ₹1.2M in fleet costs.', col: 'bg-[#493ee5] border-white/10 text-on-primary' },
+          { icon: Zap, title: 'Network Efficiency', body: 'Rail hubs are operating at 92% efficiency. Increasing load factor by 15% on Northern corridors suggested.', color: 'bg-indigo-600 text-white' },
+          { icon: AlertTriangle, title: 'Risk Warning', body: 'Coastal air corridors showing atmospheric turbulence. Reroute priority cargo to rail via Chennai hub for next 48 hours.', color: 'bg-rose-50 border-rose-100 text-rose-700' },
+          { icon: Target, title: 'Revenue Milestone', body: 'Expected yield for next period is ₹12.5M. Reaching this milestone will unlock a 1.2% reduction in fleet fuel costs.', color: 'bg-slate-900 text-white' },
         ].map((b, i) => (
-          <div key={i} className={`p-8 rounded-3xl border ${b.col} relative overflow-hidden group hover:scale-[1.02] transition-transform duration-500`}>
-            <span className="material-symbols-outlined absolute -right-8 -bottom-8 text-[140px] opacity-10 rotate-12 transition-transform group-hover:rotate-0 duration-700">{b.icon}</span>
-            <div className="relative">
-              <h4 className="text-[11px] font-black uppercase tracking-[0.2em] mb-4">{b.title}</h4>
-              <p className="text-[14px] font-bold leading-relaxed italic">{b.body}</p>
+          <div key={i} className={`p-10 rounded-[2.5rem] border ${b.color} relative overflow-hidden group hover:scale-[1.02] transition-all duration-500 shadow-sm`}>
+            <b.icon size={120} className="absolute -right-8 -bottom-8 opacity-10 rotate-12 group-hover:rotate-0 transition-transform duration-700" />
+            <div className="relative z-10">
+              <h4 className="text-[11px] font-black uppercase tracking-[0.2em] mb-6 opacity-60 flex items-center gap-2">
+                 <Briefcase size={12} /> {b.title}
+              </h4>
+              <p className="text-[15px] md:text-[16px] font-bold leading-relaxed italic uppercase tracking-tight">{b.body}</p>
             </div>
           </div>
         ))}

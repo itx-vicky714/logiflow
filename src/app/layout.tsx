@@ -8,8 +8,8 @@ import { AuthProvider } from "@/context/AuthContext";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "LogiFlow - Precision Control Tower",
-  description: "AI-powered B2B logistics and supply chain management platform with orbital intelligence.",
+  title: "LogiFlow - LogiFlow LogiFlow Dashboard",
+  description: "AI-powered B2B logistics and supply chain management platform with Air intelligence.",
 };
 
 export default function RootLayout({
@@ -31,3 +31,4 @@ export default function RootLayout({
     </html>
   );
 }
+

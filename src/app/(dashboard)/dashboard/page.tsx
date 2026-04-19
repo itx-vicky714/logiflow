@@ -43,6 +43,7 @@ export default function DashboardPage() {
   });
   const [selectedShipment, setSelectedShipment] = useState<Shipment | null>(null);
   const [dbAlerts, setDbAlerts] = useState<any[]>([]);
+  const [viewMode, setViewMode] = useState<'daily' | 'monthly'>('monthly');
 
   const fetchData = useCallback(async () => {
     try {
@@ -67,7 +68,7 @@ export default function DashboardPage() {
         const avgRisk = total > 0 ? Math.round(data.reduce((a, b) => a + b.risk_score, 0) / total) : 0;
         const revenue = data
           .filter(s => s.status === 'delivered' || s.status === 'on_time' || s.status === 'in_transit')
-          .reduce((sum, s) => sum + estimateRevenue(s), 0);
+          .reduce((sum, s) => sum + (estimateRevenue(s) * 0.025), 0);
           
         setKpi({ total, inTransit, onTime, delayed, atRisk, avgRisk, revenue });
       }
@@ -98,14 +99,25 @@ export default function DashboardPage() {
     return acc;
   }, {} as Record<string, number>);
 
-  const barData = MONTHS.map((m, i) => {
-    const monthShipments = shipments.filter(s => {
-      const date = new Date(s.created_at || s.eta);
-      return date.getMonth() === i;
-    });
-    const monthlyRevenue = monthShipments.reduce((sum, s) => sum + estimateRevenue(s), 0);
-    return { name: m, value: monthlyRevenue };
-  });
+  const barData = viewMode === 'monthly' 
+    ? MONTHS.map((m, i) => {
+        const monthShipments = shipments.filter(s => {
+          const date = new Date(s.created_at || s.eta);
+          return date.getMonth() === i;
+        });
+        const monthlyRevenue = monthShipments.reduce((sum, s) => sum + estimateRevenue(s) * 0.025, 0);
+        return { name: m, value: monthlyRevenue };
+      })
+    : Array.from({ length: 7 }).map((_, i) => {
+        const d = new Date();
+        d.setDate(d.getDate() - (6 - i));
+        const dayShipments = shipments.filter(s => {
+          const date = new Date(s.created_at || s.eta);
+          return date.toDateString() === d.toDateString();
+        });
+        const dailyRevenue = dayShipments.reduce((sum, s) => sum + estimateRevenue(s) * 0.025, 0);
+        return { name: format(d, 'MMM d'), value: dailyRevenue };
+      });
 
   const seaPercent = Math.round(((modeCounts['sea'] || 0) / Math.max(1, shipments.length)) * 100);
   const airPercent = Math.round(((modeCounts['air'] || 0) / Math.max(1, shipments.length)) * 100);
@@ -126,11 +138,13 @@ export default function DashboardPage() {
       <section className="grid grid-cols-12 gap-10 mt-10 mb-6">
         <div className="col-span-12 lg:col-span-9">
           {/* KPI Cards Row (Increased Spacing & Width) */}
-          <div className="grid grid-cols-4 gap-10">
+          <div className="grid grid-cols-3 xl:grid-cols-6 gap-6">
              <KPICard title="Total Shipments" value={kpi.total.toLocaleString()} change="+14.2%" icon="trending_up" iconColor="#493ee5" />
              <KPICard title="In Transit" value={kpi.inTransit.toLocaleString()} change="Active now" icon="sync" iconColor="on-surface-variant" />
              <KPICard title="On Time" value={`${onTimePct}%`} change="Target met" icon="verified" iconColor="#493ee5" />
              <KPICard title="Delayed" value={kpi.delayed.toLocaleString()} change="Critical action" icon="warning" iconColor="error" isError />
+             <KPICard title="High Risk" value={kpi.atRisk.toLocaleString()} change="Needs Review" icon="gpp_maybe" iconColor="error" isError={kpi.atRisk > 0} />
+             <KPICard title="AI Alerts" value={dbAlerts.length.toLocaleString()} change="Real-time" icon="bolt" iconColor="#493ee5" />
           </div>
 
           {/* Revenue Graph Area (Increased bar gap and container padding) */}
@@ -142,9 +156,19 @@ export default function DashboardPage() {
                   {formatCurrency(kpi.revenue)} <span className="text-[11px] font-bold text-on-surface-variant uppercase tracking-widest ml-2">INR Total Volume</span>
                 </p>
               </div>
-              <div className="flex bg-surface-container p-1 rounded-xl">
-                <button className="px-6 py-2.5 text-[11px] font-bold rounded-lg text-on-surface-variant hover:text-on-surface transition-colors">Daily</button>
-                <button className="px-6 py-2.5 text-[11px] font-bold rounded-lg bg-primary text-on-primary shadow-sm hover:opacity-90 transition-all">Monthly</button>
+              <div className="flex bg-slate-100 p-1 rounded-xl">
+                <button 
+                  onClick={() => setViewMode('daily')}
+                  className={`px-6 py-2 text-[11px] font-bold rounded-lg transition-all ${viewMode === 'daily' ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-500 hover:text-slate-800'}`}
+                >
+                  Daily
+                </button>
+                <button 
+                  onClick={() => setViewMode('monthly')}
+                  className={`px-6 py-2 text-[11px] font-bold rounded-lg transition-all ${viewMode === 'monthly' ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-500 hover:text-slate-800'}`}
+                >
+                  Monthly
+                </button>
               </div>
             </div>
             
@@ -170,7 +194,7 @@ export default function DashboardPage() {
         <div className="col-span-12 lg:col-span-3 flex flex-col gap-10">
           <div className="bg-surface-container-lowest p-10 rounded-3xl curated-shadow border border-white/60 flex-1">
             <div className="flex items-center justify-between mb-10">
-              <h4 className="text-sm font-bold uppercase tracking-widest text-on-surface">Smart Alerts</h4>
+              <h4 className="text-sm font-bold uppercase tracking-widest text-on-surface">AI Alerts</h4>
               <span className="px-2 py-1 bg-error-container text-error text-[10px] font-bold rounded uppercase tracking-widest">
                 {alerts.length} ACTION REQ.
               </span>
@@ -341,3 +365,4 @@ export default function DashboardPage() {
     </div>
   );
 }
+

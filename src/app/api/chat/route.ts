@@ -18,7 +18,7 @@ CRITICAL RULES:
 - DO NOT HALLUCINATE. If no match exists, say "No shipment found for this query."
 - PRECISE NUMBERS: Use exact decimals and integers from the payload.
 - MULTILINGUAL: Support English, Hindi, and Hinglish natively.
-- TONE: Professional Control Tower Officer.`;
+- TONE: Professional LogiFlow Dashboard Officer.`;
 
 function detectIntent(message: string): 'total_shipments' | 'active_shipments' | 'high_risk' | 'route_query' | 'risk_analysis' | 'delayed_shipments' | 'shipment_id_query' | 'website_capability_query' | 'alerts_summary' | 'revenue_query' | null {
   const m = message.toLowerCase();
@@ -95,7 +95,7 @@ function smartFallbackText(message: string, shipments: ShipmentRecord[]): string
   if (intent === 'alerts_summary') {
     const criticalCount = shipments.filter((s) => s.risk_score >= HIGH_RISK_THRESHOLD).length;
     const delayCount = shipments.filter((s) => s.status === 'delayed').length;
-    return `**Smart Alerts Summary:**\n- 🔴 Delayed shipments requiring action: **${delayCount}**\n- ⚠️ High-risk shipments (score ≥ ${HIGH_RISK_THRESHOLD}): **${criticalCount}**\n\nFor real-time alert logs and grid telemetry, please visit the Dashboard or Reports page.`;
+    return `**AI Alerts Summary:**\n- 🔴 Delayed shipments requiring action: **${delayCount}**\n- ⚠️ High-risk shipments (score ≥ ${HIGH_RISK_THRESHOLD}): **${criticalCount}**\n\nFor real-time alert logs and grid telemetry, please visit the Dashboard or Reports page.`;
   }
 
   if (intent === 'revenue_query') {
@@ -217,7 +217,7 @@ export async function POST(req: Request) {
 
     const contents: { role: string; parts: { text: string }[] }[] = [
       { role: 'user', parts: [{ text: fullSystem }] },
-      { role: 'model', parts: [{ text: 'Control Tower AI systems active. Grounding context loaded. I have real-time access to the manifest of ' + total + ' shipments. Ready for route-specific queries like Patna to Surat or high-risk assessments.' }] },
+      { role: 'model', parts: [{ text: 'LogiFlow Dashboard AI systems active. Grounding context loaded. I have real-time access to the manifest of ' + total + ' shipments. Ready for route-specific queries like Patna to Surat or high-risk assessments.' }] },
     ];
 
     const recentHistory = Array.isArray(history) ? history.slice(-6) : [];
@@ -274,3 +274,4 @@ export async function POST(req: Request) {
     return NextResponse.json({ text: smartFallbackText(userMessage, []), fallback: true });
   }
 }
+

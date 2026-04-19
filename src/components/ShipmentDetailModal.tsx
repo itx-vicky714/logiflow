@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import type { Shipment, Driver } from '@/types';
-import { statusConfig, modeIcon, modeLabel, riskColor, riskLabel, formatCurrency } from '@/lib/utils';
+import { statusConfig, modeIcon, modeLabel, riskColor, riskLabel, formatCurrency, estimateRevenue, CITY_COORDS } from '@/lib/utils';
 import { getRouteWeatherRisk, getWeatherRiskColor } from '@/lib/weather';
 import { X, Loader2, MapPin, Shield, Truck, GitBranch, Mail, MessageSquare, CheckCircle, AlertTriangle, Send, ChevronRight, Clock, CloudLightning, Package, IndianRupee, Zap, User, Sparkles, ArrowRight } from 'lucide-react';
 import { toast } from 'sonner';
@@ -47,18 +47,37 @@ export default function ShipmentDetailModal({ shipment: initialShipment, onClose
   const weatherRisk = getRouteWeatherRisk(shipment.origin, shipment.destination);
   const createdAt = new Date(shipment.created_at);
   const etaDate = new Date(shipment.eta);
-  const progress = shipment.status === 'delivered' ? 100 : 65; // Simulated/Derived
+  const calculateProgress = () => {
+    if (shipment.status === 'delivered') return 100;
+    if (shipment.status === 'pending') return 0;
+    const start = new Date(shipment.created_at).getTime();
+    const end = new Date(shipment.eta).getTime();
+    const now = Date.now();
+    if (now >= end) return 95; // Almost there if past ETA
+    const total = end - start;
+    const current = now - start;
+    return Math.min(Math.max(Math.round((current / total) * 100), 10), 98);
+  };
+  const progress = calculateProgress();
   const approxKm = 1240;
 
   useEffect(() => {
-    if (tab === 'risk' && !aiRisk && !aiLoading) {
+    if (tab === 'risk' && !aiRisk) {
       setAiLoading(true);
-      setTimeout(() => {
-        setAiRisk(`CRITICAL ASSESSMENT: Dynamic variance detected on ${shipment.origin} → ${shipment.destination} corridor. Weather hazard (${weatherRisk.primaryHazard}) cross-referenced with load indicates fluctuation in delivery window. Stability 88%. Action: Monitor fuel telemetry.`);
-        setAiLoading(false);
-      }, 1500);
+      fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          message: `Analyze risk for shipment ${shipment.shipment_code} from ${shipment.origin} to ${shipment.destination}. Mass: ${shipment.weight_kg}kg, Mode: ${shipment.mode}. Current risk score: ${shipment.risk_score}.`,
+          history: [] 
+        })
+      })
+      .then(res => res.json())
+      .then(data => setAiRisk(data.text || 'Protocol anomaly: Narrative diagnostic unreachable.'))
+      .catch(() => setAiRisk('Secure terminal linkage failure during risk synthesis.'))
+      .finally(() => setAiLoading(false));
     }
-  }, [tab, aiRisk, aiLoading, shipment, weatherRisk]);
+  }, [tab, shipment, aiRisk]);
 
   useEffect(() => {
     if (tab === 'fleet') {
@@ -73,18 +92,26 @@ export default function ShipmentDetailModal({ shipment: initialShipment, onClose
   }, [tab, shipment.id]);
 
   const handleAssignDriver = async () => {
-      if (!selectedDriverId) return;
+      const selectedDriver = drivers.find(d => d.id === selectedDriverId);
+      if (!selectedDriver) return;
       setAssigning(true);
       try {
+          const startCoord = CITY_COORDS[shipment.origin] || [20, 78];
+          const endCoord = CITY_COORDS[shipment.destination] || [21, 79];
+          
+          const midLat = (startCoord[0] + endCoord[0]) / 2;
+          const midLng = (startCoord[1] + endCoord[1]) / 2;
+
           const { data, error } = await supabase.from('dispatch_routes').insert({
               shipment_id: shipment.id,
               driver_id: selectedDriverId,
               status: 'active',
               stops: [
-                  { lat: 19.07, lng: 72.87, label: 'Mumbai Hub' },
-                  { lat: 21.17, lng: 72.83, label: 'Surat Checkpoint' },
-                  { lat: 23.02, lng: 72.57, label: 'Ahmedabad Terminal' }
-              ]
+                  { lat: startCoord[0], lng: startCoord[1], label: shipment.origin },
+                  { lat: midLat, lng: midLng, label: 'Mid-Transit Node' },
+                  { lat: endCoord[0], lng: endCoord[1], label: shipment.destination }
+              ],
+              current_stop_index: 0
           }).select('*, drivers(*)').single();
           if (error) throw error;
           await supabase.from('drivers').update({ status: 'on_trip' }).eq('id', selectedDriverId);

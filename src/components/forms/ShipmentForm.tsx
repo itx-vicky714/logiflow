@@ -260,7 +260,13 @@ export default function ShipmentForm() {
                          </div>
                          <div>
                             <label className={labelCls}>Target Delivery Window (ETA)</label>
-                            <input type="datetime-local" value={form.eta} onChange={e => setField('eta', e.target.value)} className={inputCls} />
+                             <input 
+                               type="datetime-local" 
+                               value={form.eta} 
+                               onChange={e => setField('eta', e.target.value)} 
+                               min={new Date(Date.now() + 3600000).toISOString().slice(0, 16)}
+                               className={inputCls} 
+                             />
                          </div>
                       </div>
 

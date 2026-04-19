@@ -2,7 +2,7 @@
 
 import React, { useState, useCallback, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
-import { seedShipments, statusConfig, modeIcon, riskColor, formatCurrency, estimateRevenue } from '@/lib/utils';
+import { seedShipments, statusConfig, modeIcon, riskColor, riskBg, formatCurrency, estimateRevenue } from '@/lib/utils';
 import type { Shipment } from '@/types';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
@@ -13,7 +13,7 @@ const REPORT_TYPES: ReportCard[] = [
   { id: 'daily', title: 'Operational Summary', description: 'Snapshot of active manifests, latencies, and fulfillment metrics for current cycle.', frequency: 'Cycle End', icon: 'description', col: 'text-[#493ee5] bg-primary-fixed border-[#493ee5]/10' },
   { id: 'disruption', title: 'Disruption Matrix', description: 'Root cause analysis of grid anomalies, risk escalations and node failures.', frequency: 'Real-time', icon: 'warning', col: 'text-error bg-error-container border-error/10' },
   { id: 'cost', title: 'Yield Impact Analysis', description: 'Terminal cost breakdown by vector, cargo category, and projected revenue.', frequency: 'Weekly', icon: 'payments', col: 'text-on-surface bg-surface-container-low border-white/50' },
-  { id: 'weather', title: 'Amnospheric Forecast', description: 'Predicted weather risk on active Indian corridors for the 72h window.', frequency: '3× Cycle', icon: 'cloud', col: 'text-cyan-600 bg-cyan-50 border-cyan-100' },
+  { id: 'weather', title: 'Atmospheric Forecast', description: 'Predicted weather risk on active Indian corridors for the 72h window.', frequency: '3× Cycle', icon: 'cloud', col: 'text-cyan-600 bg-cyan-50 border-cyan-100' },
   { id: 'mode', title: 'Vector Performance', description: 'Cross-mode evaluation: Road vs Rail vs Air vs Sea efficiency benchmarks.', frequency: 'Monthly', icon: 'hub', col: 'text-indigo-600 bg-indigo-50 border-indigo-100' },
   { id: 'ai_risk', title: 'Predictive Risk Audit', description: 'Gemini-powered risk modeling with top at-risk nodes and mitigation logic.', frequency: 'AI Drive', icon: 'bolt', col: 'text-amber-600 bg-amber-50 border-amber-100' },
 ];
@@ -287,7 +287,7 @@ export default function ReportsPage() {
                                         <td className="px-8 py-6">
                                             <div className="flex items-center gap-3">
                                                 <div className="w-24 h-1.5 bg-surface-container rounded-full overflow-hidden">
-                                                   <div className={`h-full ${riskColor(s.risk_score).replace('text-', 'bg-')} transition-all`} style={{ width: `${s.risk_score}%` }} />
+                                                   <div className={`h-full ${riskBg(s.risk_score)} transition-all`} style={{ width: `${s.risk_score}%` }} />
                                                 </div>
                                                 <span className={`text-[12px] font-black ${riskColor(s.risk_score)}`}>{s.risk_score}%</span>
                                             </div>

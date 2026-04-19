@@ -1,9 +1,10 @@
 "use client";
 
 import React, { useState, useRef, useEffect, useCallback } from 'react';
+import { format } from 'date-fns';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
-import { List } from 'react-window';
+import { AlertCircle, Zap } from 'lucide-react';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -53,8 +54,8 @@ export default function AIChatPage() {
           message: userMsg,
           history: messages.map(m => ({
             role: m.role === 'user' ? 'user' : 'model',
-            parts: [{ text: m.content }]
-          }))
+            content: m.content
+          })),
         })
       });
 

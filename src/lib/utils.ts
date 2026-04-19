@@ -1,5 +1,6 @@
 import { supabase } from './supabase';
 import type { Shipment, ShipmentMode, ShipmentStatus } from '@/types';
+import { subMonths } from 'date-fns';
 
 export function generateShipmentCode(): string {
   const date = new Date().toISOString().slice(0, 10).replace(/-/g, '');

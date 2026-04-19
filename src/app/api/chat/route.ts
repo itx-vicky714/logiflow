@@ -95,7 +95,7 @@ function smartFallbackText(message: string, shipments: ShipmentRecord[]): string
   if (intent === 'alerts_summary') {
     const criticalCount = shipments.filter((s) => s.risk_score >= HIGH_RISK_THRESHOLD).length;
     const delayCount = shipments.filter((s) => s.status === 'delayed').length;
-    return `**Smart Alerts Summary:**\n- 🔴 Delayed shipments requiring action: **${delayCount}**\n- ⚠️ High-risk shipments (score ≥ ${HIGH_RISK_THRESHOLD}): **${criticalCount}**\n\nUse the **Simulate** button on the dashboard to generate detailed real-time alerts, or click any alert's action link to resolve it.`;
+    return `**Smart Alerts Summary:**\n- 🔴 Delayed shipments requiring action: **${delayCount}**\n- ⚠️ High-risk shipments (score ≥ ${HIGH_RISK_THRESHOLD}): **${criticalCount}**\n\nFor real-time alert logs and grid telemetry, please visit the Dashboard or Reports page.`;
   }
 
   if (intent === 'revenue_query') {
@@ -122,7 +122,7 @@ function smartFallbackText(message: string, shipments: ShipmentRecord[]): string
       if (match) return `**${match.shipment_code}** (${match.origin} → ${match.destination})\nStatus: **${match.status.replace('_', ' ')}** | Risk: **${match.risk_score}/100** | Mode: ${match.mode}`;
       return `No active shipment found on the ${foundCities[0]} ↔ ${foundCities[1]} route.`;
     }
-    return 'Please provide the shipment code (e.g. LOG-...) or a route (e.g. Mumbai to Delhi) for a specific lookup.';
+    return `I can help you analyze specific shipments. For overall fleet performance, please visit the Dashboard or Reports section. How can I assist you with a specific manifest?`;
   }
   
   if (intent === 'website_capability_query') {
@@ -192,7 +192,7 @@ export async function POST(req: Request) {
     const air = shipments.filter((s) => s.mode === 'air').length;
     
     const avgRisk = total > 0 ? Math.round(shipments.reduce((a: number, s) => a + s.risk_score, 0) / total) : 0;
-    const totalRev = shipments.reduce((a: number, s) => a + (s.declared_value || 0) * 0.05, 0); // Est revenue
+    const totalRev = shipments.reduce((a: number, s) => a + (s.declared_value || 0) * 0.025, 0); // Est revenue
 
     const summary = `
 [GROUNDING CONTEXT]

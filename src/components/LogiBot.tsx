@@ -45,9 +45,9 @@ export default function LogiBot() {
         body: JSON.stringify({
           message: userMsg,
           history: messages.map(m => ({
-            role: m.role === 'user' ? 'user' : 'model',
-            parts: [{ text: m.content }]
-          }))
+          role: m.role === 'user' ? 'user' : 'model',
+          content: m.content
+        })),
         })
       });
 

@@ -79,7 +79,7 @@ export default function LoginPage() {
 
            <div className="mb-10 text-center">
               <h2 className="text-2xl font-black text-on-surface tracking-tighter uppercase mb-2">Gatekeeper Auth</h2>
-              <p className="text-[12px] font-bold text-on-surface-variant uppercase tracking-widest italic leading-tight">Initialize secure terminal terminal</p>
+              <p className="text-[12px] font-bold text-on-surface-variant uppercase tracking-widest italic leading-tight">Initialize secure terminal</p>
            </div>
 
            <form onSubmit={handleSubmit(onSubmit)} className="space-y-10">

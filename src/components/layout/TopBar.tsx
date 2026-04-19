@@ -1,3 +1,9 @@
+'use client';
+
+import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { useSidebar } from '@/context/SidebarContext';
+import { useAuth } from '@/context/AuthContext';
 import { useSearch } from '@/context/SearchContext';
 
 export function TopBar() {

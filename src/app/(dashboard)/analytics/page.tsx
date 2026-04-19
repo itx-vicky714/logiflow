@@ -7,7 +7,7 @@ import type { Shipment } from '@/types';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import dynamic from 'next/dynamic';
-import { format, subDays, isAfter, isBefore } from 'date-fns';
+import { format, subDays, isAfter, isBefore, endOfDay } from 'date-fns';
 
 const Charts = dynamic(() => import('@/components/charts/AnalyticsCharts'), { 
   ssr: false, 
@@ -22,15 +22,22 @@ export default function AnalyticsPage() {
   const [loading, setLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
+  const mountedRef = React.useRef(true);
+  useEffect(() => {
+    return () => { mountedRef.current = false; };
+  }, []);
+
   const fetchData = useCallback(async () => {
     setIsRefreshing(true);
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
+    if (!user || !mountedRef.current) return;
     await seedShipments(user.id);
     const { data } = await supabase.from('shipments').select('*').eq('user_id', user.id);
-    if (data) setShipments(data);
-    setLoading(false);
-    setTimeout(() => setIsRefreshing(false), 500);
+    if (data && mountedRef.current) setShipments(data);
+    if (mountedRef.current) setLoading(false);
+    setTimeout(() => {
+      if (mountedRef.current) setIsRefreshing(false);
+    }, 500);
   }, []);
 
   useEffect(() => { 
@@ -60,7 +67,7 @@ export default function AnalyticsPage() {
       const start = subDays(d, 1);
       const bin = filtered.filter(s => {
         const cd = new Date(s.created_at);
-        return isAfter(cd, start) && isBefore(cd, d);
+        return isAfter(cd, start) && isBefore(cd, endOfDay(d));
       });
       return { 
         date: format(d, daysCount > 7 ? 'dd MMM' : 'EEE'), 

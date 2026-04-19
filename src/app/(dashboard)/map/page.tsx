@@ -12,6 +12,22 @@ import {
 import { format } from 'date-fns';
 import { motion, AnimatePresence } from 'framer-motion';
 
+class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { hasError: boolean }> {
+  constructor(props: any) { super(props); this.state = { hasError: false }; }
+  static getDerivedStateFromError() { return { hasError: true }; }
+  render() {
+    if (this.state.hasError) return (
+      <div className="flex-1 h-full min-h-[500px] flex items-center justify-center bg-surface-container-low/50 rounded-2xl border border-dashed border-error/30 text-error">
+        <div className="text-center group p-8">
+          <span className="material-symbols-outlined text-4xl mb-4 group-hover:rotate-12 transition-transform">map_error</span>
+          <p className="text-[10px] font-black uppercase tracking-widest leading-loose">Map Protocol Failure:<br/>Tile Server Connection Interrupted</p>
+        </div>
+      </div>
+    );
+    return this.props.children;
+  }
+}
+
 const MapLayout = dynamic(() => import('@/components/MapLayout'), { ssr: false, loading: () => (
   <div className="flex-1 h-full min-h-[500px] flex items-center justify-center bg-surface-container-low/50 rounded-2xl border border-white shadow-inner">
     <div className="flex flex-col items-center gap-4">
@@ -40,7 +56,7 @@ export default function MapPage() {
   const fetchData = useCallback(async () => {
     setLoading(true);
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
+    if (!user) { setLoading(false); return; }
     await seedShipments(user.id);
     const { data } = await supabase.from('shipments')
       .select('*')
@@ -151,7 +167,9 @@ export default function MapPage() {
 
         {/* Center Map Container */}
         <div className="flex-1 relative bg-surface-container-low rounded-2xl overflow-hidden border border-white/50 curated-shadow">
-          <MapLayout shipments={mapShipments} highlighted={highlighted} />
+          <ErrorBoundary>
+            <MapLayout shipments={mapShipments} highlighted={highlighted} />
+          </ErrorBoundary>
 
           {/* Top Map Controls */}
           <div className="absolute top-8 left-1/2 -translate-x-1/2 z-[1000] flex gap-2 p-2 bg-surface-container-lowest/80 backdrop-blur-xl border border-white/50 rounded-full shadow-xl">

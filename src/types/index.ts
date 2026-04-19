@@ -100,6 +100,6 @@ export interface Notification {
   type: 'delay' | 'risk' | 'delivery' | 'system';
   title: string;
   message: string;
-  read: boolean;
+  is_read: boolean;
   created_at: string;
 }

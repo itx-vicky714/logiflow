@@ -91,6 +91,7 @@ export default function DashboardPage() {
   }, [fetchData]);
 
   const cityWeathers = KEY_CITIES.slice(0, 2).map(getCityWeather);
+  const onTimePct = kpi.total > 0 ? Math.round((kpi.onTime / kpi.total) * 100) : 0;
 
   const modeCounts = shipments.reduce((acc, s) => {
     acc[s.mode] = (acc[s.mode] || 0) + 1;
@@ -106,9 +107,9 @@ export default function DashboardPage() {
     return { name: m, value: monthlyRevenue };
   });
 
-  const seaPercent = Math.round(((modeCounts['sea'] || 0) / Math.max(1, shipments.length)) * 100) || 45;
-  const airPercent = Math.round(((modeCounts['air'] || 0) / Math.max(1, shipments.length)) * 100) || 32;
-  const roadPercent = Math.round(((modeCounts['road'] || 0) / Math.max(1, shipments.length)) * 100) || 23;
+  const seaPercent = Math.round(((modeCounts['sea'] || 0) / Math.max(1, shipments.length)) * 100);
+  const airPercent = Math.round(((modeCounts['air'] || 0) / Math.max(1, shipments.length)) * 100);
+  const roadPercent = Math.round(((modeCounts['road'] || 0) / Math.max(1, shipments.length)) * 100);
 
   const alerts = dbAlerts.length > 0 ? dbAlerts.slice(0, 3) : [];
 
@@ -128,7 +129,7 @@ export default function DashboardPage() {
           <div className="grid grid-cols-4 gap-10">
              <KPICard title="Total Shipments" value={kpi.total.toLocaleString()} change="+14.2%" icon="trending_up" iconColor="#493ee5" />
              <KPICard title="In Transit" value={kpi.inTransit.toLocaleString()} change="Active now" icon="sync" iconColor="on-surface-variant" />
-             <KPICard title="On Time" value="98.4%" change="Target met" icon="verified" iconColor="#493ee5" />
+             <KPICard title="On Time" value={`${onTimePct}%`} change="Target met" icon="verified" iconColor="#493ee5" />
              <KPICard title="Delayed" value={kpi.delayed.toLocaleString()} change="Critical action" icon="warning" iconColor="error" isError />
           </div>
 
@@ -138,7 +139,7 @@ export default function DashboardPage() {
               <div>
                 <h3 className="text-sm font-bold uppercase tracking-widest text-on-surface mb-1">Revenue Forecast</h3>
                 <p className="text-3xl font-bold tracking-tighter text-on-surface">
-                  {formatCurrency(kpi.revenue)} <span className="text-[11px] font-bold text-on-surface-variant uppercase tracking-widest ml-2">USD Total Volume</span>
+                  {formatCurrency(kpi.revenue)} <span className="text-[11px] font-bold text-on-surface-variant uppercase tracking-widest ml-2">INR Total Volume</span>
                 </p>
               </div>
               <div className="flex bg-surface-container p-1 rounded-xl">

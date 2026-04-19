@@ -58,22 +58,33 @@ function FitBounds({ shipments }: { shipments: Shipment[] }) {
   return null;
 }
 
-export default function MapLayout({ shipments, highlighted, onMarkerClick }: { shipments: Shipment[], highlighted: string | null, onMarkerClick?: (id: string) => void }) {
+export default function MapLayout({ 
+  shipments, 
+  highlighted, 
+  onMarkerClick,
+  onMapReady 
+}: { 
+  shipments: Shipment[], 
+  highlighted: string | null, 
+  onMarkerClick?: (id: string) => void,
+  onMapReady?: (map: any) => void
+}) {
   const plottedCities = Array.from(new Set(shipments.flatMap(s => [s.origin, s.destination])));
   const activeCitiesWeather = plottedCities.map(city => getCityWeather(city));
 
   return (
-    <div className="h-full w-full bg-surface relative font-['Inter']">
+    <div className="h-full w-full bg-slate-50 relative font-['Inter']">
       <MapContainer
-        center={[22.5937, 78.9629]}
-        zoom={4.5}
+        center={[20.5937, 78.9629]}
+        zoom={5}
         scrollWheelZoom
         zoomControl={false}
-        style={{ height: '100%', width: '100%', background: '#f7f9fb' }}
+        style={{ height: '100%', width: '100%', background: '#f8fafc' }}
+        ref={onMapReady}
       >
         <TileLayer
           attribution='&copy; <a href="https://carto.com/attributions">CARTO</a>'
-          url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
+          url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
         />
         <ZoomControl position="bottomright" />
         <FitBounds shipments={shipments} />
@@ -86,12 +97,11 @@ export default function MapLayout({ shipments, highlighted, onMarkerClick }: { s
             <Marker key={`weather-${cw.city}`} position={coords} icon={createWeatherBadge(cw)}>
               <Popup className="LogiFlow-popup">
                 <div className="p-2 w-40">
-                  <p className="text-[10px] font-black uppercase tracking-widest text-[#493ee5] mb-1">{cw.city} Terminal</p>
+                  <p className="text-[10px] font-black uppercase tracking-widest text-indigo-600 mb-1">{cw.city} Hub</p>
                   <div className="flex items-center justify-between">
-                    <span className="text-sm font-black text-on-surface">{cw.condition.replace('_', ' ')}</span>
-                    <span className="text-sm font-black text-on-surface">{cw.tempC}°C</span>
+                    <span className="text-sm font-black text-slate-800">{cw.condition.replace('_', ' ')}</span>
+                    <span className="text-sm font-black text-slate-800">{cw.tempC}°C</span>
                   </div>
-                  {cw.warning && <p className="mt-2 p-2 bg-error-container text-error text-[9px] font-bold rounded uppercase">{cw.warning}</p>}
                 </div>
               </Popup>
             </Marker>
@@ -105,14 +115,13 @@ export default function MapLayout({ shipments, highlighted, onMarkerClick }: { s
           if (!oCoords || !dCoords) return null;
 
           const isHighlighted = s.id === highlighted;
-          const statusCol = s.status === 'delayed' ? '#ba1a1a' : s.risk_score > 60 ? '#f59e0b' : '#10b981';
+          const statusCol = s.status === 'delayed' ? '#ef4444' : s.risk_score > 60 ? '#f59e0b' : '#10b981';
 
           // Calculate "Live Position" for in-transit shipments
           let liveCoords: [number, number] | null = null;
           if (s.status === 'in_transit') {
-            // Deterministic pseudo-progress based on ID hash
             const seed = s.id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-            const progress = 0.2 + (seed % 60) / 100; // between 0.2 and 0.8
+            const progress = 0.2 + (seed % 60) / 100;
             liveCoords = [
               oCoords[0] + (dCoords[0] - oCoords[0]) * progress,
               oCoords[1] + (dCoords[1] - oCoords[1]) * progress
@@ -124,8 +133,8 @@ export default function MapLayout({ shipments, highlighted, onMarkerClick }: { s
               <Polyline
                 positions={[oCoords, dCoords]}
                 color={statusCol}
-                weight={isHighlighted ? 4 : 1.5}
-                opacity={isHighlighted ? 0.9 : 0.3}
+                weight={isHighlighted ? 4 : 2}
+                opacity={isHighlighted ? 0.9 : 0.4}
                 dashArray={s.mode === 'air' ? '10 10' : s.mode === 'sea' ? '5 15' : undefined}
               />
               
@@ -133,24 +142,16 @@ export default function MapLayout({ shipments, highlighted, onMarkerClick }: { s
                 position={oCoords} 
                 icon={createVehicleIcon(isHighlighted, s.status, s.risk_score)}
                 eventHandlers={{ click: () => onMarkerClick?.(s.id) }}
-              >
-                <Popup className="LogiFlow-popup">
-                  <div className="p-1">
-                    <p className="text-[9px] font-black text-on-surface-variant uppercase tracking-widest border-b border-surface-container pb-1 mb-1">Origin Node</p>
-                    <p className="text-xs font-black text-on-surface">{s.origin}</p>
-                  </div>
-                </Popup>
-              </Marker>
+              />
 
-              {/* Live Position Marker (If In Transit) */}
               {liveCoords && (
                 <Marker 
                   position={liveCoords} 
                   icon={L.divIcon({ 
                     html: `
                       <div class="relative flex items-center justify-center" style="width: 32px; height: 32px;">
-                        <div class="absolute inset-0 rounded-full bg-[#10b981]/20 animate-ping"></div>
-                        <div class="absolute inset-2 rounded-full bg-white shadow-xl flex items-center justify-center">
+                        <div class="absolute inset-0 rounded-full bg-[#10b981]/10 animate-ping"></div>
+                        <div class="absolute inset-2 rounded-full bg-white shadow-lg flex items-center justify-center border border-slate-100">
                           <div class="w-2.5 h-2.5 rounded-full bg-[#10b981]"></div>
                         </div>
                       </div>
@@ -160,47 +161,31 @@ export default function MapLayout({ shipments, highlighted, onMarkerClick }: { s
                     iconAnchor: [0, 0]
                   })}
                   eventHandlers={{ click: () => onMarkerClick?.(s.id) }}
-                >
-                  <Popup className="LogiFlow-popup">
-                    <div className="p-1">
-                      <p className="text-[9px] font-black text-on-surface-variant uppercase tracking-widest border-b border-surface-container pb-1 mb-1">Live Location</p>
-                      <p className="text-xs font-black text-on-surface">{s.shipment_code}</p>
-                      <p className="text-[9px] text-on-surface-variant font-bold uppercase mt-1">In Transit</p>
-                    </div>
-                  </Popup>
-                </Marker>
+                />
               )}
 
-              {/* Destination Marker */}
               <Marker 
                 position={dCoords} 
                 icon={createVehicleIcon(isHighlighted, s.status, s.risk_score)}
                 eventHandlers={{ click: () => onMarkerClick?.(s.id) }}
-              >
-                <Popup className="LogiFlow-popup">
-                  <div className="p-1">
-                    <p className="text-[9px] font-black text-on-surface-variant uppercase tracking-widest border-b border-surface-container pb-1 mb-1">Arrival Terminal</p>
-                    <p className="text-xs font-black text-on-surface">{s.destination}</p>
-                  </div>
-                </Popup>
-              </Marker>
+              />
             </React.Fragment>
           );
         })}
       </MapContainer>
       
-      {/* LogiFlow Legend */}
-      <div className="absolute bottom-12 left-8 z-[1000] bg-surface-container-lowest/80 backdrop-blur-xl border border-white/50 p-6 rounded-2xl curated-shadow">
-        <h4 className="text-[10px] font-black text-on-surface uppercase tracking-widest mb-4">Operational Status</h4>
-        <div className="space-y-3">
+      {/* Legend */}
+      <div className="absolute bottom-10 left-6 z-[1000] bg-white/90 backdrop-blur-md border border-slate-200 p-4 rounded-xl shadow-xl min-w-[140px]">
+        <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Shipment Status</h4>
+        <div className="space-y-2">
           {[
-            { label: 'Optimal', color: '#10b981' },
+            { label: 'On Time', color: '#10b981' },
             { label: 'At Risk', color: '#f59e0b' },
-            { label: 'Delayed', color: '#ba1a1a' }
+            { label: 'Delayed', color: '#ef4444' }
           ].map(item => (
-            <div key={item.label} className="flex items-center gap-3">
-              <div className="w-2.5 h-2.5 rounded-full border border-white shadow-sm" style={{ backgroundColor: item.color }}></div>
-              <span className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest">{item.label}</span>
+            <div key={item.label} className="flex items-center gap-2.5">
+              <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: item.color }}></div>
+              <span className="text-[10px] font-bold text-slate-700 uppercase tracking-wider">{item.label}</span>
             </div>
           ))}
         </div>

@@ -243,18 +243,21 @@ export default function DashboardPage() {
           {/* Dashboard Quick Actions */}
           <div className="flex items-center gap-3 mb-8">
             <button 
+              type="button"
               onClick={handleAllClear}
               className="bg-primary text-on-primary py-2.5 px-6 text-[11px] font-black uppercase tracking-widest rounded-xl curated-shadow hover:opacity-90 active:scale-95 transition-all shadow-lg shadow-primary/20"
             >
               All Clear
             </button>
             <button 
+              type="button"
               onClick={handleReset}
               className="bg-surface-container-lowest text-on-surface py-2.5 px-6 text-[11px] font-black uppercase tracking-widest rounded-xl border border-white/60 curated-shadow hover:bg-surface-container transition-all active:scale-95"
             >
               Reset
             </button>
             <button 
+              type="button"
               onClick={handleSimulate}
               disabled={simulating}
               className={`bg-surface-container-lowest text-on-surface py-2.5 px-6 text-[11px] font-black uppercase tracking-widest rounded-xl border border-white/60 curated-shadow hover:bg-surface-container transition-all active:scale-95 flex items-center gap-2 ${simulating ? 'opacity-60 cursor-not-allowed' : ''}`}

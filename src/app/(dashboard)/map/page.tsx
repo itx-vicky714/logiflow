@@ -140,7 +140,7 @@ export default function MapPage() {
       {/* Mobile Toggle Button */}
       <button 
         onClick={() => setIsMobileListOpen(!isMobileListOpen)}
-        className="md:hidden fixed bottom-6 left-6 z-[1001] bg-indigo-600 text-white px-6 py-4 rounded-2xl shadow-2xl font-black text-xs uppercase tracking-widest flex items-center gap-3 active:scale-95 transition-transform"
+        className="md:hidden fixed bottom-6 left-6 z-[10005] bg-indigo-600 text-white px-6 py-4 rounded-2xl shadow-2xl font-black text-xs uppercase tracking-widest flex items-center gap-3 active:scale-95 transition-transform"
       >
         <Menu size={18} />
         {isMobileListOpen ? 'Close List' : `Shipments (${filteredShipments.length})`}
@@ -163,7 +163,7 @@ export default function MapPage() {
               </button>
             )}
           </div>
-          <p className="text-[13px] font-bold text-slate-400">{filteredShipments.length} Active Shipments</p>
+          <p className="text-[13px] font-bold text-slate-500">{filteredShipments.length} Active Shipments</p>
           
           <div className="mt-6 relative">
             <Search size={14} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />

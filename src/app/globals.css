@@ -40,9 +40,9 @@
 
   /* Text & Outline */
   --color-on-surface: #191c1e;
-  --color-on-surface-variant: #464555;
-  --color-outline: #777587;
-  --color-outline-variant: #c7c4d8;
+  --color-on-surface-variant: #373e42; /* Darkened from #464555 for higher contrast (text-gray-600 equiv) */
+  --color-outline: #5f6e72; /* Darkened from #777587 */
+  --color-outline-variant: #b1b9be; /* Darkened from #c7c4d8 */
   --color-inverse-surface: #2d3133;
   --color-inverse-on-surface: #eff1f3;
 }
@@ -136,7 +136,7 @@ body {
   width: 4px;
 }
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: #c3c0ff;
+  background: #a5a2e5; /* Slightly darker than c3c0ff for visibility */
   border-radius: 10px;
 }
 

@@ -111,11 +111,11 @@ export default function AnalyticsPage() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
         <div>
           <div className="flex items-center gap-2 mb-2">
-             <span className="text-[10px] font-black text-indigo-600 uppercase tracking-widest bg-indigo-50 px-3 py-1 rounded-full">Reporting & Insights</span>
+             <span className="text-[10px] font-black text-indigo-600 uppercase tracking-widest bg-indigo-50 px-3 py-1 rounded-full">Analytical Insights</span>
           </div>
-          <h1 className="text-3xl md:text-4xl font-black text-slate-800 tracking-tighter uppercase italic">Operations Review</h1>
+          <h1 className="text-3xl md:text-4xl font-black text-slate-800 tracking-tighter uppercase italic">Shipment Analytics</h1>
           <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mt-2 flex items-center gap-2">
-             <Activity size={12} className="text-emerald-500" /> Analyzing {filtered.length} active cargo streams
+             <Activity size={12} className="text-emerald-500" /> Analyzing {filtered.length} active shipments
           </p>
         </div>
 
@@ -146,10 +146,10 @@ export default function AnalyticsPage() {
       {/* Primary KPI Row */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
         {[
-          { label: 'On-Time Delivery', val: `${onTimePct}%`, icon: ShieldCheck, sub: 'Protocol Accuracy', color: 'text-indigo-600', iconBg: 'bg-indigo-50', trend: '+2.4%' },
+          { label: 'On-Time Delivery', val: `${onTimePct}%`, icon: ShieldCheck, sub: 'Delivery Reliability', color: 'text-indigo-600', iconBg: 'bg-indigo-50', trend: '+2.4%' },
           { label: 'Revenue Forecast', val: formatCurrency(totalRevenue), icon: TrendingUp, sub: '2.5% Net Yield', color: 'text-slate-800', iconBg: 'bg-slate-100', trend: '+14%'},
-          { label: 'Network Safety', val: `${100 - avgRisk}/100`, icon: Activity, sub: 'Risk Mitigation', color: 'text-emerald-600', iconBg: 'bg-emerald-50', trend: 'Stable' },
-          { label: 'Active Fleet', val: filtered.length, icon: Truck, sub: 'Live Units', color: 'text-slate-800', iconBg: 'bg-slate-100', trend: '+8 units' },
+          { label: 'Network Safety', val: `${100 - avgRisk}/100`, icon: Activity, sub: 'Safety Rating', color: 'text-emerald-600', iconBg: 'bg-emerald-50', trend: 'Stable' },
+          { label: 'Active Fleet', val: filtered.length, icon: Truck, sub: 'Total Vehicles', color: 'text-slate-800', iconBg: 'bg-slate-100', trend: '+8 units' },
         ].map((card, i) => (
           <div key={i} className="bg-white p-8 rounded-[2rem] border border-slate-100 shadow-sm group hover:shadow-md transition-all duration-300">
             <div className={`w-12 h-12 ${card.iconBg} rounded-2xl flex items-center justify-center mb-6 text-indigo-600 group-hover:scale-110 transition-transform`}>
@@ -159,8 +159,8 @@ export default function AnalyticsPage() {
                <div className={`text-3xl font-black ${card.color} tracking-tighter`}>{card.val}</div>
                <div className={`text-[10px] font-black uppercase ${card.trend.includes('-') ? 'text-rose-500' : 'text-emerald-500'}`}>{card.trend}</div>
             </div>
-            <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{card.label}</div>
-            <p className="text-[9px] text-slate-300 mt-1 font-bold uppercase tracking-tighter">{card.sub}</p>
+            <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest">{card.label}</div>
+            <p className="text-[9px] text-slate-400 mt-1 font-bold uppercase tracking-tighter">{card.sub}</p>
           </div>
         ))}
       </div>
@@ -172,9 +172,9 @@ export default function AnalyticsPage() {
           <div className="mb-10 flex justify-between items-start">
             <div>
               <p className="text-[10px] font-black text-indigo-600 uppercase tracking-widest mb-2 flex items-center gap-2">
-                 <BarChart3 size={12} /> Resource Allocation
+                 <BarChart3 size={12} /> Transport Distribution
               </p>
-              <h3 className="text-2xl font-black text-slate-800 tracking-tighter uppercase italic">Shipment Mode Data</h3>
+              <h3 className="text-2xl font-black text-slate-800 tracking-tighter uppercase italic">Distribution by Mode</h3>
             </div>
             <button className="text-slate-300 hover:text-indigo-600 transition-colors"><Info size={20} /></button>
           </div>
@@ -197,9 +197,9 @@ export default function AnalyticsPage() {
           <div className="mb-10 flex justify-between items-start">
             <div>
               <p className="text-[10px] font-black text-indigo-600 uppercase tracking-widest mb-2 flex items-center gap-2">
-                 <PieChart size={12} /> Stream Health
+                 <PieChart size={12} /> Shipment Health
               </p>
-              <h3 className="text-2xl font-black text-slate-800 tracking-tighter uppercase italic">Current Status Split</h3>
+              <h3 className="text-2xl font-black text-slate-800 tracking-tighter uppercase italic">Status Distribution</h3>
             </div>
             <button className="text-slate-300 hover:text-indigo-600 transition-colors"><Info size={20} /></button>
           </div>
@@ -258,12 +258,12 @@ export default function AnalyticsPage() {
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-12 gap-6">
             <div>
               <p className="text-[10px] font-black text-indigo-600 uppercase tracking-widest mb-2 flex items-center gap-2">
-                 <Zap size={14} className="fill-indigo-600" /> AI Forecaster
+                 <Zap size={14} className="fill-indigo-600" /> Volume Prediction
               </p>
-              <h3 className="text-3xl font-black text-slate-800 tracking-tighter uppercase italic">Predictive Shipment Volume</h3>
+              <h3 className="text-3xl font-black text-slate-800 tracking-tighter uppercase italic">Expected Volume</h3>
             </div>
             <div className="px-6 py-3 bg-slate-50 border border-slate-100 rounded-2xl text-[10px] font-black uppercase tracking-widest text-slate-400">
-               Live Corridor Synthesis: <span className="text-indigo-600">Active</span>
+               Data Analysis: <span className="text-indigo-600">Active</span>
             </div>
           </div>
           <div className="h-[400px]">
@@ -279,8 +279,8 @@ export default function AnalyticsPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {[
           { icon: Zap, title: 'Network Efficiency', body: 'Rail hubs are operating at 92% efficiency. Increasing load factor by 15% on Northern corridors suggested.', color: 'bg-indigo-600 text-white' },
-          { icon: AlertTriangle, title: 'Risk Warning', body: 'Coastal air corridors showing atmospheric turbulence. Reroute priority cargo to rail via Chennai hub for next 48 hours.', color: 'bg-rose-50 border-rose-100 text-rose-700' },
-          { icon: Target, title: 'Revenue Milestone', body: 'Expected yield for next period is ₹12.5M. Reaching this milestone will unlock a 1.2% reduction in fleet fuel costs.', color: 'bg-slate-900 text-white' },
+          { icon: AlertTriangle, title: 'Advisory', body: 'Coastal transport routes showing potential weather disruptions. Monitor routes via Chennai for the next 48 hours.', color: 'bg-rose-50 border-rose-100 text-rose-700' },
+          { icon: Target, title: 'Revenue Milestone', body: 'Expected revenue for the next period is ₹12.5M. Reaching this milestone will unlock fuel cost reductions.', color: 'bg-slate-900 text-white' },
         ].map((b, i) => (
           <div key={i} className={`p-10 rounded-[2.5rem] border ${b.color} relative overflow-hidden group hover:scale-[1.02] transition-all duration-500 shadow-sm`}>
             <b.icon size={120} className="absolute -right-8 -bottom-8 opacity-10 rotate-12 group-hover:rotate-0 transition-transform duration-700" />
@@ -288,7 +288,7 @@ export default function AnalyticsPage() {
               <h4 className="text-[11px] font-black uppercase tracking-[0.2em] mb-6 opacity-60 flex items-center gap-2">
                  <Briefcase size={12} /> {b.title}
               </h4>
-              <p className="text-[15px] md:text-[16px] font-bold leading-relaxed italic uppercase tracking-tight">{b.body}</p>
+              <p className="text-[15px] md:text-[16px] font-semibold leading-relaxed tracking-tight">{b.body}</p>
             </div>
           </div>
         ))}

@@ -62,19 +62,19 @@ export function modeIcon(mode: ShipmentMode): string {
 }
 
 export function riskColor(score: number): string {
-  if (score < 30) return 'text-green-600';
+  if (score < 40) return 'text-green-600';
   if (score < 70) return 'text-amber-600';
   return 'text-red-600';
 }
 
 export function riskBg(score: number): string {
-  if (score < 30) return 'bg-green-500';
+  if (score < 40) return 'bg-green-500';
   if (score < 70) return 'bg-amber-500';
   return 'bg-red-500';
 }
 
 export function riskLabel(score: number): string {
-  if (score < 30) return 'Low Risk';
+  if (score < 40) return 'Low Risk';
   if (score < 70) return 'Medium Risk';
   return 'High Risk';
 }
@@ -107,6 +107,21 @@ export const CITY_COORDS: Record<string, [number, number]> = {
   'Patna':         [25.5941, 85.1376],
   'Guwahati':      [26.1445, 91.7362],
   'Visakhapatnam': [17.6868, 83.2185],
+};
+
+export const calculateDistance = (origin: string, destination: string) => {
+  const o = CITY_COORDS[origin];
+  const d = CITY_COORDS[destination];
+  if (!o || !d) return null;
+  
+  const R = 6371; // km
+  const dLat = (d[0] - o[0]) * Math.PI / 180;
+  const dLon = (d[1] - o[1]) * Math.PI / 180;
+  const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+            Math.cos(o[0] * Math.PI / 180) * Math.cos(d[0] * Math.PI / 180) * 
+            Math.sin(dLon/2) * Math.sin(dLon/2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  return Math.round(R * c);
 };
 
 // Route distance estimates (km) between major cities

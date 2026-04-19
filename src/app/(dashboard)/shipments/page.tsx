@@ -69,9 +69,9 @@ export default function ShipmentsPage() {
     const blob = new Blob([csv], { type: 'text/csv' });
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
-    a.download = `LogiFlow_Manifest_${format(new Date(), 'yyyy-MM-dd')}.csv`;
+    a.download = `LogiFlow_Shipments_${format(new Date(), 'yyyy-MM-dd')}.csv`;
     a.click();
-    toast.success('Manifest Protocol Exported');
+    toast.success('Shipments Exported');
   };
 
   const toggleCheck = (id: string) => setChecked(prev => {
@@ -84,7 +84,7 @@ export default function ShipmentsPage() {
     if (checked.size === 0) return;
     const { error } = await supabase.from('shipments').update({ status: 'delivered' }).in('id', [...checked]);
     if (error) {
-      toast.error('Protocol Update Failed');
+      toast.error('Failed to update status');
     } else {
       toast.success(`Marked ${checked.size} unit(s) as delivered`);
       setChecked(new Set());
@@ -104,10 +104,10 @@ export default function ShipmentsPage() {
       {/* Page Header */}
       <div className="pt-6 px-6 flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10">
         <div>
-          <h1 className="text-3xl font-black text-on-surface tracking-tighter">Manifest Database</h1>
+          <h1 className="text-3xl font-black text-on-surface tracking-tighter">Shipment Inventory</h1>
           <div className="flex items-center gap-2 mt-2">
             <span className="status-pulse bg-primary"></span>
-            <p className="text-[10px] font-bold text-on-surface-variant uppercase tracking-[0.2em]">{shipments.length} Global entries indexed</p>
+            <p className="text-[10px] font-bold text-on-surface-variant uppercase tracking-[0.2em]">{shipments.length} Shipments listed</p>
           </div>
         </div>
         <div className="flex flex-wrap items-center gap-3">
@@ -116,7 +116,7 @@ export default function ShipmentsPage() {
               onClick={markDelivered} 
               className="bg-primary text-on-primary py-3 px-6 text-[11px] font-black uppercase tracking-widest rounded-xl shadow-lg shadow-primary/20 hover:opacity-90 active:scale-95 transition-all"
             >
-              Complete Units ({checked.size})
+              Mark Delivered ({checked.size})
             </button>
           )}
           <button 
@@ -124,7 +124,7 @@ export default function ShipmentsPage() {
             className="flex items-center gap-3 py-3 px-6 text-[11px] font-black uppercase tracking-widest rounded-xl border border-outline-variant bg-surface-container-lowest hover:bg-surface-container transition-all active:scale-95"
           >
             <span className="material-symbols-outlined text-sm">download</span>
-            <span>Export Protocol</span>
+            <span>Export CSV</span>
           </button>
         </div>
       </div>
@@ -149,7 +149,7 @@ export default function ShipmentsPage() {
           <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant text-sm group-focus-within:text-primary transition-colors">search</span>
           <input
             type="text"
-            placeholder="Search manifests, routes, or node IDs..."
+            placeholder="Search shipments, routes, or IDs..."
             value={search}
             onChange={e => setSearch(e.target.value)}
             className="w-full bg-surface-container-low border-none rounded-xl py-3 pl-12 pr-4 text-[13px] text-on-surface font-medium focus:ring-2 focus:ring-[#493ee5]/10 outline-none transition-all"
@@ -170,11 +170,11 @@ export default function ShipmentsPage() {
                     onChange={e => setChecked(e.target.checked ? new Set(filtered.map(s => s.id)) : new Set())} 
                   />
                 </th>
-                <th className="px-8 py-4 text-[10px] font-black text-on-surface-variant uppercase tracking-widest">Identifier</th>
-                <th className="px-8 py-4 text-[10px] font-black text-on-surface-variant uppercase tracking-widest">Route Corridor</th>
-                <th className="px-8 py-4 text-[10px] font-black text-on-surface-variant uppercase tracking-widest">Protocol Status</th>
-                <th className="px-8 py-4 text-[10px] font-black text-on-surface-variant uppercase tracking-widest hidden lg:table-cell">Cargo Spec</th>
-                <th className="px-8 py-4 text-[10px] font-black text-on-surface-variant uppercase tracking-widest text-right">Risk Factor</th>
+                <th className="px-8 py-4 text-[10px] font-black text-on-surface-variant uppercase tracking-widest">Shipment ID</th>
+                <th className="px-8 py-4 text-[10px] font-black text-on-surface-variant uppercase tracking-widest">Route</th>
+                <th className="px-8 py-4 text-[10px] font-black text-on-surface-variant uppercase tracking-widest">Status</th>
+                <th className="px-8 py-4 text-[10px] font-black text-on-surface-variant uppercase tracking-widest hidden lg:table-cell">Cargo Description</th>
+                <th className="px-8 py-4 text-[10px] font-black text-on-surface-variant uppercase tracking-widest text-right">Risk Score</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-surface-container">
@@ -245,9 +245,9 @@ export default function ShipmentsPage() {
                     <div className="w-16 h-16 bg-surface-container-low rounded-2xl flex items-center justify-center mx-auto mb-6 text-outline-variant border border-white shadow-inner">
                        <span className="material-symbols-outlined text-4xl">inventory</span>
                     </div>
-                    <h3 className="text-sm font-black text-on-surface uppercase tracking-widest">Protocol Null</h3>
+                    <h3 className="text-sm font-black text-on-surface uppercase tracking-widest">No Shipments Found</h3>
                     <p className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest mt-2">
-                      {search ? 'No manifest entries match the active filter protocol' : 'Waiting for system manifest deployment'}
+                      {search ? 'No shipments found matching your search' : 'Initializing shipments...'}
                     </p>
                   </td>
                 </tr>

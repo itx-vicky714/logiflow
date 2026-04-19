@@ -7,15 +7,16 @@ import type { Shipment } from '@/types';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
+import { ModeIcon } from '@/components/ModeIcon';
 
 interface ReportCard { id: string; title: string; description: string; frequency: string; icon: string; col: string; }
 const REPORT_TYPES: ReportCard[] = [
-  { id: 'daily', title: 'Operational Summary', description: 'Snapshot of active manifests, latencies, and fulfillment metrics for current cycle.', frequency: 'Cycle End', icon: 'description', col: 'text-[#493ee5] bg-primary-fixed border-[#493ee5]/10' },
-  { id: 'disruption', title: 'Delay by Transport Mode', description: 'Root cause analysis of grid anomalies, risk escalations and node failures.', frequency: 'Real-time', icon: 'warning', col: 'text-error bg-error-container border-error/10' },
-  { id: 'cost', title: 'Yield Impact Analysis', description: 'Terminal cost breakdown by vector, cargo category, and projected revenue.', frequency: 'Weekly', icon: 'payments', col: 'text-on-surface bg-surface-container-low border-white/50' },
-  { id: 'weather', title: 'Atmospheric Forecast', description: 'Predicted weather risk on active Indian corridors for the 72h window.', frequency: '3× Cycle', icon: 'cloud', col: 'text-cyan-600 bg-cyan-50 border-cyan-100' },
-  { id: 'mode', title: 'Vector Performance', description: 'Cross-mode evaluation: Road vs Rail vs Air vs Sea efficiency benchmarks.', frequency: 'Monthly', icon: 'hub', col: 'text-indigo-600 bg-indigo-50 border-indigo-100' },
-  { id: 'ai_risk', title: 'Predictive Risk Audit', description: 'Gemini-powered risk modeling with top at-risk nodes and mitigation logic.', frequency: 'AI Drive', icon: 'bolt', col: 'text-amber-600 bg-amber-50 border-amber-100' },
+  { id: 'daily', title: 'Operational Summary', description: 'Daily summary of active shipments, delivery times, and performance metrics.', frequency: 'Daily', icon: 'description', col: 'text-[#493ee5] bg-primary-fixed border-[#493ee5]/10' },
+  { id: 'disruption', title: 'Delays & Issues', description: 'Analysis of delivery delays, risk factors, and transit issues.', frequency: 'Real-time', icon: 'warning', col: 'text-error bg-error-container border-error/10' },
+  { id: 'cost', title: 'Cost & Revenue Analysis', description: 'Detailed breakdown of shipping costs and projected revenue.', frequency: 'Weekly', icon: 'payments', col: 'text-on-surface bg-surface-container-low border-white/50' },
+  { id: 'weather', title: 'Weather Forecast', description: 'Weather forecasts for active transport routes.', frequency: 'Daily', icon: 'cloud', col: 'text-cyan-600 bg-cyan-50 border-cyan-100' },
+  { id: 'mode', title: 'Transport Performance', description: 'Performance comparison across different transport modes.', frequency: 'Monthly', icon: 'hub', col: 'text-indigo-600 bg-indigo-50 border-indigo-100' },
+  { id: 'ai_risk', title: 'AI Risk Analysis', description: 'AI-driven risk analysis and mitigation recommendations.', frequency: 'AI Drive', icon: 'bolt', col: 'text-amber-600 bg-amber-50 border-amber-100' },
 ];
 
 interface GeneratedReport {
@@ -40,28 +41,28 @@ function buildReport(type: string, shipments: Shipment[], aiText?: string): Gene
   switch (type) {
     case 'daily':
       return { ...base, title: 'Operational Summary', metrics: [
-        { label: 'Total Nodes', value: String(total) },
+        { label: 'Total Shipments', value: String(total) },
         { label: 'In Transit', value: String(inTransit) },
-        { label: 'Network Flow', value: `${Math.round((onTime / Math.max(1, total)) * 100)}%` },
-        { label: 'Terminal Risk', value: String(atRisk) },
+        { label: 'On-Time Rate', value: `${Math.round((onTime / Math.max(1, total)) * 100)}%` },
+        { label: 'High Risk Shipments', value: String(atRisk) },
         { label: 'Est. Revenue', value: formatCurrency(totalRev) },
       ]};
     case 'disruption':
       const dis = shipments.filter(s => s.status === 'delayed' || s.risk_score > 70);
-      return { ...base, title: 'Delay by Transport Mode', tableRows: dis, metrics: [
-        { label: 'Disrupted Units', value: String(delayed) },
+      return { ...base, title: 'Delays & Issues', tableRows: dis, metrics: [
+        { label: 'Delayed Shipments', value: String(delayed) },
         { label: 'Critical Risk', value: String(atRisk) },
         { label: 'Revenue at Risk', value: formatCurrency(dis.reduce((a, s) => a + estimateRevenue(s), 0)) },
       ]};
     case 'cost':
-      return { ...base, title: 'Yield Impact Analysis', metrics: [
-        { label: 'Total Yield', value: formatCurrency(totalRev) },
-        { label: 'Avg Per Node', value: total > 0 ? formatCurrency(totalRev / total) : '₹0' },
+      return { ...base, title: 'Cost & Revenue Analysis', metrics: [
+        { label: 'Total Revenue', value: formatCurrency(totalRev) },
+        { label: 'Avg per Shipment', value: total > 0 ? formatCurrency(totalRev / total) : '₹0' },
         { label: 'Road Logistics', value: formatCurrency(shipments.filter(s=>s.mode==='road').reduce((a,s)=>a+estimateRevenue(s),0)) },
         { label: 'Sea Logistics', value: formatCurrency(shipments.filter(s=>s.mode==='sea').reduce((a,s)=>a+estimateRevenue(s),0)) },
       ]};
     case 'weather':
-      return { ...base, title: 'Atmospheric Forecast', metrics: [
+      return { ...base, title: 'Weather Forecast', metrics: [
         { label: 'Active Routes', value: String(total - shipments.filter(s=>s.status==='delivered').length) },
         { label: 'Weather Buffer', value: '2-4 Hours' },
         { label: 'Forecast Node', value: '72h Window' },
@@ -70,14 +71,14 @@ function buildReport(type: string, shipments: Shipment[], aiText?: string): Gene
         { title: 'Monsoon Saturation', content: 'Heavy precipitation forecast for NH-48 (Western Ghats). Road logistics: maintain low tactical speeds.' }
       ]};
     case 'mode':
-      return { ...base, title: 'Vector Performance Audit', metrics: [
+      return { ...base, title: 'Transport Mode Performance', metrics: [
         { label: 'Road Efficiency', value: '78%' },
         { label: 'Rail Efficiency', value: '92%' },
         { label: 'Air Speed Factor', value: '4.2x' },
         { label: 'Sea Volume Index', value: 'Extreme' },
       ]};
     case 'ai_risk':
-      return { ...base, title: 'Predictive Risk Audit', metrics: [
+      return { ...base, title: 'AI Risk Analysis', metrics: [
         { label: 'Risk Anomaly', value: String(atRisk) },
         { label: 'Safety Index', value: '92.4%' },
         { label: 'Revenue Guard', value: formatCurrency(totalRev * 0.95) },
@@ -121,9 +122,9 @@ export default function ReportsPage() {
         aiText = d.text;
       }
       setReport(buildReport(card.id, shipments, aiText));
-      toast.success('Manifest Intelligence Compiled');
+      toast.success('Report Generated');
     } catch {
-      toast.error('Audit Protocol Failure');
+      toast.error('Report Generation Failed');
     } finally {
       setGenerating(null);
     }
@@ -138,7 +139,7 @@ export default function ReportsPage() {
       const autoTable = (await import('jspdf-autotable')).default;
       
       const doc = new jsPDF();
-      doc.setFontSize(22); doc.text('LogiFlow Intelligence', 14, 20);
+
       doc.setFontSize(12); doc.text(report.title.toUpperCase(), 14, 30);
       doc.text(`Generated: ${format(report.generatedAt, 'dd MMM yyyy, HH:mm')}`, 14, 38);
       
@@ -147,8 +148,8 @@ export default function ReportsPage() {
         body: report.tableRows.slice(0, 20).map(s => [s.shipment_code, `${s.origin}→${s.destination}`, s.mode, `${s.risk_score}%`]),
       });
       
-      doc.save(`LogiFlow_Audit_${report.id}.pdf`);
-      toast.success('PDF Protocol Downloaded');
+      doc.save(`LogiFlow_Report_${report.id}.pdf`);
+      toast.success('PDF Downloaded');
     } catch (err) {
       console.error(err);
       toast.error('PDF Export Error');
@@ -167,26 +168,26 @@ export default function ReportsPage() {
              <span className="material-symbols-outlined text-primary text-[32px]">analytics</span>
              <span className="text-[10px] font-black tracking-[0.4em] uppercase opacity-60">LogiFlow Dashboard Intelligence</span>
           </div>
-          <h1 className="text-4xl font-black uppercase tracking-tighter">Strategic Audit Manifests</h1>
+          <h1 className="text-4xl font-black uppercase tracking-tighter">Operational Reports</h1>
           <p className="text-[15px] font-bold opacity-60 leading-relaxed italic">
-            Synthesize Air-level operational datasets into tactical intelligence. Powered by Gemini predictive modeling and real-time corridor telemetry.
+            Comprehensive operational insights powered by AI and real-time transit data.
           </p>
         </div>
         
         <div className="flex gap-10 items-center lg:border-l lg:border-white/10 lg:pl-10">
            <div>
               <div className="text-4xl font-black font-mono tracking-tighter">{shipments.length}</div>
-              <div className="text-[10px] font-black uppercase tracking-widest opacity-40 mt-1">Nodes Analyzed</div>
+              <div className="text-[10px] font-black uppercase tracking-widest opacity-40 mt-1">Total Shipments</div>
            </div>
            <div>
               <div className="text-4xl font-black text-primary italic">SYNC</div>
-              <div className="text-[10px] font-black uppercase tracking-widest opacity-40 mt-1">Grid Status</div>
+              <div className="text-[10px] font-black uppercase tracking-widest opacity-40 mt-1">System Status</div>
            </div>
         </div>
         <span className="material-symbols-outlined absolute -right-10 -bottom-10 text-[200px] opacity-[0.03] rotate-12">monitoring</span>
       </div>
 
-      {/* Grid: Audit Vectors */}
+      {/* Grid: Report Categories */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {REPORT_TYPES.map(card => (
           <div 
@@ -203,38 +204,38 @@ export default function ReportsPage() {
             </div>
             <p className="text-[12px] font-bold text-on-surface-variant/60 leading-relaxed italic mb-8 group-hover:text-on-surface-variant transition-colors">{card.description}</p>
             <div className="flex items-center justify-between border-t border-surface-container/30 pt-4">
-               <span className="text-[11px] font-black uppercase tracking-[0.2em] text-on-surface-variant/30 group-hover:text-primary transition-all">Audit System &darr;</span>
+               <span className="text-[11px] font-black uppercase tracking-[0.2em] text-on-surface-variant/30 group-hover:text-primary transition-all">Generate Report &darr;</span>
                {generating === card.id && <span className="status-pulse bg-primary w-4 h-4" />}
             </div>
           </div>
         ))}
       </div>
 
-      {/* Audit Viewer: Controlled Environment */}
+      {/* Report Viewer */}
       <AnimatePresence>
         {report && (
             <motion.div 
                 initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }}
                 className="bg-surface-container-lowest border border-white/50 rounded-[3rem] curated-shadow overflow-hidden"
             >
-                {/* Header: Audit Directive */}
+                {/* Header: Report Details */}
                 <div className="p-12 border-b border-surface-container bg-surface-container-low/50 relative overflow-hidden">
                     <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-10">
                         <div className="space-y-4">
                             <div className="flex items-center gap-3">
                                 <span className="w-1.5 h-1.5 rounded-full bg-primary status-pulse" />
-                                <span className="text-[10px] font-black text-on-surface-variant uppercase tracking-[0.3em]">Executive Audit Registry</span>
+                                <span className="text-[10px] font-black text-on-surface-variant uppercase tracking-[0.3em]">Operational Report</span>
                             </div>
                             <h2 className="text-4xl font-black text-on-surface tracking-tighter uppercase italic">{report.title}</h2>
-                            <p className="text-[12px] font-bold text-on-surface-variant uppercase tracking-[0.1em]">Protocol Generated: {format(report.generatedAt, 'EEEE, dd MMM yyyy • HH:mm')}</p>
+                            <p className="text-[12px] font-bold text-on-surface-variant uppercase tracking-[0.1em]">Report Generated: {format(report.generatedAt, 'EEEE, dd MMM yyyy • HH:mm')}</p>
                         </div>
                         <button onClick={downloadPDF} className="bg-on-surface text-inverse-on-surface px-10 py-5 rounded-2xl text-[11px] font-black uppercase tracking-widest flex items-center gap-4 shadow-2xl hover:opacity-95 transition-all active:scale-95">
-                           Export Offline Protocol <span className="material-symbols-outlined text-[16px]">download</span>
+                           Download PDF <span className="material-symbols-outlined text-[16px]">download</span>
                         </button>
                     </div>
                 </div>
 
-                {/* Audit Telemetry Grid */}
+                {/* Key Metrics Grid */}
                 <div className="grid grid-cols-2 md:grid-cols-4 border-b border-surface-container">
                     {report.metrics.map(m => (
                         <div key={m.label} className="p-10 border-r border-surface-container last:border-0 hover:bg-surface-container-low/30 transition-colors">
@@ -244,7 +245,7 @@ export default function ReportsPage() {
                     ))}
                 </div>
 
-                {/* Neural Evaluation Layer */}
+                {/* AI Analysis Layer */}
                 {report.aiText && (
                     <div className="p-12 border-b border-surface-container bg-primary-fixed/30">
                         <div className="flex items-center gap-4 mb-8">
@@ -252,28 +253,28 @@ export default function ReportsPage() {
                               <span className="material-symbols-outlined text-[24px]">psychology</span>
                            </div>
                            <div>
-                              <h4 className="text-[13px] font-black text-on-surface uppercase tracking-widest mb-1 italic">Neural Objective Evaluation</h4>
-                              <p className="text-[9px] font-black text-on-surface-variant uppercase tracking-[0.2em] leading-none">Gemini Protocol v3.11 High-Fidelity Logic</p>
+                              <h4 className="text-[13px] font-black text-on-surface uppercase tracking-widest mb-1 italic">AI Insights</h4>
+                              <p className="text-[9px] font-black text-on-surface-variant uppercase tracking-[0.2em] leading-none">Powered by Gemini AI Model</p>
                            </div>
                         </div>
-                        <div className="bg-surface-container-lowest border border-white p-10 rounded-3xl text-[14px] font-bold italic leading-relaxed text-on-surface-variant shadow-sm whitespace-pre-wrap">
+                        <div className="bg-surface-container-lowest border border-white p-10 rounded-3xl text-[14px] font-bold italic leading-relaxed text-slate-700 shadow-sm whitespace-pre-wrap">
                            {report.aiText}
                         </div>
                     </div>
                 )}
 
-                {/* Tactical Vector Audit Table */}
+                {/* Detailed Shipment Table */}
                 <div className="p-12">
                     <div className="flex items-center justify-between mb-8">
-                       <h4 className="text-[13px] font-black text-on-surface uppercase tracking-widest italic">Protocol Audit Trail</h4>
-                       <span className="text-[10px] font-black text-on-surface-variant uppercase tracking-widest opacity-40">Sample Size: {Math.min(report.tableRows.length, 20)} Units</span>
+                       <h4 className="text-[13px] font-black text-on-surface uppercase tracking-widest italic">Shipment Data</h4>
+                       <span className="text-[10px] font-black text-on-surface-variant uppercase tracking-widest opacity-40">Sample Size: {Math.min(report.tableRows.length, 20)} Shipments</span>
                     </div>
 
                     <div className="overflow-x-auto rounded-2xl border border-surface-container/50">
                         <table className="w-full text-left">
                             <thead className="bg-surface-container-low/50">
                                 <tr>
-                                    {['Mode', 'Terminal Code', 'Strategic Corridor', 'Risk Index'].map(h => (
+                                    {['Mode', 'Shipment ID', 'Route', 'Risk Level'].map(h => (
                                         <th key={h} className="px-8 py-5 text-[10px] font-black text-on-surface-variant uppercase tracking-widest">{h}</th>
                                     ))}
                                 </tr>
@@ -281,7 +282,9 @@ export default function ReportsPage() {
                             <tbody className="divide-y divide-surface-container">
                                 {report.tableRows.slice(0, 20).map(s => (
                                     <tr key={s.id} className="hover:bg-surface-container-low/20 transition-all">
-                                        <td className="px-8 py-6">{modeIcon(s.mode)}</td>
+                                        <td className="px-8 py-6 text-indigo-600">
+                                            <ModeIcon mode={s.mode} size={20} />
+                                        </td>
                                         <td className="px-8 py-6 font-black text-[13px] text-on-surface font-mono italic">#{s.shipment_code.split('-').pop()}</td>
                                         <td className="px-8 py-6 text-[13px] font-bold text-on-surface uppercase tracking-tight">{s.origin} ⇾ {s.destination}</td>
                                         <td className="px-8 py-6">

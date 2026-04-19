@@ -35,9 +35,9 @@ function ApiStatusChip({ ok, label }: { ok: boolean | null; label: string }) {
       {ok === null ? (
         <div className="status-pulse bg-surface-container w-4 h-4" />
       ) : (
-        <div className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest ${ok ? 'bg-primary-fixed text-[#493ee5]' : 'bg-error-container text-error'}`}>
+          <div className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest ${ok ? 'bg-primary-fixed text-[#493ee5]' : 'bg-error-container text-error'}`}>
           <div className={`w-1.5 h-1.5 rounded-full ${ok ? 'bg-[#493ee5]' : 'bg-error'} status-pulse`} />
-          {ok ? 'Active Link' : 'Sync Error'}
+          {ok ? 'Connected' : 'Disconnected'}
         </div>
       )}
     </div>
@@ -95,9 +95,9 @@ export default function SettingsPage() {
       const { error } = await supabase.from('profiles').upsert({ id: user.id, ...data, updated_at: new Date().toISOString() });
       if (error) throw error;
       await supabase.auth.updateUser({ data: { full_name: data.full_name, company: data.company } });
-      toast.success('System Configuration Updated');
+      toast.success('Profile Updated');
     } catch (err: any) {
-      toast.error('Update Protocol Failed');
+      toast.error('Failed to update profile');
     } finally {
       setSaving(false);
     }
@@ -111,18 +111,18 @@ export default function SettingsPage() {
       {/* Strategic Page Header */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">
         <div>
-          <h1 className="text-4xl font-black text-on-surface tracking-tighter uppercase">System Control</h1>
+          <h1 className="text-4xl font-black text-on-surface tracking-tighter uppercase">Settings</h1>
           <div className="flex items-center gap-2 mt-2">
             <span className="status-pulse bg-primary" />
-            <p className="text-[10px] font-black text-on-surface-variant uppercase tracking-[0.3em]">Profile Settings</p>
+            <p className="text-[10px] font-black text-on-surface-variant uppercase tracking-[0.3em]">User Profile</p>
           </div>
         </div>
         
         <div className="flex bg-surface-container p-1 rounded-2xl border border-white/50">
           {[
             { id: 'profile', label: 'Identity', icon: 'person' },
-            { id: 'intelligence', label: 'Backbone', icon: 'hub' },
-            { id: 'security', label: 'Firewall', icon: 'shield' },
+            { id: 'intelligence', label: 'Infrastructure', icon: 'hub' },
+            { id: 'security', label: 'Security', icon: 'shield' },
           ].map(t => (
             <button
               key={t.id}
@@ -142,7 +142,7 @@ export default function SettingsPage() {
         {activeTab === 'profile' && (
           <motion.div initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.98 }} className="space-y-10">
             
-            {/* Identity Command Card */}
+            {/* Profile Overview Card */}
             <div className="bg-surface-container-lowest p-12 rounded-[3rem] border border-white/50 curated-shadow relative overflow-hidden group">
                <span className="material-symbols-outlined absolute -right-12 -top-12 text-[240px] opacity-[0.03] rotate-12 transition-transform duration-1000 group-hover:scale-110">verified_user</span>
                <div className="relative flex flex-col md:flex-row items-center gap-12">
@@ -164,7 +164,7 @@ export default function SettingsPage() {
                     <div className="flex flex-wrap justify-center md:justify-start gap-6 pt-4">
                        {[
                          { icon: 'mail', val: user?.email },
-                         { icon: 'call', val: profile.phone || '+No Protocol' }
+                         { icon: 'call', val: profile.phone || 'Unavailable' }
                        ].map((item, i) => (
                          <div key={i} className="flex items-center gap-3 text-[12px] font-bold text-on-surface italic bg-surface-container-low/50 px-5 py-2.5 rounded-xl border border-white/50">
                            <span className="material-symbols-outlined text-[16px] text-[#493ee5]">{item.icon}</span>
@@ -182,7 +182,7 @@ export default function SettingsPage() {
                   <div className="w-12 h-12 rounded-2xl bg-surface-container-low flex items-center justify-center text-primary shadow-sm">
                     <span className="material-symbols-outlined text-[24px]">tune</span>
                   </div>
-                  <h3 className="text-2xl font-black text-on-surface tracking-tighter uppercase italic">Identity Specification</h3>
+                  <h3 className="text-2xl font-black text-on-surface tracking-tighter uppercase italic">Edit Profile</h3>
                </div>
                
                <form onSubmit={handleSubmit(onSubmit)} className="space-y-10">
@@ -201,11 +201,11 @@ export default function SettingsPage() {
                     </div>
                     <div>
                       <label className={labelCls}>Phone Number</label>
-                      <input {...register('phone')} className={fieldCls} placeholder="+91 Protocol Number" />
+                      <input {...register('phone')} className={fieldCls} placeholder="Phone Number" />
                     </div>
                     <div>
                       <label className={labelCls}>WhatsApp Number</label>
-                      <input {...register('whatsapp')} className={fieldCls} placeholder="+91 Redundant Line" />
+                      <input {...register('whatsapp')} className={fieldCls} placeholder="Redundant Line" />
                     </div>
                   </div>
 
@@ -227,7 +227,7 @@ export default function SettingsPage() {
 
                   <div className="flex justify-end pt-6">
                     <button type="submit" disabled={saving} className="bg-on-surface text-inverse-on-surface py-5 px-12 rounded-2xl text-[11px] font-black uppercase tracking-[0.3em] shadow-2xl hover:opacity-95 active:scale-95 transition-all">
-                      {saving ? 'Synchronizing Cluster...' : 'Save Changes'}
+                      {saving ? 'Saving...' : 'Save Changes'}
                     </button>
                   </div>
                </form>
@@ -243,30 +243,30 @@ export default function SettingsPage() {
                   <div className="w-12 h-12 rounded-2xl bg-surface-container-low flex items-center justify-center text-primary shadow-sm">
                     <span className="material-symbols-outlined text-[24px]">dns</span>
                   </div>
-                  <h3 className="text-2xl font-black text-on-surface tracking-tighter uppercase italic">System Infrastructure</h3>
+                  <h3 className="text-2xl font-black text-on-surface tracking-tighter uppercase italic">API & System Status</h3>
                </div>
                
                <div className="space-y-2">
-                  <ApiStatusChip ok={supabaseOk} label="Supabase Postgres Mainframe" />
-                  <ApiStatusChip ok={geminiOk} label="Gemini AI Reasoning Node" />
-                  <ApiStatusChip ok={true} label="Strategic Telemetry Gateway" />
+                  <ApiStatusChip ok={supabaseOk} label="Database Server" />
+                  <ApiStatusChip ok={geminiOk} label="AI Model (Gemini)" />
+                  <ApiStatusChip ok={true} label="Data Gateway" />
                </div>
 
                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-12">
                   <div className="p-10 bg-primary-fixed/30 border border-[#493ee5]/10 rounded-[2.5rem] relative overflow-hidden group">
                      <span className="material-symbols-outlined absolute -right-6 -bottom-6 text-[100px] opacity-[0.05] group-hover:rotate-12 transition-transform">speed</span>
                      <div className="relative z-10">
-                        <p className="text-[10px] font-black text-[#493ee5] uppercase tracking-widest mb-4">Sync Latency Index</p>
+                        <p className="text-[10px] font-black text-[#493ee5] uppercase tracking-widest mb-4">Server Latency</p>
                         <p className="text-5xl font-black text-on-surface tracking-tighter italic">18ms <span className="text-sm font-bold opacity-30">P99</span></p>
-                        <p className="text-[10px] font-black text-[#493ee5]/60 uppercase tracking-widest mt-4">Optimal system throughput stable</p>
+                        <p className="text-[10px] font-black text-[#493ee5]/60 uppercase tracking-widest mt-4">System performing normally</p>
                      </div>
                   </div>
                   <div className="p-10 bg-surface-container-low border border-white rounded-[2.5rem] relative overflow-hidden group">
                      <span className="material-symbols-outlined absolute -right-6 -bottom-6 text-[100px] opacity-[0.05] group-hover:-rotate-12 transition-transform">bolt</span>
                      <div className="relative z-10">
-                        <p className="text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-4">Neural Node Specification</p>
+                        <p className="text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-4">AI Engine</p>
                         <p className="text-5xl font-black text-on-surface tracking-tighter italic">v3.1 Flash</p>
-                        <p className="text-[10px] font-black text-on-surface-variant/50 uppercase tracking-widest mt-4">Execution layer synchronized</p>
+                        <p className="text-[10px] font-black text-on-surface-variant/50 uppercase tracking-widest mt-4">Engine connected</p>
                      </div>
                   </div>
                </div>
@@ -281,7 +281,7 @@ export default function SettingsPage() {
                   <div className="w-12 h-12 rounded-2xl bg-surface-container-low flex items-center justify-center text-primary shadow-sm">
                     <span className="material-symbols-outlined text-[24px]">encrypted</span>
                   </div>
-                  <h3 className="text-2xl font-black text-on-surface tracking-tighter uppercase italic">Security Protocol Layer</h3>
+                  <h3 className="text-2xl font-black text-on-surface tracking-tighter uppercase italic">Security & Access</h3>
                </div>
                
                <div className="space-y-6">
@@ -289,7 +289,7 @@ export default function SettingsPage() {
                     <div className="flex items-center gap-6">
                        <span className="material-symbols-outlined text-primary">account_circle</span>
                        <div>
-                         <p className="text-[14px] font-black text-on-surface uppercase italic">Authenticated Terminal ID</p>
+                         <p className="text-[14px] font-black text-on-surface uppercase italic">Email Address</p>
                          <p className="text-[11px] font-bold text-on-surface-variant mt-1 tracking-tight">{user?.email}</p>
                        </div>
                     </div>
@@ -300,8 +300,8 @@ export default function SettingsPage() {
                     <div className="flex items-center gap-6">
                        <span className="material-symbols-outlined text-primary">key</span>
                        <div>
-                         <p className="text-[14px] font-black text-on-surface uppercase italic">MFA Integration Matrix</p>
-                         <p className="text-[11px] font-bold text-on-surface-variant mt-1 tracking-tight">Multi-factor node authentication active</p>
+                         <p className="text-[14px] font-black text-on-surface uppercase italic">Two-Factor Authentication</p>
+                         <p className="text-[11px] font-bold text-on-surface-variant mt-1 tracking-tight">Multi-factor authentication active</p>
                        </div>
                     </div>
                     <button className="text-[10px] font-black text-[#493ee5] uppercase tracking-widest hover:underline decoration-2">Configure Protocol</button>
@@ -314,7 +314,7 @@ export default function SettingsPage() {
                     className="flex items-center gap-4 px-10 py-5 bg-error-container text-error rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] border border-error/10 hover:bg-error hover:text-white transition-all shadow-sm active:scale-95"
                   >
                     <span className="material-symbols-outlined text-[18px]">logout</span> 
-                    Terminate Production Session
+                    Logout
                   </button>
                </div>
             </div>

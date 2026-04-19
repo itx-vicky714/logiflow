@@ -54,14 +54,14 @@ export function TopBar() {
 
   const handleReset = () => {
     setQuery('');
-    toast.success('Manifest Grid Refreshed');
+    toast.success('Dashboard Refreshed');
     window.location.reload();
   };
 
   const handleSimulate = async () => {
     if (simulating) return;
     setSimulating(true);
-    const toastId = toast.loading('Synchronizing neural data...');
+    const toastId = toast.loading('Simulating shipment...');
 
     try {
       const { data: { user: currentUser } } = await supabase.auth.getUser();
@@ -149,7 +149,7 @@ export function TopBar() {
               
               {showNotifications && (
                 <div className="absolute top-12 right-0 w-80 bg-white rounded-2xl shadow-2xl border border-slate-100 p-4 animate-in fade-in slide-in-from-top-2 duration-300">
-                  <h4 className="text-xs font-black uppercase tracking-widest text-slate-900 mb-4 px-2">AI Alerts</h4>
+                  <h4 className="text-xs font-black uppercase tracking-widest text-slate-900 mb-4 px-2">System Alerts</h4>
                   <div className="space-y-3">
                     {notifications.length > 0 ? notifications.map((n, i) => (
                       <div key={i} className="p-3 bg-slate-50 rounded-xl hover:bg-slate-100 transition-colors cursor-pointer">
@@ -163,7 +163,7 @@ export function TopBar() {
                       </div>
                     )}
                   </div>
-                  <button className="w-full mt-4 py-2 text-[10px] font-black text-[#493ee5] uppercase tracking-widest hover:bg-[#493ee5]/5 rounded-lg transition-colors">View All Hubs</button>
+                  <button className="w-full mt-4 py-2 text-[10px] font-black text-[#493ee5] uppercase tracking-widest hover:bg-[#493ee5]/5 rounded-lg transition-colors">View All Notifications</button>
                 </div>
               )}
             </div>
@@ -256,7 +256,7 @@ export function TopBar() {
               ))}
             </div>
             <div className="mt-12 p-6 bg-slate-50 rounded-2xl flex items-center justify-between">
-              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Support linkage active</p>
+              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Support team available</p>
               <a href="mailto:support@logiflow.app" className="text-[11px] font-black text-[#493ee5] uppercase tracking-widest border-b-2 border-primary/20 hover:border-primary transition-all pb-1">support@logiflow.app</a>
             </div>
           </div>

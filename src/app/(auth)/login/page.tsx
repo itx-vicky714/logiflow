@@ -77,7 +77,7 @@ export default function LoginPage() {
 
            <div className="mb-10">
               <h2 className="text-2xl font-black text-slate-800 tracking-tighter uppercase italic">Welcome Back</h2>
-              <p className="text-[12px] font-bold text-slate-400 uppercase tracking-widest mt-1">Sign in to manage your shipments</p>
+              <p className="text-[12px] font-bold text-slate-600 uppercase tracking-widest mt-1">Sign in to manage your shipments</p>
            </div>
 
            <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">

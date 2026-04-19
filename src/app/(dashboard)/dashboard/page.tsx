@@ -9,7 +9,8 @@ import {
 import { getCityWeather, KEY_CITIES } from '@/lib/weather';
 import type { Shipment, KPIData } from '@/types';
 import dynamic from 'next/dynamic';
-import { format } from 'date-fns';
+import { format, subDays } from 'date-fns';
+import { motion, AnimatePresence } from 'framer-motion';
 
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
@@ -21,29 +22,38 @@ const HIGH_RISK_THRESHOLD = 70;
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
 
-// Memoized KPI Component to prevent re-renders durante initial hydration
+// Memoized KPI Component to prevent re-renders
 const KPICard = React.memo(({ title, value, change, icon, iconColor, isError }: { 
   title: string; value: string | number; change: string; icon: string; iconColor: string; isError?: boolean 
 }) => (
-  <div className="bg-surface-container-lowest p-8 rounded-3xl curated-shadow border border-white/60 min-h-[170px] flex flex-col justify-between group hover:border-primary/20 transition-all">
-    <p className="text-on-surface-variant text-[11px] font-bold uppercase tracking-widest leading-none">{title}</p>
+  <motion.div 
+    initial={{ opacity: 0, y: 20 }}
+    animate={{ opacity: 1, y: 0 }}
+    whileHover={{ y: -4 }}
+    className="bg-surface-container-lowest p-8 rounded-3xl curated-shadow border border-white/60 min-h-[170px] flex flex-col justify-between group hover:border-primary/40 transition-all cursor-default"
+  >
+    <p className="text-slate-500 text-[11px] font-bold uppercase tracking-widest leading-none">{title}</p>
     <div>
       <h2 className={`text-4xl font-bold tracking-tighter ${isError ? 'text-error' : 'text-on-surface'} mb-1`}>{value}</h2>
       <div className={`flex items-center gap-1 ${isError ? 'text-error' : 'text-[#493ee5]'} text-[10px] font-bold`}>
-        <span className="material-symbols-outlined text-xs">{icon}</span>
+        <span className="material-symbols-outlined text-sm">{icon}</span>
         <span>{change}</span>
       </div>
     </div>
-  </div>
+  </motion.div>
 ));
+
+const SkeletonCard = () => (
+  <div className="bg-slate-50 p-8 rounded-3xl border border-slate-100 min-h-[170px] animate-pulse">
+    <div className="h-3 w-20 bg-slate-200 rounded mb-auto"></div>
+    <div className="h-10 w-24 bg-slate-200 rounded mt-4"></div>
+  </div>
+);
 
 export default function DashboardPage() {
   const router = useRouter();
   const [shipments, setShipments] = useState<Shipment[]>([]);
   const [loading, setLoading] = useState(true);
-  const [kpi, setKpi] = useState<KPIData>({
-    total: 0, inTransit: 0, onTime: 0, delayed: 0, atRisk: 0, avgRisk: 0, revenue: 0
-  });
   const [selectedShipment, setSelectedShipment] = useState<Shipment | null>(null);
   const [dbAlerts, setDbAlerts] = useState<any[]>([]);
   const [viewMode, setViewMode] = useState<'daily' | 'monthly'>('monthly');
@@ -67,17 +77,6 @@ export default function DashboardPage() {
         
       if (data) {
         setShipments(data);
-        const total = data.length;
-        const inTransit = data.filter(s => s.status === 'in_transit').length;
-        const onTime = data.filter(s => s.status === 'on_time' || s.status === 'delivered').length;
-        const delayed = data.filter(s => s.status === 'delayed').length;
-        const atRisk = data.filter(s => s.risk_score >= HIGH_RISK_THRESHOLD).length;
-        const avgRisk = total > 0 ? Math.round(data.reduce((a, b) => a + b.risk_score, 0) / total) : 0;
-        const revenue = data
-          .filter(s => s.status === 'delivered' || s.status === 'on_time' || s.status === 'in_transit')
-          .reduce((sum, s) => sum + (estimateRevenue(s) * 0.025), 0);
-          
-        setKpi({ total, inTransit, onTime, delayed, atRisk, avgRisk, revenue });
       }
 
       const { data: alertsData } = await supabase
@@ -98,43 +97,79 @@ export default function DashboardPage() {
     fetchData();
   }, [fetchData]);
 
-  const cityWeathers = KEY_CITIES.slice(0, 2).map(getCityWeather);
-  const onTimePct = kpi.total > 0 ? Math.round((kpi.onTime / kpi.total) * 100) : 0;
+  const { modeCounts, seaPercent, airPercent, roadPercent } = React.useMemo(() => {
+    const counts = shipments.reduce((acc, s) => {
+      acc[s.mode] = (acc[s.mode] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
 
-  const modeCounts = shipments.reduce((acc, s) => {
-    acc[s.mode] = (acc[s.mode] || 0) + 1;
-    return acc;
-  }, {} as Record<string, number>);
+    return {
+      modeCounts: counts,
+      seaPercent: Math.round(((counts['sea'] || 0) / Math.max(1, shipments.length)) * 100),
+      airPercent: Math.round(((counts['air'] || 0) / Math.max(1, shipments.length)) * 100),
+      roadPercent: Math.round(((counts['road'] || 0) / Math.max(1, shipments.length)) * 100),
+    };
+  }, [shipments]);
 
-  const barData = viewMode === 'monthly' 
-    ? MONTHS.map((m, i) => {
-        const monthShipments = shipments.filter(s => {
-          const date = new Date(s.created_at || s.eta);
-          return date.getMonth() === i;
+  const barData = React.useMemo(() => {
+    return viewMode === 'monthly' 
+      ? MONTHS.map((m, i) => {
+          const monthShipments = shipments.filter(s => {
+            const date = new Date(s.created_at || s.eta);
+            return date.getMonth() === i;
+          });
+          const monthlyRevenue = monthShipments.reduce((sum, s) => sum + estimateRevenue(s) * 0.025, 0);
+          return { name: m, value: monthlyRevenue };
+        })
+      : Array.from({ length: 7 }).map((_, i) => {
+          const d = new Date();
+          d.setDate(d.getDate() - (6 - i));
+          const dayShipments = shipments.filter(s => {
+            const date = new Date(s.created_at || s.eta);
+            return date.toDateString() === d.toDateString();
+          });
+          const dailyRevenue = dayShipments.reduce((sum, s) => sum + estimateRevenue(s) * 0.025, 0);
+          return { name: format(d, 'MMM d'), value: dailyRevenue };
         });
-        const monthlyRevenue = monthShipments.reduce((sum, s) => sum + estimateRevenue(s) * 0.025, 0);
-        return { name: m, value: monthlyRevenue };
-      })
-    : Array.from({ length: 7 }).map((_, i) => {
-        const d = new Date();
-        d.setDate(d.getDate() - (6 - i));
-        const dayShipments = shipments.filter(s => {
-          const date = new Date(s.created_at || s.eta);
-          return date.toDateString() === d.toDateString();
-        });
-        const dailyRevenue = dayShipments.reduce((sum, s) => sum + estimateRevenue(s) * 0.025, 0);
-        return { name: format(d, 'MMM d'), value: dailyRevenue };
-      });
+  }, [shipments, viewMode]);
 
-  const seaPercent = Math.round(((modeCounts['sea'] || 0) / Math.max(1, shipments.length)) * 100);
-  const airPercent = Math.round(((modeCounts['air'] || 0) / Math.max(1, shipments.length)) * 100);
-  const roadPercent = Math.round(((modeCounts['road'] || 0) / Math.max(1, shipments.length)) * 100);
+  const stats = React.useMemo(() => {
+    const total = shipments.length;
+    const inTransit = shipments.filter(s => s.status === 'in_transit').length;
+    const delayed = shipments.filter(s => s.status === 'delayed').length;
+    const onTime = shipments.filter(s => s.status === 'on_time').length;
+    const atRisk = shipments.filter(s => s.risk_score >= 70).length;
+    const revenue = shipments.reduce((sum, s) => sum + estimateRevenue(s) * 0.025, 0);
+    
+    return {
+      total,
+      inTransit,
+      delayed,
+      onTime,
+      atRisk,
+      revenue,
+      onTimePct: total > 0 ? Math.round((onTime / total) * 100) : 0
+    };
+  }, [shipments]);
 
-  const alerts = dbAlerts.length > 0 ? dbAlerts.slice(0, 3) : [];
+  const cityWeathers = React.useMemo(() => KEY_CITIES.slice(0, 2).map(getCityWeather), []);
+  const alerts = React.useMemo(() => dbAlerts.length > 0 ? dbAlerts.slice(0, 3) : [], [dbAlerts]);
 
   if (loading) return (
-    <div className="flex items-center justify-center min-h-[60vh]">
-      <div className="status-pulse bg-primary w-12 h-12"></div>
+    <div className="pt-16 px-12">
+      <div className="h-8 w-48 bg-slate-100 rounded animate-pulse mb-8"></div>
+      <div className="grid grid-cols-12 gap-10">
+        <div className="col-span-9 space-y-10">
+          <div className="grid grid-cols-6 gap-6">
+            {Array.from({ length: 6 }).map((_, i) => <SkeletonCard key={i} />)}
+          </div>
+          <div className="h-80 bg-slate-50 rounded-3xl animate-pulse"></div>
+        </div>
+        <div className="col-span-3 space-y-10">
+          <div className="h-80 bg-slate-50 rounded-3xl animate-pulse"></div>
+          <div className="h-40 bg-slate-50 rounded-3xl animate-pulse"></div>
+        </div>
+      </div>
     </div>
   );
 
@@ -146,18 +181,18 @@ export default function DashboardPage() {
         <div className="col-span-12 lg:col-span-9">
           <div className="flex items-center justify-between mb-8">
             <h3 className="text-xl font-black text-slate-800 tracking-tighter uppercase italic">
-              Network Intelligence Grid
+              Shipment Operations Control
             </h3>
           </div>
 
-          {/* KPI Cards Row (Increased Spacing & Width) */}
+          {/* KPI Cards Row */}
           <div className="grid grid-cols-3 xl:grid-cols-6 gap-6">
-             <KPICard title="Total Shipments" value={kpi.total.toLocaleString()} change="+14.2%" icon="trending_up" iconColor="#493ee5" />
-             <KPICard title="In Transit" value={kpi.inTransit.toLocaleString()} change="Active now" icon="sync" iconColor="on-surface-variant" />
-             <KPICard title="On Time" value={`${onTimePct}%`} change="Target met" icon="verified" iconColor="#493ee5" />
-             <KPICard title="Delayed" value={kpi.delayed.toLocaleString()} change="Critical action" icon="warning" iconColor="error" isError />
-             <KPICard title="High Risk" value={kpi.atRisk.toLocaleString()} change="Needs Review" icon="gpp_maybe" iconColor="error" isError={kpi.atRisk > 0} />
-             <KPICard title="AI Alerts" value={dbAlerts.length.toLocaleString()} change="Real-time" icon="bolt" iconColor="#493ee5" />
+             <KPICard title="Total Orders" value={stats.total.toLocaleString()} change="+14.2%" icon="trending_up" iconColor="#493ee5" />
+             <KPICard title="In Transit" value={stats.inTransit.toLocaleString()} change="Active now" icon="sync" iconColor="on-surface-variant" />
+             <KPICard title="On Time" value={`${stats.onTimePct}%`} change="Target met" icon="verified" iconColor="#493ee5" />
+             <KPICard title="Delayed" value={stats.delayed.toLocaleString()} change="Needs Attention" icon="warning" iconColor="error" isError />
+             <KPICard title="High Risk" value={stats.atRisk.toLocaleString()} change="Review Data" icon="gpp_maybe" iconColor="error" isError={stats.atRisk > 0} />
+             <KPICard title="System Alerts" value={dbAlerts.length.toLocaleString()} change="Real-time" icon="bolt" iconColor="#493ee5" />
           </div>
 
           {/* Revenue Graph Area (Increased bar gap and container padding) */}
@@ -166,7 +201,7 @@ export default function DashboardPage() {
               <div>
                 <h3 className="text-sm font-bold uppercase tracking-widest text-on-surface mb-1">Revenue Forecast</h3>
                 <p className="text-3xl font-bold tracking-tighter text-on-surface">
-                  {formatCurrency(kpi.revenue)} <span className="text-[11px] font-bold text-on-surface-variant uppercase tracking-widest ml-2">INR Total Volume</span>
+                  {formatCurrency(stats.revenue)} <span className="text-[11px] font-bold text-on-surface-variant uppercase tracking-widest ml-2">Total Estimated Revenue</span>
                 </p>
               </div>
               <div className="flex bg-slate-100 p-1 rounded-xl">
@@ -207,9 +242,9 @@ export default function DashboardPage() {
         <div className="col-span-12 lg:col-span-3 flex flex-col gap-10">
           <div className="bg-surface-container-lowest p-10 rounded-3xl curated-shadow border border-white/60 flex-1">
             <div className="flex items-center justify-between mb-10">
-              <h4 className="text-sm font-bold uppercase tracking-widest text-on-surface">AI Alerts</h4>
+              <h4 className="text-sm font-bold uppercase tracking-widest text-on-surface">System Alerts</h4>
               <span className="px-2 py-1 bg-error-container text-error text-[10px] font-bold rounded uppercase tracking-widest">
-                {alerts.length} ACTION REQ.
+                {alerts.length} Action Needed
               </span>
             </div>
             <div className="space-y-10">
@@ -219,7 +254,7 @@ export default function DashboardPage() {
                   <div>
                     <p className="text-[13px] font-semibold text-on-surface tracking-tight leading-none uppercase">{a.title}</p>
                     <p className="text-[11px] text-on-surface-variant mt-2 leading-relaxed font-medium">{a.message}</p>
-                    <button className="text-[10px] font-bold text-primary mt-3 uppercase tracking-tighter hover:underline decoration-1 underline-offset-4">Details Protocol</button>
+                    <button className="text-[10px] font-bold text-primary mt-3 uppercase tracking-tighter hover:underline decoration-1 underline-offset-4">View Details</button>
                   </div>
                 </div>
               )) : (
@@ -260,12 +295,12 @@ export default function DashboardPage() {
         <div className="col-span-12 lg:col-span-9 bg-surface-container-lowest rounded-3xl curated-shadow border border-white/60 overflow-hidden" style={{ contentVisibility: 'auto', containIntrinsicSize: '0 500px' }}>
           <div className="p-12 border-b border-surface-container">
             <div className="flex items-center justify-between">
-              <h4 className="text-sm font-bold uppercase tracking-widest text-on-surface">Recent Shipments</h4>
+              <h4 className="text-sm font-bold uppercase tracking-widest text-on-surface">Active Shipments</h4>
               <button 
                 onClick={() => router.push('/shipments')}
                 className="text-[12px] font-bold text-primary flex items-center gap-1 hover:underline decoration-1 underline-offset-4"
               >
-                View Expanded Fleet <span className="material-symbols-outlined text-sm">chevron_right</span>
+                View Full Fleet <span className="material-symbols-outlined text-sm">chevron_right</span>
               </button>
             </div>
           </div>
@@ -273,11 +308,11 @@ export default function DashboardPage() {
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="bg-surface-container-low/50">
-                  <th className="px-12 py-8 text-[11px] font-bold text-on-surface-variant uppercase tracking-[0.1em]">Operational ID</th>
-                  <th className="px-12 py-8 text-[11px] font-bold text-on-surface-variant uppercase tracking-[0.1em]">Target Terminal</th>
-                  <th className="px-12 py-8 text-[11px] font-bold text-on-surface-variant uppercase tracking-[0.1em]">Tactical Status</th>
-                  <th className="px-12 py-8 text-[11px] font-bold text-on-surface-variant uppercase tracking-[0.1em]">Registry ETA</th>
-                  <th className="px-12 py-8 text-[11px] font-bold text-on-surface-variant uppercase tracking-[0.1em]">Terminal Actions</th>
+                  <th className="px-12 py-8 text-[11px] font-bold text-on-surface-variant uppercase tracking-[0.1em]">Shipment ID</th>
+                  <th className="px-12 py-8 text-[11px] font-bold text-on-surface-variant uppercase tracking-[0.1em]">Destination</th>
+                  <th className="px-12 py-8 text-[11px] font-bold text-on-surface-variant uppercase tracking-[0.1em]">Status</th>
+                  <th className="px-12 py-8 text-[11px] font-bold text-on-surface-variant uppercase tracking-[0.1em]">ETA Schedule</th>
+                  <th className="px-12 py-8 text-[11px] font-bold text-on-surface-variant uppercase tracking-[0.1em]">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-surface-container">
@@ -289,7 +324,7 @@ export default function DashboardPage() {
                     </td>
                     <td className="px-12 py-10">
                       <p className="text-sm font-semibold text-on-surface uppercase tracking-tight">{s.destination}</p>
-                      <p className="text-[11px] text-on-surface-variant uppercase mt-1 tracking-tight font-medium">Clearance Zone A</p>
+                      <p className="text-[11px] text-on-surface-variant uppercase mt-1 tracking-tight font-medium">Clearance Zone</p>
                     </td>
                     <td className="px-12 py-10">
                       <span className={`inline-flex items-center gap-2 px-5 py-2.5 ${
@@ -311,11 +346,13 @@ export default function DashboardPage() {
                       </p>
                     </td>
                     <td className="px-12 py-10">
-                      <button className="w-12 h-12 rounded-xl flex items-center justify-center hover:bg-surface-container transition-all group-hover:bg-white shadow-sm">
+                      <button 
+                        onClick={(e) => { e.stopPropagation(); setSelectedShipment(s); }}
+                        className="w-12 h-12 rounded-xl flex items-center justify-center hover:bg-surface-container transition-all group-hover:bg-white shadow-sm"
+                      >
                         <div className="w-10 h-10 rounded-xl bg-surface-container-low border border-white/50 flex items-center justify-center text-primary shadow-sm group-hover:bg-surface-container-lowest transition-all">
                            <ModeIcon mode={s.mode} size={18} />
                         </div>
-                        <span className="material-symbols-outlined text-2xl text-on-surface-variant">more_vert</span>
                       </button>
                     </td>
                   </tr>

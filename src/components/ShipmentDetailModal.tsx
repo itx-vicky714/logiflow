@@ -3,7 +3,10 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { supabase } from '@/lib/supabase';
 import type { Shipment, Driver, DispatchRoute } from '@/types';
-import { statusConfig, modeIcon, modeLabel, riskColor, riskLabel, formatCurrency, estimateRevenue, CITY_COORDS } from '@/lib/utils';
+import { 
+  statusConfig, modeIcon, modeLabel, riskColor, riskLabel, formatCurrency, 
+  estimateRevenue, CITY_COORDS, calculateDistance 
+} from '@/lib/utils';
 import { getRouteWeatherRisk, getWeatherRiskColor } from '@/lib/weather';
 import { 
   X, Loader2, MapPin, Shield, Truck, GitBranch, Mail, MessageSquare, CheckCircle, 
@@ -23,22 +26,6 @@ interface Props {
 }
 
 type Tab = 'overview' | 'risk' | 'vehicle' | 'routes';
-
-function calculateDistance(origin: string, destination: string): number {
-  const coords = CITY_COORDS as Record<string, [number, number]>;
-  const normalize = (c: string) => 
-    Object.keys(coords).find(k => k.toLowerCase() === c?.toLowerCase()) || c;
-  const o = coords[normalize(origin)];
-  const d = coords[normalize(destination)];
-  if (!o || !d) return 850; // Fallback distance
-  const R = 6371;
-  const dLat = (d[0]-o[0]) * Math.PI/180;
-  const dLon = (d[1]-o[1]) * Math.PI/180;
-  const a = Math.sin(dLat/2)**2 + 
-    Math.cos(o[0]*Math.PI/180) * Math.cos(d[0]*Math.PI/180) * 
-    Math.sin(dLon/2)**2;
-  return Math.round(R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)));
-}
 
 const getRiskFactors = (shipment: Shipment) => {
   const factors = [];
@@ -111,6 +98,7 @@ const getRiskFactors = (shipment: Shipment) => {
 
 const getAltRoutes = (shipment: Shipment) => {
   const distance = calculateDistance(shipment.origin, shipment.destination);
+  if (distance === null) return [];
   const routes = [];
   
   if (shipment.mode !== 'road') {
@@ -170,7 +158,7 @@ const getDriverInfo = (shipment: Shipment) => {
   return drivers[index];
 };
 
-export default function ShipmentDetailModal({ shipment: initialShipment, onClose, onUpdate }: Props) {
+const ShipmentDetailModal = React.memo(({ shipment: initialShipment, onClose, onUpdate }: Props) => {
   const [shipment, setShipment] = useState(initialShipment);
   const [tab, setTab] = useState<Tab>('overview');
   const [aiRisk, setAiRisk] = useState('');
@@ -183,19 +171,26 @@ export default function ShipmentDetailModal({ shipment: initialShipment, onClose
   const router = useRouter();
 
   const progressPercent = useMemo(() => {
+    if (shipment.status === 'delivered') return 100;
+    if (shipment.status === 'pending') return 0;
+    if (!shipment.eta) return 45;
+    
     const created = new Date(shipment.created_at).getTime();
     const eta = new Date(shipment.eta).getTime();
     const now = Date.now();
+    
+    if (isNaN(created) || isNaN(eta) || eta <= created) return 45;
+    
     return Math.min(100, Math.max(0, 
       Math.round(((now - created) / (eta - created)) * 100)
     ));
-  }, [shipment]);
+  }, [shipment.status, shipment.eta, shipment.created_at]);
 
   const totalDistance = useMemo(() => 
     calculateDistance(shipment.origin, shipment.destination), 
   [shipment]);
 
-  const coveredKm = Math.round(totalDistance * (progressPercent / 100));
+  const coveredKm = totalDistance ? Math.round(totalDistance * (progressPercent / 100)) : null;
   const hoursLeft = Math.max(0, Math.round((new Date(shipment.eta).getTime() - Date.now()) / 3600000));
   const minutesAgo = Math.round((Date.now() - new Date(shipment.created_at).getTime()) / 60000);
 
@@ -319,20 +314,20 @@ export default function ShipmentDetailModal({ shipment: initialShipment, onClose
                    {/* B) SHIPMENT METRICS */}
                    <section className="grid grid-cols-2 md:grid-cols-4 gap-4">
                       {[
-                        { label: 'ETA Hours', val: `${hoursLeft}h`, color: 'text-slate-800' },
-                        { label: 'Weight (kg)', val: shipment.weight_kg?.toLocaleString('en-IN') || '—', color: 'text-slate-800' },
-                        { label: 'Route KM', val: `${totalDistance} km`, color: 'text-slate-800' },
+                        { label: 'ETA Hours', val: hoursLeft > 0 ? `${hoursLeft}h` : '—', color: 'text-slate-800' },
+                        { label: 'Weight (kg)', val: shipment.weight_kg ? shipment.weight_kg.toLocaleString('en-IN') : '—', color: 'text-slate-800' },
+                        { label: 'Route KM', val: totalDistance ? `${totalDistance.toLocaleString()} km` : '—', color: 'text-slate-800' },
                         { 
                           label: 'Risk Score', 
-                          val: shipment.risk_score, 
+                          val: `${shipment.risk_score}%`, 
                           style: shipment.risk_score >= 70 ? 'bg-red-50 border-red-200 text-red-600' : 
                                  shipment.risk_score >= 40 ? 'bg-amber-50 border-amber-200 text-amber-600' : 
                                  'bg-green-50 border-green-200 text-green-600'
                         }
                       ].map((box, i) => (
                         <div key={i} className={`rounded-xl p-4 border text-center ${box.style || 'bg-white border-slate-100'}`}>
-                           <p className="text-2xl font-black tracking-tighter">{box.val}</p>
-                           <p className="text-[9px] font-black uppercase tracking-widest text-slate-450 mt-1">{box.label}</p>
+                           <p className="text-2xl font-black tracking-tighter" style={{ color: box.color }}>{box.val}</p>
+                           <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 mt-1">{box.label}</p>
                         </div>
                       ))}
                    </section>
@@ -646,4 +641,6 @@ export default function ShipmentDetailModal({ shipment: initialShipment, onClose
       </motion.div>
     </div>
   );
-}
+});
+
+export default ShipmentDetailModal;

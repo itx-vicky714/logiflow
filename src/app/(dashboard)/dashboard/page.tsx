@@ -12,6 +12,7 @@ import dynamic from 'next/dynamic';
 import { format } from 'date-fns';
 
 import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
 
 const ShipmentDetailModal = dynamic(() => import('@/components/ShipmentDetailModal'), { ssr: false });
 
@@ -44,6 +45,96 @@ export default function DashboardPage() {
   const [selectedShipment, setSelectedShipment] = useState<Shipment | null>(null);
   const [dbAlerts, setDbAlerts] = useState<any[]>([]);
   const [viewMode, setViewMode] = useState<'daily' | 'monthly'>('monthly');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [dateFilter, setDateFilter] = useState('all');
+  const [simulating, setSimulating] = useState(false);
+
+  const handleAllClear = () => {
+    setSearchQuery('');
+    setStatusFilter('all');
+    setDateFilter('all');
+    setSelectedShipment(null);
+    toast.success('Filters cleared');
+  };
+
+  const handleReset = async () => {
+    setLoading(true);
+    try {
+      const { data } = await supabase
+        .from('shipments')
+        .select('*')
+        .order('created_at', { ascending: false });
+      setShipments(data || []);
+      toast.success('Dashboard refreshed');
+    } catch {
+      toast.error('Refresh failed');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSimulate = async () => {
+    setSimulating(true);
+    const toastId = toast.loading('Generating simulation data...');
+    
+    const cities = ['Mumbai', 'Delhi', 'Chennai', 'Bangalore', 
+      'Kolkata', 'Hyderabad', 'Pune', 'Ahmedabad', 'Surat', 'Patna'];
+    const modes = ['road', 'rail', 'air', 'sea'];
+    const statuses = ['on_time', 'delayed', 'at_risk', 'in_transit'];
+    const cargos = ['Electronics', 'Textiles', 'Pharmaceuticals', 
+      'Automotive Parts', 'FMCG Goods', 'Industrial Equipment'];
+    const suppliers = ['Tata Motors', 'Reliance Industries', 'Infosys Logistics',
+      'Mahindra Supply Co', 'Flipkart Commerce', 'Amazon India'];
+
+    const sampleShipments = Array.from({ length: 6 }, (_, i) => {
+      const originIdx = Math.floor(Math.random() * cities.length);
+      let destIdx = Math.floor(Math.random() * cities.length);
+      while (destIdx === originIdx) {
+        destIdx = Math.floor(Math.random() * cities.length);
+      }
+      const eta = new Date();
+      eta.setHours(eta.getHours() + Math.floor(Math.random() * 48) + 6);
+      
+      return {
+        origin: cities[originIdx],
+        destination: cities[destIdx],
+        transport_mode: modes[Math.floor(Math.random() * modes.length)],
+        status: statuses[Math.floor(Math.random() * statuses.length)],
+        cargo_type: cargos[Math.floor(Math.random() * cargos.length)],
+        supplier: suppliers[Math.floor(Math.random() * suppliers.length)],
+        weight: Math.floor(Math.random() * 5000) + 500,
+        declared_value: Math.floor(Math.random() * 500000) + 50000,
+        risk_score: Math.floor(Math.random() * 100),
+        estimated_delivery: eta.toISOString(),
+        priority: Math.random() > 0.7 ? 'high' : 'normal',
+      };
+    });
+
+    try {
+      const { error } = await supabase
+        .from('shipments')
+        .insert(sampleShipments);
+      
+      if (error) throw error;
+      
+      // Refresh dashboard data
+      const { data } = await supabase
+        .from('shipments')
+        .select('*')
+        .order('created_at', { ascending: false });
+      setShipments(data || []);
+      
+      toast.dismiss(toastId);
+      toast.success('6 sample shipments generated!');
+    } catch (err) {
+      toast.dismiss(toastId);
+      toast.error('Simulation failed — check Supabase connection');
+      console.error(err);
+    } finally {
+      setSimulating(false);
+    }
+  };
 
   const fetchData = useCallback(async () => {
     try {
@@ -137,6 +228,36 @@ export default function DashboardPage() {
       {/* Top Section: Dashboard KPIs & Sidebar Panels (9+3 Enforced) */}
       <section className="grid grid-cols-12 gap-10 mt-10 mb-6">
         <div className="col-span-12 lg:col-span-9">
+          {/* Dashboard Quick Actions */}
+          <div className="flex items-center gap-3 mb-8">
+            <button 
+              onClick={handleAllClear}
+              className="bg-primary text-on-primary py-2.5 px-6 text-[11px] font-black uppercase tracking-widest rounded-xl curated-shadow hover:opacity-90 active:scale-95 transition-all shadow-lg shadow-primary/20"
+            >
+              All Clear
+            </button>
+            <button 
+              onClick={handleReset}
+              className="bg-surface-container-lowest text-on-surface py-2.5 px-6 text-[11px] font-black uppercase tracking-widest rounded-xl border border-white/60 curated-shadow hover:bg-surface-container transition-all active:scale-95"
+            >
+              Reset
+            </button>
+            <button 
+              onClick={handleSimulate}
+              disabled={simulating}
+              className="bg-surface-container-lowest text-on-surface py-2.5 px-6 text-[11px] font-black uppercase tracking-widest rounded-xl border border-white/60 curated-shadow hover:bg-surface-container transition-all active:scale-95 disabled:opacity-50 flex items-center gap-2"
+            >
+              {simulating ? (
+                <>
+                  <div className="w-3 h-3 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+                  Simulating...
+                </>
+              ) : (
+                'Simulate'
+              )}
+            </button>
+          </div>
+
           {/* KPI Cards Row (Increased Spacing & Width) */}
           <div className="grid grid-cols-3 xl:grid-cols-6 gap-6">
              <KPICard title="Total Shipments" value={kpi.total.toLocaleString()} change="+14.2%" icon="trending_up" iconColor="#493ee5" />

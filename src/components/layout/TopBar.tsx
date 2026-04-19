@@ -13,12 +13,12 @@ import type { Notification, Shipment } from '@/types';
 const SIMULATE_SEQUENCE = [
   { origin: 'Mumbai', destination: 'Delhi', mode: 'road', status: 'on_time', priority: 'normal', risk_score: 15, cargo_type: 'Electronics', supplier_name: 'Tata Motors', weight_kg: 1200, declared_value: 150000 },
   { origin: 'Chennai', destination: 'Bangalore', mode: 'rail', status: 'in_transit', priority: 'normal', risk_score: 35, cargo_type: 'Textiles', supplier_name: 'Reliance Industries', weight_kg: 3000, declared_value: 200000 },
-  { origin: 'Kolkata', destination: 'Hyderabad', mode: 'air', status: 'at_risk', priority: 'high', risk_score: 72, cargo_type: 'Pharmaceuticals', supplier_name: 'Sun Pharma Logistics', weight_kg: 500, declared_value: 500000 },
+  { origin: 'Kolkata', destination: 'Hyderabad', mode: 'air', status: 'in_transit', priority: 'high', risk_score: 72, cargo_type: 'Pharmaceuticals', supplier_name: 'Sun Pharma Logistics', weight_kg: 500, declared_value: 500000 },
   { origin: 'Ahmedabad', destination: 'Pune', mode: 'road', status: 'delayed', priority: 'high', risk_score: 85, cargo_type: 'Automotive Parts', supplier_name: 'Mahindra Supply Co', weight_kg: 4500, declared_value: 350000 },
   { origin: 'Delhi', destination: 'Kolkata', mode: 'rail', status: 'on_time', priority: 'normal', risk_score: 20, cargo_type: 'FMCG Goods', supplier_name: 'Flipkart Commerce', weight_kg: 2000, declared_value: 120000 },
   { origin: 'Mumbai', destination: 'Chennai', mode: 'sea', status: 'in_transit', priority: 'normal', risk_score: 45, cargo_type: 'Industrial Equipment', supplier_name: 'Larsen & Toubro', weight_kg: 8000, declared_value: 800000 },
   { origin: 'Bangalore', destination: 'Hyderabad', mode: 'road', status: 'on_time', priority: 'normal', risk_score: 10, cargo_type: 'IT Hardware', supplier_name: 'Infosys Logistics', weight_kg: 800, declared_value: 250000 },
-  { origin: 'Patna', destination: 'Mumbai', mode: 'rail', status: 'at_risk', priority: 'high', risk_score: 68, cargo_type: 'Agricultural Goods', supplier_name: 'ITC Agribusiness', weight_kg: 6000, declared_value: 90000 },
+  { origin: 'Patna', destination: 'Mumbai', mode: 'rail', status: 'in_transit', priority: 'high', risk_score: 68, cargo_type: 'Agricultural Goods', supplier_name: 'ITC Agribusiness', weight_kg: 6000, declared_value: 90000 },
 ];
 
 export function TopBar() {

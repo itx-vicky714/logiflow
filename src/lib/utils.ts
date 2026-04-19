@@ -42,7 +42,6 @@ export function statusConfig(status: ShipmentStatus) {
     case 'in_transit': return { label: 'In Transit', bg: 'bg-blue-100',   text: 'text-blue-700',   dot: 'bg-blue-500'   };
     case 'delayed':    return { label: 'Delayed',    bg: 'bg-red-100',    text: 'text-red-700',    dot: 'bg-red-500'    };
     case 'delivered':  return { label: 'Delivered',  bg: 'bg-emerald-100',text: 'text-emerald-700',dot: 'bg-emerald-500'};
-    case 'dispatched': return { label: 'Dispatched', bg: 'bg-indigo-100', text: 'text-indigo-700', dot: 'bg-indigo-500' };
     case 'pending':    return { label: 'Pending',    bg: 'bg-amber-100',  text: 'text-amber-700',  dot: 'bg-amber-400'  };
     default:           return { label: status,       bg: 'bg-gray-100',   text: 'text-gray-700',   dot: 'bg-gray-400'   };
   }

@@ -11,6 +11,10 @@ const SYSTEM_PROMPT = LOGIFLOW_SYSTEM_PROMPT;
 function detectIntent(message: string): 'total_shipments' | 'active_shipments' | 'high_risk' | 'route_query' | 'risk_analysis' | 'delayed_shipments' | 'shipment_id_query' | 'product_help' | 'alerts_summary' | 'revenue_query' | null {
   const m = message.toLowerCase();
   
+  // High Priority: Website Usage / Help (Check BEFORE route_query to avoid 'kaise' matching 'se')
+  const helpTerms = ['what can you do', 'website', 'features', 'help', 'use kru', 'kaise use', 'ka kaam ki', 'use hota hai', 'kaise hota hai', 'how to use', 'guide'];
+  if (helpTerms.some(term => m.includes(term))) return 'product_help';
+
   // Total / Stats
   if (m.includes('total') || (m.includes('how many') && !m.includes('delay') && !m.includes('risk')) || (m.includes('kitna') && m.includes('total'))) return 'total_shipments';
   if (m.includes('active') || m.includes('in transit') || m.includes('moving')) return 'active_shipments';
@@ -23,13 +27,12 @@ function detectIntent(message: string): 'total_shipments' | 'active_shipments' |
   // Finance
   if (m.includes('revenue') || m.includes('earning') || m.includes('money') || m.includes('income')) return 'revenue_query';
   
-  // Routes & IDs (Order matters: check specific patterns first)
+  // Routes & IDs
   if (/shipment\s+#?[a-z0-9-]+/.test(m) || m.includes('id ') || m.includes('log-') || m.includes('sim-')) return 'shipment_id_query';
-  if (m.includes('status') || m.includes('route') || m.includes(' eta') || /(.+) (to|se) (.+)/.test(m) || /(se|tak)\s/.test(m)) return 'route_query';
+  if (m.includes('status') || m.includes('route') || m.includes(' eta') || /\b(.+)\b\s+\b(to|se)\b\s+\b(.+)\b/.test(m) || /(se|tak)\s/.test(m)) return 'route_query';
   
-  // Analysis & Support
+  // Analysis
   if (m.includes('analysis') || m.includes('assessment') || m.includes('risk-scan') || m.includes('scan')) return 'risk_analysis';
-  if (m.includes('what can you do') || m.includes('website') || m.includes('features') || m.includes('help') || m.includes('use kru') || m.includes('kaise use')) return 'product_help';
   
   return null;
 }
@@ -143,7 +146,16 @@ function smartFallbackText(message: string, shipments: ShipmentRecord[]): string
   }
   
   if (intent === 'product_help') {
-    return `**LogiFlow Platform Guide:**\n\n1. **Dashboard**: View real-time KPIs, network health, and active transit overview.\n2. **Shipments**: Detailed manifest of all current and historical shipments with smart filters.\n3. **Map**: High-fidelity interactive control tower for real-time fleet tracking.\n4. **Alerts**: System notifications for delays, high-risk conditions, and weather disruptions.\n5. **Analytics**: Revenue forecasting, risk drift reports, and operational summaries.\n6. **Chatbot (LogiBot)**: Ask me anything about your manifest, specific IDs, or route risks!\n\nI can assist you in English, Hindi, and Hinglish. What would you like to explore?`;
+    return `**LogiFlow Dashboard Usage Guide:**
+
+- **Dashboard**: Dashboard se aap total shipments, delayed shipments, high-risk items aur alerts dekh sakte ho. Ye aapke poore network ki health ka main control tower hai.
+- **Shipments**: Shipments section me aap har ek shipment ki details, current status, ID aur updates check kar sakte ho.
+- **Map**: Map section me aap live route visualisations aur global shipment movement dekh sakte ho.
+- **Alerts**: Smart Alerts me aapko delayed shipments, route disruptions aur potential risks ki real-time notifications milti hain.
+- **Analytics/Reports**: Is section me aap performance trends Samajh sakte ho aur weekly/daily reports generate kar sakte ho.
+- **Chatbot (LogiBot)**: Mujhse aap kisi bhi shipment ki status, specific route queries (e.g. Patna to Surat), ya delayed alerts ke baare me pooch sakte ho!
+
+How can I assist you with the platform today?`;
   }
 
   // Final Professional Fallback — NO generic fleet summary unless no intent matches and it's a general greeting

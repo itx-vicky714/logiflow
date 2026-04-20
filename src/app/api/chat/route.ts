@@ -8,12 +8,27 @@ const HIGH_RISK_THRESHOLD = 70;
 // System prompt imported from @/lib/prompts
 const SYSTEM_PROMPT = LOGIFLOW_SYSTEM_PROMPT;
 
-function detectIntent(message: string): 'total_shipments' | 'active_shipments' | 'high_risk' | 'route_query' | 'risk_analysis' | 'delayed_shipments' | 'shipment_id_query' | 'product_help' | 'alerts_summary' | 'revenue_query' | null {
+function detectIntent(message: string): 
+  | 'total_shipments' | 'active_shipments' | 'high_risk' | 'route_query' | 'risk_analysis' 
+  | 'delayed_shipments' | 'shipment_id_query' | 'product_help' | 'alerts_summary' 
+  | 'revenue_query' | 'reports_analytics' | 'map_usage' | 'dashboard_usage' | 'alerts_management' | null {
   const m = message.toLowerCase();
   
-  // High Priority: Website Usage / Help (Check BEFORE route_query to avoid 'kaise' matching 'se')
+  // High Priority: Website Usage / Help
   const helpTerms = ['what can you do', 'website', 'features', 'help', 'use kru', 'kaise use', 'ka kaam ki', 'use hota hai', 'kaise hota hai', 'how to use', 'guide'];
   if (helpTerms.some(term => m.includes(term))) return 'product_help';
+
+  // Analytics & Reports
+  if (m.includes('analytics') || m.includes('report') || m.includes('forecast') || m.includes('trend')) return 'reports_analytics';
+  
+  // Map Usage
+  if (m.includes('map') || m.includes('route visualization') || m.includes('live tracking') || m.includes('location')) return 'map_usage';
+  
+  // Dashboard Usage
+  if (m.includes('dashboard') || (m.includes('kya') && m.includes('dashboard'))) return 'dashboard_usage';
+  
+  // Alerts & Resolutions
+  if (m.includes('resolve') || m.includes('solve alert') || m.includes('alert kaise') || (m.includes('alert') && m.includes('manage'))) return 'alerts_management';
 
   // Total / Stats
   if (m.includes('total') || (m.includes('how many') && !m.includes('delay') && !m.includes('risk')) || (m.includes('kitna') && m.includes('total'))) return 'total_shipments';
@@ -146,16 +161,24 @@ function smartFallbackText(message: string, shipments: ShipmentRecord[]): string
   }
   
   if (intent === 'product_help') {
-    return `**LogiFlow Dashboard Usage Guide:**
+    return `**LogiFlow Platform Guide:**\n\n- **Dashboard**: Dashboard se aap total shipments, delayed shipments, aur overall network health check kar sakte hain.\n- **Shipments**: Is section mein aap individual shipment details aur unke status dekh sakte hain.\n- **Map**: Live route visualization aur movement tracking ke liye Map section use karein.\n- **Alerts**: System Alerts aapko risk aur delays ki turant notification dete hain.\n- **Analytics**: Revenue forecast aur transit trends samajhne ke liye Reports/Analytics use karein.\n- **Chatbot**: Mujhse aap shipment tracking, alerts, aur route-specific sawaal pooch sakte hain.`;
+  }
 
-- **Dashboard**: Dashboard se aap total shipments, delayed shipments, high-risk items aur alerts dekh sakte ho. Ye aapke poore network ki health ka main control tower hai.
-- **Shipments**: Shipments section me aap har ek shipment ki details, current status, ID aur updates check kar sakte ho.
-- **Map**: Map section me aap live route visualisations aur global shipment movement dekh sakte ho.
-- **Alerts**: Smart Alerts me aapko delayed shipments, route disruptions aur potential risks ki real-time notifications milti hain.
-- **Analytics/Reports**: Is section me aap performance trends Samajh sakte ho aur weekly/daily reports generate kar sakte ho.
-- **Chatbot (LogiBot)**: Mujhse aap kisi bhi shipment ki status, specific route queries (e.g. Patna to Surat), ya delayed alerts ke baare me pooch sakte ho!
+  if (intent === 'reports_analytics') {
+    return `**Reports & Analytics**: Is section mein aap logistics performance trends aur revenue analysis dekh sakte hain. Analytics page par jaakar aap daily aur monthly efficiency reports generate aur download kar sakte hain.`;
+  }
 
-How can I assist you with the platform today?`;
+  if (intent === 'map_usage') {
+    return `**Map Tracking**: LogiFlow Map section aapko live geospatial tracking provide karta hai. Aap map par kisi bhi shipment node par click karke uski exact location aur transit mode check kar sakte hain.`;
+  }
+
+  if (intent === 'dashboard_usage') {
+    return `**Dashboard Usage**: Dashboard aapka primary control center hai. Yahan aap real-time KPIs (Total Orders, In Transit, Delayed) dekh sakte hain aur simulation tool ke zariye system health test kar sakte hain.`;
+  }
+
+  if (intent === 'alerts_management') {
+    const alertCount = shipments.filter(s => s.status === 'delayed' || s.risk_score > 70).length;
+    return `**Alerts Management**: Abhi system mein **${alertCount}** active alerts hain. Aap TopBar ke Bell Icon par jaakar ya Dashboard alerts panel se inhe 'Resolve' kar sakte hain. Resolve karne par alert system se hat jayega.`;
   }
 
   // Final Professional Fallback — NO generic fleet summary unless no intent matches and it's a general greeting

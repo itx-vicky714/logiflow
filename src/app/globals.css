@@ -41,7 +41,7 @@
   /* Text & Outline */
   --color-on-surface: #191c1e;
   --color-on-surface-variant: #373e42; /* Darkened from #464555 for higher contrast (text-gray-600 equiv) */
-  --color-outline: #5f6e72; /* Darkened from #777587 */
+  --color-outline: #94a3b8; /* Darkened from #777587 */
   --color-outline-variant: #b1b9be; /* Darkened from #c7c4d8 */
   --color-inverse-surface: #2d3133;
   --color-inverse-on-surface: #eff1f3;
@@ -85,10 +85,10 @@ body {
 
 .premium-card {
   background-color: white;
-  border: 1px solid rgba(226, 232, 240, 0.8); /* border-slate-200/80 */
-  border-radius: 1rem; /* rounded-2xl */
-  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); /* shadow-sm */
-  transition: all 0.2s ease-in-out;
+  border: 1.5px solid #e2e8f0; /* Stronger border-slate-200 for visibility */
+  border-radius: 1.25rem; /* rounded-2xl+ */
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px -1px rgba(0, 0, 0, 0.01); /* Subtle shadow */
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .premium-card:hover {

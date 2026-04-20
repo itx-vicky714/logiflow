@@ -191,7 +191,7 @@ export default function DashboardPage() {
           </div>
 
           {/* KPI Cards Row */}
-          <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-4 lg:gap-6">
+          <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-6">
              <KPICard title="Total Orders" value={stats.total.toLocaleString()} change="+14.2%" icon="trending_up" iconColor="#493ee5" />
              <KPICard title="In Transit" value={stats.inTransit.toLocaleString()} change="Active now" icon="sync" iconColor="on-surface-variant" />
              <KPICard title="On Time" value={`${stats.onTimePct}%`} change="Target met" icon="verified" iconColor="#493ee5" />
@@ -256,10 +256,23 @@ export default function DashboardPage() {
               {alerts.length > 0 ? alerts.map((a, i) => (
                 <div key={i} className="flex gap-6 group">
                   <div className={`w-[3px] h-12 ${a.type === 'risk' || a.type === 'delay' ? 'bg-error' : a.type === 'info' ? 'bg-primary' : 'bg-tertiary-container'} rounded-full transition-transform group-hover:scale-y-125`}></div>
-                  <div>
-                    <p className="text-[13px] font-semibold text-on-surface tracking-tight leading-none uppercase">{a.title}</p>
+                  <div className="flex-1">
+                    <div className="flex justify-between items-start mb-1">
+                      <p className="text-[13px] font-semibold text-on-surface tracking-tight leading-none uppercase">{a.title}</p>
+                      <button 
+                        onClick={async () => {
+                          const { error } = await supabase.from('notifications').update({ is_read: true }).eq('id', a.id);
+                          if (!error) {
+                            setDbAlerts(prev => prev.filter(item => item.id !== a.id));
+                            toast.success('Alert resolved');
+                          }
+                        }}
+                        className="text-[9px] font-black uppercase text-indigo-600 opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        Resolve
+                      </button>
+                    </div>
                     <p className="text-[11px] text-on-surface-variant mt-2 leading-relaxed font-medium">{a.message}</p>
-                    <button className="text-[10px] font-bold text-primary mt-3 uppercase tracking-tighter hover:underline decoration-1 underline-offset-4">View Details</button>
                   </div>
                 </div>
               )) : (

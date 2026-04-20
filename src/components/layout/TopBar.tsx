@@ -112,18 +112,36 @@ export function TopBar() {
       const eta = new Date();
       eta.setHours(eta.getHours() + Math.floor(Math.random() * 48) + 6);
 
-      const { error } = await supabase
+      const { data: newShipment, error } = await supabase
         .from('shipments')
         .insert({
           ...shipmentData,
           user_id: currentUser.id,
           eta: eta.toISOString(),
-          is_simulated: true, // Clearly marked as simulated/sandbox data
+          is_simulated: true,
           shipment_code: `SIM-${Math.random().toString(36).substring(2, 8).toUpperCase()}`,
-        });
+        })
+        .select()
+        .single();
 
       if (error) throw error;
       
+      // Auto-generate alert on every 4th simulation run
+      if (currentIndex % 4 === 3) {
+        const severityArr = ['low', 'medium', 'high', 'critical'];
+        const reasons = ['Weather anomaly detected', 'Transit vector drift', 'Resource bottleneck', 'Route disruption'];
+        
+        await supabase.from('notifications').insert({
+          user_id: currentUser.id,
+          shipment_id: newShipment.id,
+          type: 'risk',
+          title: 'Simulated System Alert',
+          message: `${reasons[currentIndex % reasons.length]} for shipment #${newShipment.shipment_code.split('-').pop()}.`,
+          is_read: false
+        });
+        toast.info('Alert Triggered: Anomalous vector detected in sandbox node.');
+      }
+
       localStorage.setItem('simulate_index', String(currentIndex + 1));
       toast.success(`Sandbox Node Active: ${shipmentData.origin} → ${shipmentData.destination}`, { id: toastId });
       
@@ -207,12 +225,29 @@ export function TopBar() {
               </button>
               
               {showNotifications && (
-                <div className="absolute top-16 right-0 w-80 bg-white rounded-2xl shadow-2xl border border-slate-100 p-4 animate-in fade-in slide-in-from-top-2 duration-300">
-                  <h4 className="text-xs font-black uppercase tracking-widest text-slate-900 mb-4 px-2">System Alerts</h4>
-                  <div className="space-y-3">
+                <div className="absolute top-16 right-0 w-80 bg-white rounded-2xl shadow-2xl border border-slate-200 p-4 animate-in fade-in slide-in-from-top-2 duration-300">
+                  <div className="flex items-center justify-between mb-4 px-2">
+                    <h4 className="text-xs font-black uppercase tracking-widest text-slate-900">System Alerts</h4>
+                    {notifications.length > 0 && (
+                      <button onClick={handleAllClear} className="text-[9px] font-black uppercase tracking-widest text-indigo-600 hover:underline">Clear All</button>
+                    )}
+                  </div>
+                  <div className="space-y-3 max-h-[400px] overflow-y-auto no-scrollbar">
                     {notifications.length > 0 ? notifications.map((n, i) => (
-                      <div key={i} className="p-3 bg-slate-50 rounded-xl hover:bg-slate-100 transition-colors cursor-pointer">
-                        <p className="text-[11px] font-bold text-slate-800 leading-tight mb-1">{n.title}</p>
+                      <div key={i} className="p-3 bg-slate-50/80 rounded-xl hover:bg-slate-100 transition-colors border border-slate-100 group">
+                        <div className="flex justify-between items-start mb-1">
+                          <p className="text-[11px] font-bold text-slate-800 leading-tight">{n.title}</p>
+                          <button 
+                            onClick={async (e) => {
+                              e.stopPropagation();
+                              const { error } = await supabase.from('notifications').update({ is_read: true }).eq('id', n.id);
+                              if (!error) setNotifications(prev => prev.filter(item => item.id !== n.id));
+                            }}
+                            className="text-[9px] font-bold uppercase text-indigo-600 opacity-0 group-hover:opacity-100 transition-opacity"
+                          >
+                            Resolve
+                          </button>
+                        </div>
                         <p className="text-[10px] text-slate-500 leading-relaxed line-clamp-2">{n.message}</p>
                       </div>
                     )) : (

@@ -68,38 +68,43 @@ export function TopBar() {
 
   const handleAllClear = async () => {
     if (!user) return;
-    const toastId = toast.loading('Purging network nodes...');
+    const toastId = toast.loading('Resolving active alerts...');
     try {
-      const { error } = await supabase.from('shipments').delete().eq('user_id', user.id);
+      const { error } = await supabase
+        .from('notifications')
+        .update({ is_read: true })
+        .eq('user_id', user.id)
+        .eq('is_read', false);
+      
       if (error) throw error;
-      toast.success('Network Cleared', { id: toastId });
-      window.location.reload();
+      
+      setNotifications([]);
+      toast.success('All alerts resolved', { id: toastId });
     } catch (err) {
-      toast.error('Purge Failed', { id: toastId });
+      toast.error('Failed to clear alerts', { id: toastId });
     }
   };
 
-  const handleReset = async () => {
-    if (!user) return;
-    const toastId = toast.loading('Re-initializing network samples...');
-    try {
-      await supabase.from('shipments').delete().eq('user_id', user.id);
-      await seedShipments(user.id);
-      toast.success('Network Re-initialized', { id: toastId });
-      window.location.reload();
-    } catch (err) {
-      toast.error('Initialization Failed', { id: toastId });
-    }
+  const handleReset = () => {
+    setQuery('');
+    localStorage.removeItem('simulate_index');
+    toast.success('Dashboard filters and view state reset');
+    // We reload to ensure all components reset to their default initial state
+    setTimeout(() => window.location.reload(), 500);
   };
 
   const handleSimulate = async () => {
     if (simulating) return;
+    
+    const confirmed = window.confirm("This will add a sample tracking node to your dashboard for demonstration purposes. Proceed?");
+    if (!confirmed) return;
+
     setSimulating(true);
-    const toastId = toast.loading('Synthesizing active node...');
+    const toastId = toast.loading('Injecting sandbox node...');
 
     try {
       const { data: { user: currentUser } } = await supabase.auth.getUser();
-      if (!currentUser) throw new Error('Auth required');
+      if (!currentUser) throw new Error('Authentication required');
 
       const currentIndex = parseInt(localStorage.getItem('simulate_index') || '0');
       const shipmentData = SIMULATE_SEQUENCE[currentIndex % SIMULATE_SEQUENCE.length];
@@ -113,19 +118,19 @@ export function TopBar() {
           ...shipmentData,
           user_id: currentUser.id,
           eta: eta.toISOString(),
-          is_simulated: true,
-          shipment_code: `LOG-${Math.random().toString(36).substring(2, 8).toUpperCase()}`,
+          is_simulated: true, // Clearly marked as simulated/sandbox data
+          shipment_code: `SIM-${Math.random().toString(36).substring(2, 8).toUpperCase()}`,
         });
 
       if (error) throw error;
       
       localStorage.setItem('simulate_index', String(currentIndex + 1));
-      toast.success(`Node Active: ${shipmentData.origin} → ${shipmentData.destination}`, { id: toastId });
+      toast.success(`Sandbox Node Active: ${shipmentData.origin} → ${shipmentData.destination}`, { id: toastId });
       
-      window.location.reload();
+      setTimeout(() => window.location.reload(), 1000);
     } catch (err) {
       console.error(err);
-      toast.error('Simulation Interrupted', { id: toastId });
+      toast.error('Simulation Failed', { id: toastId });
     } finally {
       setSimulating(false);
     }
@@ -161,15 +166,15 @@ export function TopBar() {
           <div className="hidden lg:flex items-center gap-3">
             <button 
               onClick={handleAllClear}
-              className="h-10 px-4 flex items-center justify-center rounded-xl bg-slate-100 text-slate-500 hover:bg-rose-50 hover:text-rose-600 transition-all font-bold text-[10px] uppercase tracking-widest active:scale-95 border border-transparent hover:border-rose-100"
-              title="Purge all shipments"
+              className="h-10 px-4 flex items-center justify-center rounded-xl bg-slate-100 text-slate-500 hover:bg-indigo-50 hover:text-indigo-600 transition-all font-bold text-[10px] uppercase tracking-widest active:scale-95 border border-transparent hover:border-indigo-100"
+              title="Clear all alerts"
             >
               All Clear
             </button>
             <button 
               onClick={handleReset}
               className="h-10 px-4 flex items-center justify-center rounded-xl bg-slate-100 text-slate-500 hover:bg-slate-200 hover:text-slate-900 transition-all font-bold text-[10px] uppercase tracking-widest active:scale-95 border border-transparent hover:border-slate-200"
-              title="Reset to sample data"
+              title="Reset view state"
             >
               Reset
             </button>

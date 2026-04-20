@@ -87,8 +87,8 @@ export default function LogiBot() {
             initial={{ opacity: 0, y: 20, scale: 0.95, filter: 'blur(10px)' }}
             animate={{ opacity: 1, y: 0, scale: 1, filter: 'blur(0px)' }}
             exit={{ opacity: 0, y: 20, scale: 0.95, filter: 'blur(10px)' }}
-            className="fixed bottom-28 right-8 w-[400px] h-[600px] bg-surface-container-lowest border border-white/50 rounded-[2.5rem] curated-shadow z-50 flex flex-col overflow-hidden"
-            style={{ contentVisibility: 'auto', containIntrinsicSize: '400px 600px' }}
+            className="fixed bottom-0 right-0 sm:bottom-28 sm:right-8 w-full sm:w-[400px] h-full sm:h-[600px] bg-surface-container-lowest border border-white/50 sm:rounded-[2.5rem] curated-shadow z-50 flex flex-col overflow-hidden"
+            style={{ contentVisibility: 'auto', containIntrinsicSize: '400px 600px', maxWidth: '400px' }}
           >
             {/* Header */}
             <div className="p-8 border-b border-surface-container bg-surface-container-low/30">

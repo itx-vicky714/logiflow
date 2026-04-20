@@ -30,13 +30,14 @@ const KPICard = React.memo(({ title, value, change, icon, iconColor, isError }: 
     initial={{ opacity: 0, y: 20 }}
     animate={{ opacity: 1, y: 0 }}
     whileHover={{ y: -4 }}
-    className="bg-surface-container-lowest p-8 rounded-3xl curated-shadow border border-white/60 min-h-[170px] flex flex-col justify-between group hover:border-primary/40 transition-all cursor-default"
+    className="bg-surface-container-lowest p-6 lg:p-8 rounded-3xl transition-all cursor-default border border-white/60 shadow-[0_4px_24px_-4px_rgba(0,0,0,0.04)] relative overflow-hidden group hover:border-primary/30"
   >
-    <p className="text-slate-500 text-[11px] font-bold uppercase tracking-widest leading-none">{title}</p>
-    <div>
-      <h2 className={`text-4xl font-bold tracking-tighter ${isError ? 'text-error' : 'text-on-surface'} mb-1`}>{value}</h2>
+    <div className="absolute inset-0 bg-gradient-to-br from-white/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+    <p className="text-slate-500 text-[10px] lg:text-[11px] font-bold uppercase tracking-widest leading-none relative z-10">{title}</p>
+    <div className="relative z-10">
+      <h2 className={`text-2xl lg:text-4xl font-bold tracking-tighter ${isError ? 'text-error' : 'text-on-surface'} mb-1 mt-4`}>{value}</h2>
       <div className={`flex items-center gap-1 ${isError ? 'text-error' : 'text-[#493ee5]'} text-[10px] font-bold`}>
-        <span className="material-symbols-outlined text-sm">{icon}</span>
+        <span className="material-symbols-outlined text-xs lg:text-sm">{icon}</span>
         <span>{change}</span>
       </div>
     </div>
@@ -179,14 +180,14 @@ export default function DashboardPage() {
       {/* Top Section: Dashboard KPIs & Sidebar Panels (9+3 Enforced) */}
       <section className="grid grid-cols-12 gap-10 mt-10 mb-6">
         <div className="col-span-12 lg:col-span-9">
-          <div className="flex items-center justify-between mb-8">
+          <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
             <h3 className="text-xl font-black text-slate-800 tracking-tighter uppercase italic">
               Shipment Operations Control
             </h3>
           </div>
 
           {/* KPI Cards Row */}
-          <div className="grid grid-cols-3 xl:grid-cols-6 gap-6">
+          <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-4 lg:gap-6">
              <KPICard title="Total Orders" value={stats.total.toLocaleString()} change="+14.2%" icon="trending_up" iconColor="#493ee5" />
              <KPICard title="In Transit" value={stats.inTransit.toLocaleString()} change="Active now" icon="sync" iconColor="on-surface-variant" />
              <KPICard title="On Time" value={`${stats.onTimePct}%`} change="Target met" icon="verified" iconColor="#493ee5" />
@@ -196,7 +197,7 @@ export default function DashboardPage() {
           </div>
 
           {/* Revenue Graph Area (Increased bar gap and container padding) */}
-          <div className="mt-10 w-full bg-surface-container-lowest p-12 rounded-3xl curated-shadow border border-white/60">
+          <div className="mt-6 lg:mt-10 w-full bg-surface-container-lowest p-6 lg:p-12 rounded-3xl border border-white/60 shadow-[0_4px_24px_-4px_rgba(0,0,0,0.04)]">
             <div className="flex items-center justify-between mb-12">
               <div>
                 <h3 className="text-sm font-bold uppercase tracking-widest text-on-surface mb-1">Revenue Forecast</h3>
@@ -220,7 +221,7 @@ export default function DashboardPage() {
               </div>
             </div>
             
-            <div className="h-64 flex items-end justify-between gap-6 relative mt-6">
+            <div className="h-64 flex items-end justify-between gap-2 md:gap-6 relative mt-6 overflow-x-auto pb-4 scrollbar-hide">
               {barData.map((data, idx) => {
                  const maxVal = Math.max(...barData.map(d => d.value));
                  const height = maxVal > 0 ? (data.value / maxVal) * 100 : 0;
@@ -239,8 +240,8 @@ export default function DashboardPage() {
         </div>
 
         {/* Tactical Panels Column */}
-        <div className="col-span-12 lg:col-span-3 flex flex-col gap-10">
-          <div className="bg-surface-container-lowest p-10 rounded-3xl curated-shadow border border-white/60 flex-1">
+        <div className="col-span-12 lg:col-span-3 flex flex-col gap-6 lg:gap-10">
+          <div className="bg-surface-container-lowest p-6 lg:p-10 rounded-3xl border border-white/60 shadow-[0_4px_24px_-4px_rgba(0,0,0,0.04)] flex-1">
             <div className="flex items-center justify-between mb-10">
               <h4 className="text-sm font-bold uppercase tracking-widest text-on-surface">System Alerts</h4>
               <span className="px-2 py-1 bg-error-container text-error text-[10px] font-bold rounded uppercase tracking-widest">
@@ -266,7 +267,7 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          <div className="bg-surface-container-low p-10 rounded-3xl curated-shadow border border-white/40">
+          <div className="bg-surface-container-low p-6 lg:p-10 rounded-3xl border border-white/40 shadow-[0_4px_24px_-4px_rgba(0,0,0,0.02)]">
             <h4 className="text-[11px] font-bold uppercase tracking-widest text-on-surface-variant mb-6">Weather Intelligence</h4>
             <div className="grid grid-cols-2 gap-4">
               {cityWeathers.map((w, idx) => (
@@ -291,9 +292,9 @@ export default function DashboardPage() {
       </section>
 
       {/* Bottom Section: Operations Registry & Transport Modal (9+3 Enforced) */}
-      <section className="grid grid-cols-12 gap-10">
-        <div className="col-span-12 lg:col-span-9 bg-surface-container-lowest rounded-3xl curated-shadow border border-white/60 overflow-hidden" style={{ contentVisibility: 'auto', containIntrinsicSize: '0 500px' }}>
-          <div className="p-12 border-b border-surface-container">
+      <section className="grid grid-cols-12 gap-6 lg:gap-10">
+        <div className="col-span-12 lg:col-span-9 bg-surface-container-lowest rounded-3xl border border-white/60 shadow-[0_4px_24px_-4px_rgba(0,0,0,0.04)] overflow-hidden" style={{ contentVisibility: 'auto', containIntrinsicSize: '0 500px' }}>
+          <div className="p-6 lg:p-12 border-b border-surface-container">
             <div className="flex items-center justify-between">
               <h4 className="text-sm font-bold uppercase tracking-widest text-on-surface">Active Shipments</h4>
               <button 
@@ -318,16 +319,16 @@ export default function DashboardPage() {
               <tbody className="divide-y divide-surface-container">
                 {shipments.slice(0, 5).map((s, i) => (
                   <tr key={i} onClick={() => setSelectedShipment(s)} className="hover:bg-surface-container-low transition-colors cursor-pointer group">
-                    <td className="px-12 py-10">
+                    <td className="px-6 lg:px-12 py-6 lg:py-10">
                       <p className="text-sm font-semibold text-on-surface group-hover:text-primary transition-colors">#{s.shipment_code.split('-').pop()}</p>
-                      <p className="text-[11px] text-on-surface-variant uppercase mt-1 tracking-tight font-medium">{s.cargo_type}</p>
+                      <p className="text-[10px] lg:text-[11px] text-on-surface-variant uppercase mt-1 tracking-tight font-medium">{s.cargo_type}</p>
                     </td>
-                    <td className="px-12 py-10">
+                    <td className="px-6 lg:px-12 py-6 lg:py-10">
                       <p className="text-sm font-semibold text-on-surface uppercase tracking-tight">{s.destination}</p>
-                      <p className="text-[11px] text-on-surface-variant uppercase mt-1 tracking-tight font-medium">Clearance Zone</p>
+                      <p className="text-[10px] lg:text-[11px] text-on-surface-variant uppercase mt-1 tracking-tight font-medium hidden md:block">Clearance Zone</p>
                     </td>
-                    <td className="px-12 py-10">
-                      <span className={`inline-flex items-center gap-2 px-5 py-2.5 ${
+                    <td className="px-6 lg:px-12 py-6 lg:py-10">
+                      <span className={`inline-flex items-center gap-2 px-3 lg:px-5 py-1.5 lg:py-2.5 ${
                         s.status === 'delayed' ? 'bg-error-container text-error' : 
                         s.status === 'pending' ? 'bg-surface-container-highest text-on-surface-variant' :
                         'bg-primary-fixed text-on-primary-fixed-variant'
@@ -340,12 +341,12 @@ export default function DashboardPage() {
                         {s.status.replace('_', ' ')}
                       </span>
                     </td>
-                    <td className="px-12 py-10">
+                    <td className="hidden sm:table-cell px-6 lg:px-12 py-6 lg:py-10">
                       <p className={`text-sm font-semibold ${s.status === 'delayed' ? 'text-error' : 'text-on-surface'} tracking-tight`}>
                         {format(new Date(s.eta), 'MMM d, HH:mm')}
                       </p>
                     </td>
-                    <td className="px-12 py-10">
+                    <td className="px-6 lg:px-12 py-6 lg:py-10">
                       <button 
                         onClick={(e) => { e.stopPropagation(); setSelectedShipment(s); }}
                         className="w-12 h-12 rounded-xl flex items-center justify-center hover:bg-surface-container transition-all group-hover:bg-white shadow-sm"
@@ -363,8 +364,8 @@ export default function DashboardPage() {
         </div>
 
         {/* Transport Breakdown Area */}
-        <div className="col-span-12 lg:col-span-3 flex flex-col gap-10" style={{ contentVisibility: 'auto', containIntrinsicSize: '0 400px' }}>
-          <div className="bg-surface-container-lowest p-12 rounded-3xl curated-shadow border border-white/60 flex-1 flex flex-col group overflow-hidden relative">
+        <div className="col-span-12 lg:col-span-3 flex flex-col gap-6 lg:gap-10" style={{ contentVisibility: 'auto', containIntrinsicSize: '0 400px' }}>
+          <div className="bg-surface-container-lowest p-8 lg:p-12 rounded-3xl border border-white/60 shadow-[0_4px_24px_-4px_rgba(0,0,0,0.04)] flex-1 flex flex-col group overflow-hidden relative">
             <h4 className="text-sm font-bold uppercase tracking-widest text-on-surface mb-12">Logistics Distribution</h4>
             <div className="relative w-48 h-48 mx-auto mb-12 transition-transform duration-1000 group-hover:scale-105">
               <svg className="w-full h-full transform -rotate-90 rounded-full" viewBox="0 0 100 100">

@@ -15,7 +15,22 @@ import {
   LayoutDashboard,
   History,
   Globe,
-  Plus
+  Plus,
+  Pill,
+  ShoppingBag,
+  Factory,
+  Store,
+  Package,
+  Ship,
+  AlertTriangle,
+  Timer,
+  CheckCircle2,
+  AlertCircle,
+  Clock,
+  ShieldCheck,
+  TrendingUp,
+  Map as MapIcon,
+  MessageSquare
 } from 'lucide-react';
 import { motion, AnimatePresence, useScroll, useSpring } from 'framer-motion';
 
@@ -31,12 +46,12 @@ const ACTIVITY_EVENTS = [
 ];
 
 const INDUSTRIES = [
-  { icon: "🏥", label: "Pharma" },
-  { icon: "🛒", label: "FMCG" },
-  { icon: "🏭", label: "Manufacturing" },
-  { icon: "🛍️", label: "Retail" },
-  { icon: "📦", label: "Distribution" },
-  { icon: "🚢", label: "Freight Forwarders" },
+  { icon: <Pill size={18} />, label: "Pharma" },
+  { icon: <ShoppingBag size={18} />, label: "FMCG" },
+  { icon: <Factory size={18} />, label: "Manufacturing" },
+  { icon: <Store size={18} />, label: "Retail" },
+  { icon: <Package size={18} />, label: "Distribution" },
+  { icon: <Ship size={18} />, label: "Freight Forwarders" },
 ];
 
 const CAPABILITIES = [
@@ -106,7 +121,7 @@ const FadeIn = ({ children, delay = 0, className = "" }: { children: React.React
   );
 };
 
-const FloatingChip = ({ icon, label, value, color, delay, className, index = 0 }: { icon: string, label: string, value: string, color: string, delay: string, className: string, index?: number }) => {
+const FloatingChip = ({ icon, label, value, color, delay, className, index = 0 }: { icon: React.ReactNode, label: string, value: string, color: string, delay: string, className: string, index?: number }) => {
   const animationType = index % 2 === 0 ? 'float-1' : 'float-2';
   const duration = 4 + (index % 3);
 
@@ -115,7 +130,7 @@ const FloatingChip = ({ icon, label, value, color, delay, className, index = 0 }
       className={`bg-white rounded-xl shadow-lg p-3 flex items-center gap-3 border border-slate-100 z-20 ${className}`}
       style={{ animation: `${animationType} ${duration}s ease infinite`, animationDelay: delay }}
     >
-      <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-lg ${color}`}>
+      <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${color}`}>
         {icon}
       </div>
       <div>
@@ -377,9 +392,9 @@ const ShowcaseAlerts = () => (
   <div className="bg-white rounded-[2rem] shadow-2xl border border-slate-100 p-8 w-full h-full flex items-center justify-center">
     <div className="flex flex-col gap-4 w-full max-w-lg">
       {[
-        { id: 'SHP-A018', icon: '🔴', title: 'Delayed', reason: 'Chennai port congestion', time: 'Reported 14:22', level: 'High' },
-        { id: 'SHP-R003', icon: '🟡', title: 'At Risk', reason: 'NH-48 weather advisory', time: 'Risk: High', level: 'Medium' },
-        { id: 'SHP-L007', icon: '🟢', title: 'On Time', reason: 'Bangalore arrival confirmed', time: 'ETA 18:00', level: 'Normal' }
+        { id: 'SHP-A018', icon: <AlertCircle className="text-rose-500" size={24} />, title: 'Delayed', reason: 'Chennai port congestion', time: 'Reported 14:22', level: 'High' },
+        { id: 'SHP-R003', icon: <AlertTriangle className="text-amber-500" size={24} />, title: 'At Risk', reason: 'NH-48 weather advisory', time: 'Risk: High', level: 'Medium' },
+        { id: 'SHP-L007', icon: <CheckCircle2 className="text-emerald-500" size={24} />, title: 'On Time', reason: 'Bangalore arrival confirmed', time: 'ETA 18:00', level: 'Normal' }
       ].map((alert, i) => (
         <motion.div 
           key={i}
@@ -389,7 +404,7 @@ const ShowcaseAlerts = () => (
           className="bg-white rounded-2xl p-5 border border-slate-100 shadow-md flex items-center justify-between group hover:border-indigo-200 transition-colors"
         >
           <div className="flex items-center gap-4">
-            <span className="text-2xl">{alert.icon}</span>
+            <div className="shrink-0">{alert.icon}</div>
             <div>
               <p className="text-sm font-black text-slate-900">{alert.id} — {alert.title}</p>
               <p className="text-xs text-slate-500 font-medium">{alert.reason} · {alert.time}</p>
@@ -454,8 +469,8 @@ const ShowcaseAI = () => (
   <div className="bg-white rounded-[2rem] shadow-2xl border border-slate-100 p-8 w-full h-full flex items-center justify-center">
     <div className="w-full max-w-md bg-slate-50 rounded-[2rem] border border-slate-100 overflow-hidden flex flex-col shadow-inner">
       <div className="bg-white border-b border-slate-100 p-4 flex items-center gap-3">
-        <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white">
-          <Bot size={20} />
+        <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-indigo-200">
+          <MessageSquare size={20} />
         </div>
         <div>
           <h4 className="text-sm font-black text-slate-900 leading-none">LogiBot</h4>
@@ -631,16 +646,16 @@ export default function LandingPage() {
         
         {/* Floating Operational Chips (Hero only visibility logic handled in CSS/Responsive) */}
         <div className="absolute inset-0 max-w-7xl mx-auto pointer-events-none hidden md:block">
-          <FloatingChip icon="⚠️" label="Delay Risk" value="High — NH-48" color="text-amber-600" delay="0s" className="absolute top-[25%] left-[5%]" index={0} />
-          <FloatingChip icon="🔔" label="Active Alerts" value="3 shipments" color="text-rose-600" delay="0.5s" className="absolute top-[20%] right-[10%]" index={1} />
-          <FloatingChip icon="✓" label="ETA Confidence" value="94% on track" color="text-emerald-600" delay="1s" className="absolute bottom-[25%] left-[10%]" index={2} />
-          <FloatingChip icon="🌦" label="Weather Impact" value="Coastal route risk" color="text-indigo-600" delay="1.5s" className="absolute bottom-[30%] right-[5%]" index={3} />
+          <FloatingChip icon={<AlertTriangle size={16} />} label="Delay Risk" value="High — NH-48" color="bg-amber-50 text-amber-600" delay="0s" className="absolute top-[25%] left-[5%]" index={0} />
+          <FloatingChip icon={<Bell size={16} />} label="Active Alerts" value="3 shipments" color="bg-rose-50 text-rose-600" delay="0.5s" className="absolute top-[20%] right-[10%]" index={1} />
+          <FloatingChip icon={<CheckCircle2 size={16} />} label="ETA Confidence" value="94% on track" color="bg-emerald-50 text-emerald-600" delay="1s" className="absolute bottom-[25%] left-[10%]" index={2} />
+          <FloatingChip icon={<CloudRain size={16} />} label="Weather Impact" value="Coastal route risk" color="bg-indigo-50 text-indigo-600" delay="1.5s" className="absolute bottom-[30%] right-[5%]" index={3} />
         </div>
 
         {/* Mobile Chips (Only show 2) */}
         <div className="md:hidden absolute inset-0 pointer-events-none overflow-hidden">
-           <FloatingChip icon="⚠️" label="Delay Risk" value="High — NH-48" color="text-amber-600" delay="0s" className="absolute top-[20%] left-[5%] scale-75" index={4} />
-           <FloatingChip icon="🔔" label="Active Alerts" value="3 shipments" color="text-rose-600" delay="0.5s" className="absolute top-[18%] right-[5%] scale-75" index={5} />
+           <FloatingChip icon={<AlertTriangle size={14} />} label="Delay Risk" value="High Risk" color="bg-amber-50 text-amber-600" delay="0s" className="absolute top-[20%] left-[2%] scale-75" index={4} />
+           <FloatingChip icon={<Bell size={14} />} label="Active Alerts" value="3 Alerts" color="bg-rose-50 text-rose-600" delay="0.5s" className="absolute top-[18%] right-[2%] scale-75" index={5} />
         </div>
 
         <div className="max-w-7xl mx-auto px-6 relative z-10 text-center">
@@ -694,8 +709,8 @@ export default function LandingPage() {
              {/* Row 1: Industries */}
              <div className="flex flex-wrap justify-center gap-4 mb-8">
                 {INDUSTRIES.map((ind, i) => (
-                  <span key={i} className="px-6 py-3 bg-slate-50 border border-slate-100 rounded-2xl text-xs font-black text-slate-700 flex items-center gap-2 hover:bg-white hover:shadow-md transition-all">
-                    <span className="text-lg grayscale group-hover:grayscale-0">{ind.icon}</span> {ind.label}
+                  <span key={i} className="px-6 py-3 bg-slate-50 border border-slate-100 rounded-2xl text-xs font-black text-slate-700 flex items-center gap-2 hover:bg-white hover:border-indigo-200 hover:shadow-xl transition-all group">
+                    <span className="text-indigo-500 group-hover:scale-110 transition-transform">{ind.icon}</span> {ind.label}
                   </span>
                 ))}
              </div>
@@ -792,20 +807,20 @@ export default function LandingPage() {
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {[
-              { title: "Live Shipment Visibility", icon: "🗺️", text: "See every active shipment on a live India map — position, ETA, status, and risk score. Road, rail, air, and sea in one view. No more calling transporters for updates." },
-              { title: "AI Delay Prediction", icon: "🤖", text: "Our AI monitors traffic corridors, weather systems, and port congestion to flag shipments at risk — before delays happen. Not a dashboard, a co-pilot." },
-              { title: "Weather & Route Intelligence", icon: "🌦️", text: "Every route has a weather-aware risk score updated every hour. Monsoon on the coastal highway? Congestion on NH-48? You know first — not last." },
-              { title: "Analytics & Revenue Tracking", icon: "📊", text: "On-time rates, delay costs, route leaderboards, revenue forecasts — all calculated automatically from your shipment data. No manual reports." },
-              { title: "AI Logistics Assistant (LogiBot)", icon: "💬", text: "Ask LogiBot: 'Which shipments are at risk today?' or 'What's causing the Mumbai delays?' Instant answers. No lookup, no waiting, no dashboard drilling." },
+              { title: "Live Shipment Visibility", icon: <MapIcon size={24} />, text: "See every active shipment on a live India map — position, ETA, status, and risk score. Road, rail, air, and sea in one view. No more calling transporters for updates." },
+              { title: "AI Delay Prediction", icon: <Zap size={24} />, text: "Our AI monitors traffic corridors, weather systems, and port congestion to flag shipments at risk — before delays happen. Not a dashboard, a co-pilot." },
+              { title: "Weather & Route Intelligence", icon: <CloudRain size={24} />, text: "Every route has a weather-aware risk score updated every hour. Monsoon on the coastal highway? Congestion on NH-48? You know first — not last." },
+              { title: "Analytics & Revenue Tracking", icon: <TrendingUp size={24} />, text: "On-time rates, delay costs, route leaderboards, revenue forecasts — all calculated automatically from your shipment data. No manual reports." },
+              { title: "AI Logistics Assistant (LogiBot)", icon: <MessageSquare size={24} />, text: "Ask LogiBot: 'Which shipments are at risk today?' or 'What's causing the Mumbai delays?' Instant answers. No lookup, no waiting, no dashboard drilling." },
             ].map((feat, i) => (
-              <FadeIn key={i} delay={i * 80}>
-                <TiltCard className="h-full">
-                  <div className="p-10 bg-slate-50 rounded-[2.5rem] border border-slate-100 shadow-sm h-full hover:bg-white hover:border-indigo-100 transition-all group">
-                    <div className="text-4xl mb-8 group-hover:scale-110 transition-transform origin-left">{feat.icon}</div>
-                    <h3 className="text-xl font-black text-slate-900 mb-6">{feat.title}</h3>
-                    <p className="text-slate-500 font-bold leading-relaxed">{feat.text}</p>
+              <FadeIn key={i} delay={i * 100}>
+                <div className="bg-white p-8 lg:p-12 rounded-[2rem] border border-slate-100 shadow-sm hover:shadow-2xl hover:border-indigo-100 transition-all group flex flex-col h-full">
+                  <div className="w-14 h-14 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center mb-8 group-hover:scale-110 transition-transform">
+                    {feat.icon}
                   </div>
-                </TiltCard>
+                  <h3 className="text-xl font-black text-slate-900 mb-6">{feat.title}</h3>
+                  <p className="text-slate-500 font-bold leading-relaxed">{feat.text}</p>
+                </div>
               </FadeIn>
             ))}
           </div>
@@ -921,14 +936,14 @@ export default function LandingPage() {
 
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
             {[
-              { role: "Operations Manager", icon: "👤", text: "You're responsible for 50+ shipments a week. You need visibility without spending 3 hours chasing updates. LogiFlow gives you a complete picture — before your morning coffee." },
-              { role: "Dispatch Team", icon: "🚛", text: "You're on the phone all day coordinating routes, drivers, and ETAs. LogiFlow cuts those calls in half — live status is always one click away." },
-              { role: "Supply Chain Lead", icon: "📈", text: "You need data to make decisions — delay trends, route performance, cost impact. LogiFlow's analytics replace the manual Excel reports your team spends Fridays on." },
-              { role: "Logistics SME & Startups", icon: "🏢", text: "You're growing fast and can't afford enterprise software. LogiFlow gives you control-tower capability at startup-friendly pricing — free to start, scales with you." }
+              { role: "Operations Manager", icon: <LayoutDashboard size={28} />, text: "You're responsible for 50+ shipments a week. You need visibility without spending 3 hours chasing updates. LogiFlow gives you a complete picture — before your morning coffee." },
+              { role: "Dispatch Team", icon: <Truck size={28} />, text: "You're on the phone all day coordinating routes, drivers, and ETAs. LogiFlow cuts those calls in half — live status is always one click away." },
+              { role: "Supply Chain Lead", icon: <TrendingUp size={28} />, text: "You need data to make decisions — delay trends, route performance, cost impact. LogiFlow's analytics replace the manual Excel reports your team spends Fridays on." },
+              { role: "Logistics SME & Startups", icon: <Factory size={28} />, text: "You're growing fast and can't afford enterprise software. LogiFlow gives you control-tower capability at startup-friendly pricing — free to start, scales with you." }
             ].map((persona, i) => (
               <FadeIn key={i} delay={i * 100}>
-                <div className="p-8 bg-slate-50 rounded-[2rem] border border-slate-100 hover:bg-white hover:shadow-2xl transition-all h-full flex flex-col items-center text-center">
-                  <div className="w-16 h-16 bg-white shadow-lg rounded-2xl flex items-center justify-center text-3xl mb-8 group-hover:scale-110 transition-transform">{persona.icon}</div>
+                <div className="p-8 bg-slate-50 rounded-[2rem] border border-slate-100 hover:bg-white hover:border-indigo-200 hover:shadow-2xl transition-all h-full flex flex-col items-center text-center group">
+                  <div className="w-16 h-16 bg-white shadow-lg rounded-2xl flex items-center justify-center text-indigo-600 mb-8 group-hover:scale-110 group-hover:bg-indigo-600 group-hover:text-white transition-all duration-500">{persona.icon}</div>
                   <h3 className="text-xl font-black text-slate-900 mb-6 uppercase italic tracking-tight">{persona.role}</h3>
                   <p className="text-sm font-bold text-slate-500 leading-relaxed">{persona.text}</p>
                 </div>

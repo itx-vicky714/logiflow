@@ -1,24 +1,12 @@
 import { NextResponse } from 'next/server';
+import { LOGIFLOW_SYSTEM_PROMPT } from '@/lib/prompts';
 export const dynamic = 'force-dynamic';
 
 /** Consistent high-risk threshold used in both API and dashboard */
 const HIGH_RISK_THRESHOLD = 70;
 
-const SYSTEM_PROMPT = `You are LogiBot, the EXCLUSIVE Logistics Intelligence AI for the LogiFlow Platform.
-Your sole purpose is to provide REAL-TIME, DATA-BACKED answers using the [GROUNDING CONTEXT] and [DETAILED MANIFEST] provided below.
-
-INTENT-BASED EXECUTION:
-1. TOTAL_SHIPMENTS: Return exact number from context.
-2. HIGH_RISK: Filter manifest for risk_score > 70 and return count + codes.
-3. ROUTE_QUERY: Match origin/destination and return status/risk/ETA.
-4. RISK_ANALYSIS: Provide shipment-specific reasoning based on cargo, mode, weather, and score.
-
-CRITICAL RULES:
-- NEVER GIVE GENERIC ANSWERS. Statements like "I cannot access real-time data" are FORBIDDEN.
-- DO NOT HALLUCINATE. If no match exists, say "No shipment found for this query."
-- PRECISE NUMBERS: Use exact decimals and integers from the payload.
-- MULTILINGUAL: Support English, Hindi, and Hinglish natively.
-- TONE: Professional LogiFlow Dashboard Officer.`;
+// System prompt imported from @/lib/prompts
+const SYSTEM_PROMPT = LOGIFLOW_SYSTEM_PROMPT;
 
 function detectIntent(message: string): 'total_shipments' | 'active_shipments' | 'high_risk' | 'route_query' | 'risk_analysis' | 'delayed_shipments' | 'shipment_id_query' | 'website_capability_query' | 'alerts_summary' | 'revenue_query' | null {
   const m = message.toLowerCase();

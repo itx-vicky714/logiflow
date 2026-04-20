@@ -134,7 +134,7 @@ const FloatingChip = ({ icon, label, value, color, delay, className, index = 0 }
         {icon}
       </div>
       <div>
-        <p className="text-[10px] uppercase tracking-wider text-slate-400 font-bold">{label}</p>
+        <p className="text-[10px] uppercase tracking-wider text-slate-500 font-bold">{label}</p>
         <p className="text-xs font-black text-slate-900">{value}</p>
       </div>
     </motion.div>
@@ -256,12 +256,12 @@ const ROIByTheNumbers = () => {
 
       <div className="p-8 lg:p-12 bg-slate-50 flex flex-col justify-center text-center">
         <div className="mb-8">
-          <p className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-2">You currently lose approximately</p>
+          <p className="text-sm font-bold text-slate-500 uppercase tracking-widest mb-2">You currently lose approximately</p>
           <p className="text-4xl lg:text-5xl font-black text-rose-500">{formatINR(monthlyLoss)}<span className="text-lg font-bold">/mo</span></p>
         </div>
 
         <div className="mb-8">
-          <p className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-2">LogiFlow reduces this to</p>
+          <p className="text-sm font-bold text-slate-500 uppercase tracking-widest mb-2">LogiFlow reduces this to</p>
           <p className="text-4xl lg:text-5xl font-black text-emerald-500">{formatINR(reducedLoss)}<span className="text-lg font-bold">/mo</span></p>
         </div>
 
@@ -289,7 +289,7 @@ const ShowcaseDashboard = () => (
         { label: 'Revenue Protected', val: '₹5.3L', color: 'text-indigo-600' }
       ].map((kpi, i) => (
         <div key={i} className="bg-slate-50 rounded-2xl p-4 border border-slate-100">
-          <p className="text-[10px] uppercase font-bold text-slate-400 tracking-wider mb-1">{kpi.label}</p>
+          <p className="text-[10px] uppercase font-bold text-slate-500 tracking-wider mb-1">{kpi.label}</p>
           <p className={`text-xl font-black ${kpi.color}`}>{kpi.val}</p>
         </div>
       ))}
@@ -319,7 +319,7 @@ const ShowcaseDashboard = () => (
             <div className="flex items-center gap-3">
               <div className={`w-2 h-2 rounded-full ${row.color}`} />
               <span className="text-xs font-bold text-slate-900">{row.id}</span>
-              <span className="text-[10px] text-slate-400 font-medium">{row.route}</span>
+              <span className="text-[10px] text-slate-500 font-medium">{row.route}</span>
             </div>
             <span className="text-[10px] font-bold text-slate-600">{row.status}</span>
           </div>
@@ -367,7 +367,7 @@ const ShowcaseMap = () => (
       <div className="absolute bottom-6 left-6 bg-white p-4 rounded-2xl shadow-xl border border-slate-100 max-w-[200px]">
         <div className="flex items-center gap-2 mb-2">
           <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-          <span className="text-[10px] font-black uppercase text-slate-400 tracking-wider">Live tracking</span>
+          <span className="text-[10px] font-black uppercase text-slate-500 tracking-wider">Live tracking</span>
         </div>
         <p className="text-xs font-bold text-slate-900 mb-1">SHP-R042 · Mumbai → Delhi</p>
         <p className="text-[10px] text-slate-500">67% complete · ETA: 04:30 AM</p>
@@ -422,7 +422,7 @@ const ShowcaseAlerts = () => (
 const ShowcaseAnalytics = () => (
   <div className="bg-white rounded-[2rem] shadow-2xl border border-slate-100 p-8 w-full h-full grid grid-cols-2 gap-8">
      <div className="bg-slate-50 rounded-3xl p-6 border border-slate-100 flex flex-col">
-       <h4 className="text-xs font-black text-slate-400 uppercase tracking-wider mb-6">Mode Distribution</h4>
+       <h4 className="text-xs font-black text-slate-500 uppercase tracking-wider mb-6">Mode Distribution</h4>
        <div className="flex-1 flex items-center justify-center relative">
          <div className="w-32 h-32 rounded-full border-[16px] border-indigo-600 relative">
             <motion.div 
@@ -432,7 +432,7 @@ const ShowcaseAnalytics = () => (
          </div>
          <div className="absolute inset-0 flex flex-col items-center justify-center">
            <span className="text-xl font-black">94%</span>
-           <span className="text-[10px] font-bold text-slate-400">On Time</span>
+           <span className="text-[10px] font-bold text-slate-500">On Time</span>
          </div>
        </div>
        <div className="mt-6 flex flex-wrap gap-4 justify-center">
@@ -442,11 +442,11 @@ const ShowcaseAnalytics = () => (
      </div>
      <div className="flex flex-col gap-6">
         <div className="bg-slate-50 rounded-3xl p-6 border border-slate-100">
-           <p className="text-[10px] font-black text-slate-400 mb-2 uppercase tracking-widest">Avg Delay Cost</p>
-           <p className="text-2xl font-black text-rose-500">₹42,300<span className="text-xs font-bold text-slate-400 ml-2">/ shipment</span></p>
+           <p className="text-[10px] font-black text-slate-500 mb-2 uppercase tracking-widest">Avg Delay Cost</p>
+           <p className="text-2xl font-black text-rose-500">₹42,300<span className="text-xs font-bold text-slate-500 ml-2">/ shipment</span></p>
         </div>
         <div className="bg-slate-50 rounded-3xl p-6 border border-slate-100 flex-1">
-           <p className="text-[10px] font-black text-slate-400 mb-4 uppercase tracking-widest">Route Efficiency</p>
+           <p className="text-[10px] font-black text-slate-500 mb-4 uppercase tracking-widest">Route Efficiency</p>
            <div className="space-y-4">
               {[80, 65, 90].map((w, i) => (
                 <div key={i}>
@@ -509,7 +509,7 @@ const ShowcaseAI = () => (
         </div>
       </div>
       <div className="p-4 bg-white border-t border-slate-100">
-        <div className="bg-slate-50 rounded-xl border border-slate-100 p-2 text-[12px] text-slate-400 font-medium">
+        <div className="bg-slate-50 rounded-xl border border-slate-100 p-2 text-[12px] text-slate-500 font-medium">
           Type your action...
         </div>
       </div>
@@ -573,7 +573,7 @@ export default function LandingPage() {
             </div>
             <div className="leading-none">
               <h1 className="text-xl font-black tracking-tight text-slate-900">Logi<span className="text-indigo-600">Flow</span></h1>
-              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Control Tower</span>
+              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Control Tower</span>
             </div>
           </Link>
 
@@ -689,7 +689,7 @@ export default function LandingPage() {
                   <p className="text-4xl lg:text-5xl font-black text-slate-900 mb-2">
                     {stat.prefix}{stat.val.toLocaleString('en-IN')}{stat.suffix}
                   </p>
-                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">{stat.label}</p>
+                  <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">{stat.label}</p>
                 </div>
               </FadeIn>
             ))}
@@ -781,7 +781,7 @@ export default function LandingPage() {
                   <h3 className="text-2xl font-black text-slate-900 mb-6">{card.title}</h3>
                   <div className="space-y-6 flex-1">
                     <div>
-                      <p className="text-[10px] font-black uppercase text-slate-400 tracking-wider mb-2">The Problem</p>
+                      <p className="text-[10px] font-black uppercase text-slate-500 tracking-wider mb-2">The Problem</p>
                       <p className="text-slate-500 font-bold leading-relaxed">{card.problem}</p>
                     </div>
                     <div className="bg-slate-50/50 p-6 rounded-2xl border border-slate-100">
@@ -892,7 +892,7 @@ export default function LandingPage() {
                     key={tab}
                     onClick={() => setActiveTab(tab)}
                     className={`px-6 py-3 rounded-2xl text-[10px] uppercase font-black tracking-widest transition-all ${
-                      activeTab === tab ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-100' : 'text-slate-400 hover:text-indigo-600'
+                      activeTab === tab ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-100' : 'text-slate-500 hover:text-indigo-600'
                     }`}
                   >
                     {tab}
@@ -995,7 +995,7 @@ export default function LandingPage() {
                       </div>
                       <div>
                         <p className="text-sm font-black text-slate-900">{testi.author}</p>
-                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{testi.role}</p>
+                        <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{testi.role}</p>
                       </div>
                    </div>
                 </div>
@@ -1024,7 +1024,7 @@ export default function LandingPage() {
                   >
                     <span className="text-sm md:text-base font-black text-slate-900">{faq.q}</span>
                     <div className="p-2 bg-slate-100 rounded-xl transition-transform" style={{ transform: activeFaq === i ? 'rotate(45deg)' : 'none' }}>
-                      <Plus size={20} className={activeFaq === i ? 'text-indigo-600' : 'text-slate-400'} />
+                      <Plus size={20} className={activeFaq === i ? 'text-indigo-600' : 'text-slate-500'} />
                     </div>
                   </button>
                   <motion.div 
@@ -1090,20 +1090,20 @@ export default function LandingPage() {
                 </div>
                 <div>
                   <h4 className="text-xl font-black tracking-tight text-slate-900">LogiFlow</h4>
-                  <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Control Tower for India</p>
+                  <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Control Tower for India</p>
                 </div>
               </Link>
               <p className="text-sm font-bold text-slate-500 leading-relaxed max-w-sm mb-8">
                 AI-powered logistics control tower for shipment tracking across road, rail, air, and sea cargo corridors in India.
               </p>
               <div>
-                <p className="text-[10px] font-black uppercase text-slate-400 mb-2 tracking-widest">Designed & Built By</p>
+                <p className="text-[10px] font-black uppercase text-slate-500 mb-2 tracking-widest">Designed & Built By</p>
                 <p className="text-sm font-black text-indigo-600">Vicky Kumar — PGDM Student | Bihar</p>
               </div>
             </div>
 
             <div>
-              <h5 className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 mb-8">Platform</h5>
+              <h5 className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500 mb-8">Platform</h5>
               <ul className="space-y-4">
                 {['Live Tracking', 'Smart Alerts', 'Route Intelligence', 'AI Assistant', 'Analytics', 'Reports'].map((link) => (
                   <li key={link}><a href="#" className="text-xs font-black uppercase tracking-widest text-slate-600 hover:text-indigo-600 transition-colors">{link}</a></li>
@@ -1112,7 +1112,7 @@ export default function LandingPage() {
             </div>
 
             <div>
-              <h5 className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 mb-8">Use Cases</h5>
+              <h5 className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500 mb-8">Use Cases</h5>
               <ul className="space-y-4">
                 {['Pharma', 'FMCG', 'Manufacturing', 'Retail Supply Chain', 'Freight Forwarding'].map((link) => (
                   <li key={link}><a href="#" className="text-xs font-black uppercase tracking-widest text-slate-600 hover:text-indigo-600 transition-colors">{link}</a></li>
@@ -1121,7 +1121,7 @@ export default function LandingPage() {
             </div>
 
             <div>
-              <h5 className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 mb-8">Company</h5>
+              <h5 className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500 mb-8">Company</h5>
               <ul className="space-y-4">
                 {['About', 'Contact', 'Privacy Policy', 'Terms of Service'].map((link) => (
                   <li key={link}><a href="#" className="text-xs font-black uppercase tracking-widest text-slate-600 hover:text-indigo-600 transition-colors">{link}</a></li>
@@ -1131,7 +1131,7 @@ export default function LandingPage() {
           </div>
 
           <div className="pt-16 border-t border-slate-100 text-center">
-            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400">
+            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500">
               © 2026 LogiFlow — Original design and code by Vicky Kumar, PGDM Student, Bihar, India. Unauthorized reproduction is prohibited.
             </p>
           </div>

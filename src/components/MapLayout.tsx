@@ -176,7 +176,7 @@ export default function MapLayout({
       
       {/* Legend */}
       <div className="absolute bottom-10 left-6 z-[1000] bg-white/90 backdrop-blur-md border border-slate-200 p-4 rounded-xl shadow-xl min-w-[140px]">
-        <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Shipment Status</h4>
+        <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-3">Shipment Status</h4>
         <div className="space-y-2">
           {[
             { label: 'On Time', color: '#10b981' },

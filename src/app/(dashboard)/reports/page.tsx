@@ -192,20 +192,20 @@ export default function ReportsPage() {
         {REPORT_TYPES.map(card => (
           <div 
             key={card.id} onClick={() => !generating && generateReport(card)}
-            className={`cursor-pointer group relative bg-surface-container-lowest border border-white/50 rounded-3xl p-8 curated-shadow transition-all duration-300 hover:-translate-y-1 ${report?.id === card.id ? 'ring-2 ring-primary ring-offset-4 ring-offset-surface' : ''}`}
+            className={`cursor-pointer group relative premium-card p-8 hover:-translate-y-1 ${report?.id === card.id ? 'ring-2 ring-indigo-600 ring-offset-4' : ''}`}
           >
             <div className={`w-14 h-14 rounded-2xl flex items-center justify-center mb-6 transition-all shadow-sm ${card.col}`}>
                <span className="material-symbols-outlined text-[24px]">{card.icon}</span>
             </div>
-            <h3 className="text-[17px] font-black text-on-surface uppercase tracking-tight mb-2 group-hover:text-[#493ee5] transition-colors">{card.title}</h3>
+            <h3 className="text-[17px] font-black text-slate-900 uppercase tracking-tight mb-2 group-hover:text-indigo-600 transition-colors">{card.title}</h3>
             <div className="flex items-center gap-2 mb-4">
-               <span className="text-[10px] font-black text-on-surface-variant uppercase tracking-widest px-2.5 py-1 bg-surface-container-low rounded-lg">{card.frequency}</span>
+               <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest px-2.5 py-1 bg-slate-50 border border-slate-100 rounded-lg">{card.frequency}</span>
                {card.id === 'ai_risk' && <span className="text-[10px] font-black text-amber-600 uppercase tracking-widest animate-pulse flex items-center gap-1"><span className="material-symbols-outlined text-[12px]">bolt</span> Neural</span>}
             </div>
-            <p className="text-[12px] font-bold text-on-surface-variant/60 leading-relaxed italic mb-8 group-hover:text-on-surface-variant transition-colors">{card.description}</p>
-            <div className="flex items-center justify-between border-t border-surface-container/30 pt-4">
-               <span className="text-[11px] font-black uppercase tracking-[0.2em] text-on-surface-variant/30 group-hover:text-primary transition-all">Generate Report &darr;</span>
-               {generating === card.id && <span className="status-pulse bg-primary w-4 h-4" />}
+            <p className="text-[12px] font-bold text-slate-400 leading-relaxed italic mb-8 group-hover:text-slate-600 transition-colors">{card.description}</p>
+            <div className="flex items-center justify-between border-t border-slate-100 pt-4">
+               <span className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-300 group-hover:text-indigo-600 transition-all">Generate Report &darr;</span>
+               {generating === card.id && <span className="status-pulse bg-indigo-600 w-4 h-4" />}
             </div>
           </div>
         ))}
@@ -216,31 +216,31 @@ export default function ReportsPage() {
         {report && (
             <motion.div 
                 initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }}
-                className="bg-surface-container-lowest border border-white/50 rounded-[3rem] curated-shadow overflow-hidden"
+                className="premium-card overflow-hidden"
             >
                 {/* Header: Report Details */}
-                <div className="p-12 border-b border-surface-container bg-surface-container-low/50 relative overflow-hidden">
+                <div className="p-12 border-b border-slate-100 bg-slate-50/50 relative overflow-hidden">
                     <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-10">
                         <div className="space-y-4">
                             <div className="flex items-center gap-3">
-                                <span className="w-1.5 h-1.5 rounded-full bg-primary status-pulse" />
-                                <span className="text-[10px] font-black text-on-surface-variant uppercase tracking-[0.3em]">Operational Report</span>
+                                <span className="w-1.5 h-1.5 rounded-full bg-indigo-600 status-pulse" />
+                                <span className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em]">Operational Report</span>
                             </div>
-                            <h2 className="text-4xl font-black text-on-surface tracking-tighter uppercase italic">{report.title}</h2>
-                            <p className="text-[12px] font-bold text-on-surface-variant uppercase tracking-[0.1em]">Report Generated: {format(report.generatedAt, 'EEEE, dd MMM yyyy • HH:mm')}</p>
+                            <h2 className="text-4xl font-black text-slate-900 tracking-tighter uppercase italic">{report.title}</h2>
+                            <p className="text-[12px] font-bold text-slate-500 uppercase tracking-[0.1em]">Report Generated: {format(report.generatedAt, 'EEEE, dd MMM yyyy • HH:mm')}</p>
                         </div>
-                        <button onClick={downloadPDF} className="bg-on-surface text-inverse-on-surface px-10 py-5 rounded-2xl text-[11px] font-black uppercase tracking-widest flex items-center gap-4 shadow-2xl hover:opacity-95 transition-all active:scale-95">
+                        <button onClick={downloadPDF} className="bg-slate-900 text-white px-10 py-5 rounded-2xl text-[11px] font-black uppercase tracking-widest flex items-center gap-4 shadow-2xl hover:opacity-95 transition-all active:scale-95 border border-white/10">
                            Download PDF <span className="material-symbols-outlined text-[16px]">download</span>
                         </button>
                     </div>
                 </div>
 
                 {/* Key Metrics Grid */}
-                <div className="grid grid-cols-2 md:grid-cols-4 border-b border-surface-container">
+                <div className="grid grid-cols-2 md:grid-cols-4 border-b border-slate-100">
                     {report.metrics.map(m => (
-                        <div key={m.label} className="p-10 border-r border-surface-container last:border-0 hover:bg-surface-container-low/30 transition-colors">
-                            <div className="text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-4">{m.label}</div>
-                            <div className="text-3xl font-black text-[#493ee5] tracking-tighter">{m.value}</div>
+                        <div key={m.label} className="p-10 border-r border-slate-100 last:border-0 hover:bg-slate-50/30 transition-colors">
+                            <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-4">{m.label}</div>
+                            <div className="text-3xl font-black text-indigo-600 tracking-tighter">{m.value}</div>
                         </div>
                     ))}
                 </div>

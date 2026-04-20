@@ -36,16 +36,23 @@ export function modeColor(mode: ShipmentMode): string {
   }
 }
 
-export function statusConfig(status: ShipmentStatus) {
+export const statusConfig = (status: string) => {
+  const label = status.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase());
   switch (status) {
-    case 'on_time':    return { label: 'On Time',    bg: 'bg-green-100',  text: 'text-green-700',  dot: 'bg-green-500'  };
-    case 'in_transit': return { label: 'In Transit', bg: 'bg-blue-100',   text: 'text-blue-700',   dot: 'bg-blue-500'   };
-    case 'delayed':    return { label: 'Delayed',    bg: 'bg-red-100',    text: 'text-red-700',    dot: 'bg-red-500'    };
-    case 'delivered':  return { label: 'Delivered',  bg: 'bg-emerald-100',text: 'text-emerald-700',dot: 'bg-emerald-500'};
-    case 'pending':    return { label: 'Pending',    bg: 'bg-amber-100',  text: 'text-amber-700',  dot: 'bg-amber-400'  };
-    default:           return { label: status,       bg: 'bg-gray-100',   text: 'text-gray-700',   dot: 'bg-gray-400'   };
+    case 'on_time':
+      return { label, classes: 'bg-emerald-50 text-emerald-700 border border-emerald-200' };
+    case 'delayed':
+      return { label, classes: 'bg-rose-50 text-rose-700 border border-rose-200' };
+    case 'in_transit':
+      return { label, classes: 'bg-amber-50 text-amber-700 border border-amber-200' };
+    case 'pending':
+      return { label, classes: 'bg-slate-50 text-slate-700 border border-slate-200' };
+    case 'delivered':
+      return { label, classes: 'bg-emerald-50 text-emerald-700 border border-emerald-200' };
+    default:
+      return { label, classes: 'bg-slate-50 text-slate-600 border border-slate-200' };
   }
-}
+};
 
 export function modeLabel(mode: ShipmentMode): string {
   return mode.charAt(0).toUpperCase() + mode.slice(1);

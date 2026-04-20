@@ -20,23 +20,23 @@ const profileSchema = z.object({
 
 type ProfileFormData = z.infer<typeof profileSchema>;
 
-const fieldCls = "w-full bg-surface-container-low border-none rounded-xl py-4 px-6 text-[13px] text-on-surface font-bold focus:ring-2 focus:ring-[#493ee5]/10 outline-none transition-all placeholder-on-surface-variant/30 font-['Inter']";
-const labelCls = "block text-[10px] font-black text-on-surface-variant uppercase tracking-[0.2em] mb-3 ml-1";
+const fieldCls = "w-full bg-slate-50 border border-slate-100 rounded-2xl py-4 px-6 text-[13px] text-slate-900 font-bold focus:bg-white focus:ring-4 focus:ring-indigo-50/50 outline-none transition-all placeholder-slate-300 font-['Inter']";
+const labelCls = "block text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-3 ml-1";
 
 function ApiStatusChip({ ok, label }: { ok: boolean | null; label: string }) {
   return (
-    <div className="flex items-center justify-between py-6 border-b border-surface-container last:border-0 hover:bg-surface-container-low/30 px-6 -mx-6 rounded-2xl transition-all">
+    <div className="flex items-center justify-between py-6 border-b border-slate-100 last:border-0 hover:bg-slate-50/50 px-6 -mx-6 rounded-2xl transition-all">
       <div className="flex items-center gap-4">
-         <span className={`material-symbols-outlined text-[20px] ${ok ? 'text-[#493ee5]' : 'text-on-surface-variant'}`}>
+         <span className={`material-symbols-outlined text-[22px] ${ok ? 'text-indigo-600' : 'text-slate-400'}`}>
            {label.includes('AI') ? 'psychology' : label.includes('Postgres') ? 'database' : 'hub'}
          </span>
-         <span className="text-[13px] font-bold text-on-surface tracking-tight">{label}</span>
+         <span className="text-[13px] font-black text-slate-900 tracking-tight">{label}</span>
       </div>
       {ok === null ? (
-        <div className="status-pulse bg-surface-container w-4 h-4" />
+        <div className="status-pulse bg-slate-100 w-4 h-4 rounded-full" />
       ) : (
-          <div className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest ${ok ? 'bg-primary-fixed text-[#493ee5]' : 'bg-error-container text-error'}`}>
-          <div className={`w-1.5 h-1.5 rounded-full ${ok ? 'bg-[#493ee5]' : 'bg-error'} status-pulse`} />
+          <div className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-widest ${ok ? 'bg-indigo-50 text-indigo-600 border border-indigo-100' : 'bg-rose-50 text-rose-600 border border-rose-100'}`}>
+          <div className={`w-1.5 h-1.5 rounded-full ${ok ? 'bg-indigo-600' : 'bg-rose-600'} status-pulse`} />
           {ok ? 'Connected' : 'Disconnected'}
         </div>
       )}
@@ -118,7 +118,7 @@ export default function SettingsPage() {
           </div>
         </div>
         
-        <div className="flex bg-surface-container p-1 rounded-2xl border border-white/50">
+        <div className="flex bg-slate-100/50 p-1 rounded-2xl border border-slate-200/50 shadow-sm">
           {[
             { id: 'profile', label: 'Identity', icon: 'person' },
             { id: 'intelligence', label: 'Infrastructure', icon: 'hub' },
@@ -128,10 +128,10 @@ export default function SettingsPage() {
               key={t.id}
               onClick={() => setActiveTab(t.id as any)}
               className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
-                activeTab === t.id ? 'bg-surface-container-lowest shadow-sm text-[#493ee5]' : 'text-on-surface-variant hover:text-on-surface'
+                activeTab === t.id ? 'bg-white shadow-sm text-indigo-600' : 'text-slate-500 hover:text-slate-700'
               }`}
             >
-              <span className="material-symbols-outlined text-[16px]">{t.icon}</span>
+              <span className="material-symbols-outlined text-[16px] font-bold">{t.icon}</span>
               {t.label}
             </button>
           ))}
@@ -143,22 +143,22 @@ export default function SettingsPage() {
           <motion.div initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.98 }} className="space-y-10">
             
             {/* Profile Overview Card */}
-            <div className="bg-surface-container-lowest p-12 rounded-[3rem] border border-white/50 curated-shadow relative overflow-hidden group">
+            <div className="premium-card p-12 relative overflow-hidden group">
                <span className="material-symbols-outlined absolute -right-12 -top-12 text-[240px] opacity-[0.03] rotate-12 transition-transform duration-1000 group-hover:scale-110">verified_user</span>
                <div className="relative flex flex-col md:flex-row items-center gap-12">
                   <div className="relative group/avatar">
-                    <div className="w-40 h-40 rounded-[2.5rem] bg-on-surface text-inverse-on-surface flex items-center justify-center text-5xl font-black shadow-2xl ring-8 ring-surface-container-low tracking-tighter">
+                    <div className="w-40 h-40 rounded-[2.5rem] bg-slate-900 text-white flex items-center justify-center text-5xl font-black shadow-2xl ring-8 ring-slate-50 tracking-tighter">
                       {initials}
                     </div>
-                    <button className="absolute -bottom-3 -right-3 w-12 h-12 bg-white rounded-2xl flex items-center justify-center shadow-xl hover:scale-110 transition-all text-[#493ee5]">
+                    <button className="absolute -bottom-3 -right-3 w-12 h-12 bg-white rounded-2xl flex items-center justify-center shadow-xl hover:scale-110 transition-all text-indigo-600 border border-slate-100">
                       <span className="material-symbols-outlined text-[20px]">photo_camera</span>
                     </button>
                   </div>
                   <div className="flex-1 text-center md:text-left space-y-4">
-                    <span className="px-4 py-1.5 bg-primary-fixed text-[#493ee5] rounded-full text-[9px] font-black uppercase tracking-widest border border-[#493ee5]/10 mb-2 inline-block">Enterprise Administrator</span>
-                    <h2 className="text-5xl font-black text-on-surface mb-2 tracking-tighter leading-none italic uppercase">{profile.full_name || 'User Profile'}</h2>
-                    <p className="text-[14px] font-bold text-on-surface-variant uppercase tracking-widest flex items-center justify-center md:justify-start gap-3">
-                       <span className="material-symbols-outlined text-[16px] text-[#493ee5]">corporate_fare</span>
+                    <span className="px-4 py-1.5 bg-indigo-50 text-indigo-600 rounded-full text-[9px] font-black uppercase tracking-widest border border-indigo-100 mb-2 inline-block">Enterprise Administrator</span>
+                    <h2 className="text-5xl font-black text-slate-900 mb-2 tracking-tighter leading-none italic uppercase italic">{profile.full_name || 'User Profile'}</h2>
+                    <p className="text-[14px] font-bold text-slate-500 uppercase tracking-widest flex items-center justify-center md:justify-start gap-3">
+                       <span className="material-symbols-outlined text-[16px] text-indigo-600">corporate_fare</span>
                        {profile.company || 'Logistics Manager'}
                     </p>
                     <div className="flex flex-wrap justify-center md:justify-start gap-6 pt-4">
@@ -166,8 +166,8 @@ export default function SettingsPage() {
                          { icon: 'mail', val: user?.email },
                          { icon: 'call', val: profile.phone || 'Unavailable' }
                        ].map((item, i) => (
-                         <div key={i} className="flex items-center gap-3 text-[12px] font-bold text-on-surface italic bg-surface-container-low/50 px-5 py-2.5 rounded-xl border border-white/50">
-                           <span className="material-symbols-outlined text-[16px] text-[#493ee5]">{item.icon}</span>
+                         <div key={i} className="flex items-center gap-3 text-[12px] font-black text-slate-700 italic bg-white px-5 py-2.5 rounded-xl border border-slate-100 shadow-sm">
+                           <span className="material-symbols-outlined text-[16px] text-indigo-600">{item.icon}</span>
                            {item.val}
                          </div>
                        ))}
@@ -177,12 +177,12 @@ export default function SettingsPage() {
             </div>
 
             {/* Specification Form */}
-            <div className="bg-surface-container-lowest p-12 rounded-[3rem] border border-white/50 curated-shadow">
+            <div className="premium-card p-12">
                <div className="flex items-center gap-4 mb-10">
-                  <div className="w-12 h-12 rounded-2xl bg-surface-container-low flex items-center justify-center text-primary shadow-sm">
+                  <div className="w-12 h-12 rounded-2xl bg-indigo-50 flex items-center justify-center text-indigo-600 shadow-sm border border-indigo-100">
                     <span className="material-symbols-outlined text-[24px]">tune</span>
                   </div>
-                  <h3 className="text-2xl font-black text-on-surface tracking-tighter uppercase italic">Edit Profile</h3>
+                  <h3 className="text-2xl font-black text-slate-900 tracking-tighter uppercase italic">Control Protocol</h3>
                </div>
                
                <form onSubmit={handleSubmit(onSubmit)} className="space-y-10">
@@ -226,8 +226,8 @@ export default function SettingsPage() {
                   </div>
 
                   <div className="flex justify-end pt-6">
-                    <button type="submit" disabled={saving} className="bg-on-surface text-inverse-on-surface py-5 px-12 rounded-2xl text-[11px] font-black uppercase tracking-[0.3em] shadow-2xl hover:opacity-95 active:scale-95 transition-all">
-                      {saving ? 'Saving...' : 'Save Changes'}
+                    <button type="submit" disabled={saving} className="bg-slate-900 text-white py-5 px-12 rounded-2xl text-[11px] font-black uppercase tracking-[0.3em] shadow-2xl hover:bg-slate-800 active:scale-95 transition-all border border-white/10">
+                      {saving ? 'Processing...' : 'Deploy Changes'}
                     </button>
                   </div>
                </form>

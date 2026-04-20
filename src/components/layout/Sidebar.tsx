@@ -60,7 +60,7 @@ export function Sidebar() {
       {/* Logo Hub */}
       <div className="px-8 mb-12">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-[#493ee5] text-white rounded-lg flex items-center justify-center">
+          <div className="w-10 h-10 bg-indigo-600 text-white rounded-xl flex items-center justify-center shadow-lg shadow-indigo-100">
             <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>analytics</span>
           </div>
           <div>
@@ -80,8 +80,8 @@ export function Sidebar() {
               href={item.href}
               onClick={closeMobile}
               className={`${
-                active ? 'text-[#493ee5] font-semibold' : 'text-[#464555] font-medium'
-              } flex items-center gap-3 py-3 px-8 transition-all duration-300 hover:text-[#493ee5] scale-100 active:scale-95`}
+                active ? 'text-indigo-600 font-semibold bg-indigo-50/50' : 'text-slate-600 font-medium hover:bg-slate-100/50'
+              } flex items-center gap-3 py-3 px-8 transition-all duration-300 hover:text-indigo-600 scale-100 active:scale-95 rounded-xl mx-4 my-0.5`}
             >
               <span className="material-symbols-outlined">{item.icon}</span>
               <span>{item.name}</span>
@@ -134,7 +134,7 @@ export function Sidebar() {
               animate={{ x: 0 }}
               exit={{ x: '-100%' }}
               transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-              className="h-screen w-72 fixed left-0 top-0 bg-[#f2f4f6] z-[60] flex flex-col font-['Inter'] lg:hidden shadow-2xl"
+              className="h-screen w-72 fixed left-0 top-0 bg-slate-50 z-[60] flex flex-col font-['Inter'] lg:hidden shadow-2xl"
             >
               {sidebarContent}
             </motion.aside>
@@ -142,7 +142,7 @@ export function Sidebar() {
         )}
       </AnimatePresence>
 
-      <aside className="h-screen w-64 fixed left-0 top-0 flex flex-col bg-[#f2f4f6] font-['Inter'] antialiased tracking-tight z-50 border-r border-slate-200 transition-transform duration-300 -translate-x-full lg:translate-x-0">
+      <aside className="h-screen w-64 fixed left-0 top-0 flex flex-col bg-slate-50 font-['Inter'] antialiased tracking-tight z-50 border-r border-slate-200/60 transition-transform duration-300 -translate-x-full lg:translate-x-0">
         {sidebarContent}
       </aside>
     </>

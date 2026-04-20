@@ -30,13 +30,13 @@ const KPICard = React.memo(({ title, value, change, icon, iconColor, isError }: 
     initial={{ opacity: 0, y: 20 }}
     animate={{ opacity: 1, y: 0 }}
     whileHover={{ y: -4 }}
-    className="bg-surface-container-lowest p-6 lg:p-8 rounded-3xl transition-all cursor-default border border-white/60 shadow-[0_4px_24px_-4px_rgba(0,0,0,0.04)] relative overflow-hidden group hover:border-primary/30"
+    className="premium-card p-6 lg:p-8 relative overflow-hidden group"
   >
-    <div className="absolute inset-0 bg-gradient-to-br from-white/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+    <div className="absolute inset-0 bg-gradient-to-br from-indigo-50/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
     <p className="text-slate-500 text-[10px] lg:text-[11px] font-bold uppercase tracking-widest leading-none relative z-10">{title}</p>
     <div className="relative z-10">
-      <h2 className={`text-2xl lg:text-4xl font-bold tracking-tighter ${isError ? 'text-error' : 'text-on-surface'} mb-1 mt-4`}>{value}</h2>
-      <div className={`flex items-center gap-1 ${isError ? 'text-error' : 'text-[#493ee5]'} text-[10px] font-bold`}>
+      <h2 className={`text-2xl lg:text-4xl font-black tracking-tighter ${isError ? 'text-rose-600' : 'text-slate-900'} mb-1 mt-4`}>{value}</h2>
+      <div className={`flex items-center gap-1 ${isError ? 'text-rose-500' : 'text-indigo-600'} text-[10px] font-bold`}>
         <span className="material-symbols-outlined text-xs lg:text-sm">{icon}</span>
         <span>{change}</span>
       </div>
@@ -196,16 +196,16 @@ export default function DashboardPage() {
              <KPICard title="System Alerts" value={dbAlerts.length.toLocaleString()} change="Real-time" icon="bolt" iconColor="#493ee5" />
           </div>
 
-          {/* Revenue Graph Area (Increased bar gap and container padding) */}
-          <div className="mt-6 lg:mt-10 w-full bg-surface-container-lowest p-6 lg:p-12 rounded-3xl border border-white/60 shadow-[0_4px_24px_-4px_rgba(0,0,0,0.04)]">
+          {/* Revenue Graph Area */}
+          <div className="mt-6 lg:mt-10 w-full premium-card p-6 lg:p-12">
             <div className="flex items-center justify-between mb-12">
               <div>
-                <h3 className="text-sm font-bold uppercase tracking-widest text-on-surface mb-1">Revenue Forecast</h3>
-                <p className="text-3xl font-bold tracking-tighter text-on-surface">
-                  {formatCurrency(stats.revenue)} <span className="text-[11px] font-bold text-on-surface-variant uppercase tracking-widest ml-2">Total Estimated Revenue</span>
+                <h3 className="text-[11px] font-bold uppercase tracking-widest text-slate-500 mb-2">Revenue Forecast</h3>
+                <p className="text-3xl font-black tracking-tighter text-slate-900">
+                  {formatCurrency(stats.revenue)} <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest ml-2">Estimated Flow</span>
                 </p>
               </div>
-              <div className="flex bg-slate-100 p-1 rounded-xl">
+              <div className="flex bg-slate-100/50 p-1 rounded-2xl border border-slate-200/50">
                 <button 
                   onClick={() => setViewMode('daily')}
                   className={`px-6 py-2 text-[11px] font-bold rounded-lg transition-all ${viewMode === 'daily' ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-500 hover:text-slate-800'}`}
@@ -241,11 +241,11 @@ export default function DashboardPage() {
 
         {/* Tactical Panels Column */}
         <div className="col-span-12 lg:col-span-3 flex flex-col gap-6 lg:gap-10">
-          <div className="bg-surface-container-lowest p-6 lg:p-10 rounded-3xl border border-white/60 shadow-[0_4px_24px_-4px_rgba(0,0,0,0.04)] flex-1">
+          <div className="premium-card p-6 lg:p-10 flex-1">
             <div className="flex items-center justify-between mb-10">
-              <h4 className="text-sm font-bold uppercase tracking-widest text-on-surface">System Alerts</h4>
-              <span className="px-2 py-1 bg-error-container text-error text-[10px] font-bold rounded uppercase tracking-widest">
-                {alerts.length} Action Needed
+              <h4 className="text-[11px] font-black uppercase tracking-widest text-slate-900">System Alerts</h4>
+              <span className="px-3 py-1.5 bg-rose-50 text-rose-600 text-[10px] font-black rounded-full border border-rose-100 uppercase tracking-widest">
+                {alerts.length} Action
               </span>
             </div>
             <div className="space-y-10">
@@ -267,21 +267,21 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          <div className="bg-surface-container-low p-6 lg:p-10 rounded-3xl border border-white/40 shadow-[0_4px_24px_-4px_rgba(0,0,0,0.02)]">
-            <h4 className="text-[11px] font-bold uppercase tracking-widest text-on-surface-variant mb-6">Weather Intelligence</h4>
+          <div className="bg-slate-50 p-6 lg:p-10 rounded-3xl border border-slate-200/60 shadow-sm">
+            <h4 className="text-[11px] font-black uppercase tracking-widest text-slate-500 mb-6 font-headline">Weather Intel</h4>
             <div className="grid grid-cols-2 gap-4">
               {cityWeathers.map((w, idx) => (
-                <div key={idx} className="bg-surface-container-lowest p-6 rounded-2xl flex flex-col gap-3 hover:shadow-lg transition-all border border-white/50">
+                <div key={idx} className="bg-white p-6 rounded-2xl flex flex-col gap-3 hover:shadow-md transition-all border border-slate-100">
                   <div className="flex items-center justify-between">
-                    <span className={`material-symbols-outlined ${w.riskLevel === 'high' || w.riskLevel === 'severe' ? 'text-error' : 'text-primary'} text-2xl`}>
+                    <span className={`material-symbols-outlined ${w.riskLevel === 'high' || w.riskLevel === 'severe' ? 'text-rose-600' : 'text-indigo-600'} text-2xl`}>
                       {w.condition === 'sunny' ? 'light_mode' : w.condition === 'storm' ? 'thunderstorm' : 'cloud'}
                     </span>
-                    <span className="text-[13px] font-bold">{w.tempC}°C</span>
+                    <span className="text-[13px] font-black text-slate-900">{w.tempC}°C</span>
                   </div>
                   <div>
-                    <p className="text-[12px] font-bold text-on-surface leading-none">{w.city}</p>
-                    <p className={`text-[10px] mt-1 ${w.riskLevel === 'high' || w.riskLevel === 'severe' ? 'text-error font-bold' : 'text-on-surface-variant'} uppercase tracking-tighter`}>
-                      {w.condition === 'storm' ? 'Alert: Storm' : 'Clear Flow'}
+                    <p className="text-[12px] font-black text-slate-900 leading-none">{w.city}</p>
+                    <p className={`text-[10px] mt-1.5 ${w.riskLevel === 'high' || w.riskLevel === 'severe' ? 'text-rose-600 font-bold' : 'text-slate-500'} uppercase tracking-tight`}>
+                      {w.condition === 'storm' ? 'Severe Risk' : 'Clear Skies'}
                     </p>
                   </div>
                 </div>
@@ -291,17 +291,17 @@ export default function DashboardPage() {
         </div>
       </section>
 
-      {/* Bottom Section: Operations Registry & Transport Modal (9+3 Enforced) */}
+      {/* Bottom Section: Operations Registry & Transport Modal */}
       <section className="grid grid-cols-12 gap-6 lg:gap-10">
-        <div className="col-span-12 lg:col-span-9 bg-surface-container-lowest rounded-3xl border border-white/60 shadow-[0_4px_24px_-4px_rgba(0,0,0,0.04)] overflow-hidden" style={{ contentVisibility: 'auto', containIntrinsicSize: '0 500px' }}>
-          <div className="p-6 lg:p-12 border-b border-surface-container">
+        <div className="col-span-12 lg:col-span-9 premium-card overflow-hidden" style={{ contentVisibility: 'auto', containIntrinsicSize: '0 500px' }}>
+          <div className="p-6 lg:p-12 border-b border-slate-100">
             <div className="flex items-center justify-between">
-              <h4 className="text-sm font-bold uppercase tracking-widest text-on-surface">Active Shipments</h4>
+              <h4 className="text-[11px] font-black uppercase tracking-widest text-slate-900">Active Shipments</h4>
               <button 
                 onClick={() => router.push('/shipments')}
-                className="text-[12px] font-bold text-primary flex items-center gap-1 hover:underline decoration-1 underline-offset-4"
+                className="text-[11px] font-black text-indigo-600 flex items-center gap-1 hover:underline decoration-2 underline-offset-8 uppercase tracking-widest"
               >
-                View Full Fleet <span className="material-symbols-outlined text-sm">chevron_right</span>
+                Full Fleet <span className="material-symbols-outlined text-sm">chevron_right</span>
               </button>
             </div>
           </div>
@@ -365,21 +365,21 @@ export default function DashboardPage() {
 
         {/* Transport Breakdown Area */}
         <div className="col-span-12 lg:col-span-3 flex flex-col gap-6 lg:gap-10" style={{ contentVisibility: 'auto', containIntrinsicSize: '0 400px' }}>
-          <div className="bg-surface-container-lowest p-8 lg:p-12 rounded-3xl border border-white/60 shadow-[0_4px_24px_-4px_rgba(0,0,0,0.04)] flex-1 flex flex-col group overflow-hidden relative">
-            <h4 className="text-sm font-bold uppercase tracking-widest text-on-surface mb-12">Logistics Distribution</h4>
+          <div className="premium-card p-8 lg:p-12 flex-1 flex flex-col group overflow-hidden relative">
+            <h4 className="text-[11px] font-black uppercase tracking-widest text-slate-900 mb-12">Modal Distribution</h4>
             <div className="relative w-48 h-48 mx-auto mb-12 transition-transform duration-1000 group-hover:scale-105">
               <svg className="w-full h-full transform -rotate-90 rounded-full" viewBox="0 0 100 100">
-                <circle cx="50" cy="50" fill="transparent" r="40" stroke="#f2f4f6" strokeWidth="12" />
-                <circle cx="50" cy="50" fill="transparent" r="40" stroke="#493ee5" 
+                <circle cx="50" cy="50" fill="transparent" r="40" stroke="#f8fafc" strokeWidth="12" />
+                <circle cx="50" cy="50" fill="transparent" r="40" stroke="#4f46e5" 
                         strokeDasharray="251.2" strokeDashoffset={251.2 * (1 - seaPercent/100)} 
                         strokeWidth="12" className="transition-all duration-1000" />
-                <circle cx="50" cy="50" fill="transparent" r="40" stroke="#635bff" 
+                <circle cx="50" cy="50" fill="transparent" r="40" stroke="#818cf8" 
                         strokeDasharray="251.2" strokeDashoffset={251.2 * (1 - (seaPercent + airPercent)/100)} 
                         strokeWidth="12" className="transition-all duration-1000" />
               </svg>
               <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                <p className="text-3xl font-bold text-on-surface tracking-tighter italic">{Math.max(1, Math.round(shipments.length/1000))}k</p>
-                <p className="text-[9px] font-bold text-on-surface-variant uppercase tracking-widest">Units</p>
+                <p className="text-3xl font-black text-slate-900 tracking-tighter italic">{Math.max(1, Math.round(shipments.length/10))}</p>
+                <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Active</p>
               </div>
             </div>
             <div className="space-y-6">

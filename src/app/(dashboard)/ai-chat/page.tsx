@@ -26,7 +26,7 @@ export default function AIChatPage() {
     <React.Suspense fallback={
       <div className="flex flex-col h-[calc(100vh-10rem)] max-w-5xl mx-auto items-center justify-center">
         <div className="status-pulse bg-primary w-12 h-12" />
-        <p className="mt-4 text-[10px] font-black uppercase tracking-widest text-slate-400">Initializing Neural Link...</p>
+        <p className="mt-4 text-[10px] font-black uppercase tracking-widest text-slate-500">Initializing Neural Link...</p>
       </div>
     }>
       <ChatContainer />
@@ -111,32 +111,32 @@ function ChatContainer() {
       {/* Header Segment */}
       <div className="mb-8 flex items-center justify-between shrink-0">
          <div className="flex items-center gap-5">
-            <div className="w-14 h-14 rounded-2xl bg-on-surface text-inverse-on-surface flex items-center justify-center shadow-2xl">
-               <span className="material-symbols-outlined text-[28px]">psychology</span>
+            <div className="w-14 h-14 rounded-2xl bg-slate-900 text-white flex items-center justify-center shadow-2xl border border-white/10">
+               <span className="material-symbols-outlined text-[28px] font-bold">psychology</span>
             </div>
             <div>
-               <h1 className="text-3xl font-black text-on-surface tracking-tighter uppercase italic">Neural Command Center</h1>
+               <h1 className="text-3xl font-black text-slate-900 tracking-tighter uppercase italic">Neural Command</h1>
                <div className="flex items-center gap-2 mt-1">
-                  <span className="status-pulse bg-primary" />
-                  <p className="text-[10px] font-black text-on-surface-variant uppercase tracking-[0.3em]">LogiBot Intelligence Node v3.4</p>
+                  <span className="status-pulse bg-indigo-600" />
+                  <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em]">LogiBot Intelligence Node v3.4</p>
                </div>
             </div>
          </div>
       </div>
 
-      <div className="flex-1 bg-surface-container-lowest border border-white/50 rounded-[3rem] curated-shadow flex flex-col overflow-hidden relative">
+      <div className="flex-1 premium-card flex flex-col overflow-hidden relative">
         <div className="flex-1 overflow-y-auto p-12 space-y-8 scrollbar-hide" ref={scrollRef}>
           {messages.map((m, idx) => (
             <div key={idx} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
               <div className={`max-w-[75%] p-6 rounded-3xl text-[14px] font-bold leading-relaxed shadow-sm ${
                 m.role === 'user' 
-                  ? 'bg-on-surface text-inverse-on-surface rounded-tr-none' 
-                  : 'bg-surface-container-low text-on-surface border border-white/50 rounded-tl-none italic'
+                  ? 'bg-slate-900 text-white rounded-tr-none border border-white/10' 
+                  : 'bg-slate-50 text-slate-700 border border-slate-100 rounded-tl-none italic'
               }`}>
                 {m.content.split('\n').map((line, lIdx) => (
                   <p key={lIdx} className={lIdx > 0 ? 'mt-4' : ''}>
                      {line.split('**').map((part, pIdx) => (
-                       pIdx % 2 === 1 ? <span key={pIdx} className="text-primary font-black">{part}</span> : part
+                       pIdx % 2 === 1 ? <span key={pIdx} className="text-indigo-600 font-black">{part}</span> : part
                      ))}
                   </p>
                 ))}
@@ -145,47 +145,46 @@ function ChatContainer() {
           ))}
           
           {loading && (
-            <div className="flex justify-start px-12 mt-4">
-              <div className="bg-surface-container-low p-6 rounded-3xl rounded-tl-none border border-white/50 text-on-surface-variant italic text-[12px] font-black flex items-center gap-4">
-                 <span className="status-pulse bg-primary w-2 h-2" /> 
-                 <span className="animate-pulse">Synthesizing supply chain logic...</span>
+            <div className="flex justify-start px-0 mt-4">
+              <div className="bg-slate-50 p-6 rounded-3xl rounded-tl-none border border-slate-100 text-slate-500 italic text-[12px] font-black flex items-center gap-4">
+                 <span className="status-pulse bg-indigo-600 w-2 h-2" /> 
+                 <span className="animate-pulse">Optimizing neural paths...</span>
               </div>
             </div>
           )}
         </div>
 
         {/* Input & Directive Control */}
-        <div className="p-8 border-t border-surface-container bg-surface-container-low/50 relative z-20 shrink-0">
+        <div className="p-8 border-t border-slate-100 bg-slate-50/50 relative z-20 shrink-0">
           
           <div className="flex flex-wrap gap-2 mb-6 max-h-32 overflow-y-auto custom-scrollbar">
             {SUGGESTIONS.map(s => (
                <button 
                 key={s} onClick={() => handleSend(s)}
-                className="px-4 py-2 bg-surface-container-lowest border border-white/50 rounded-xl text-[9px] font-black uppercase tracking-widest text-primary hover:bg-on-surface hover:text-white transition-all shadow-sm active:scale-95 whitespace-nowrap"
+                className="px-4 py-2 bg-white border border-slate-100 rounded-xl text-[9px] font-black uppercase tracking-widest text-indigo-600 hover:bg-slate-900 hover:text-white transition-all shadow-sm active:scale-95 whitespace-nowrap"
                >
                  {s}
                </button>
             ))}
           </div>
-
           <div className="relative group">
             <input
               type="text"
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-              placeholder="Enter strategic command vector..."
-              className="w-full bg-surface-container-lowest border-none rounded-2xl py-6 pl-8 pr-20 text-[14px] font-bold text-on-surface focus:ring-4 focus:ring-[#493ee5]/5 shadow-inner outline-none transition-all placeholder-on-surface-variant/30"
+              placeholder="Inject strategic command..."
+              className="w-full bg-white border border-slate-100 rounded-2xl py-6 pl-8 pr-20 text-[14px] font-bold text-slate-900 focus:ring-4 focus:ring-indigo-100 outline-none transition-all placeholder-slate-300 shadow-inner"
             />
             <button 
               onClick={() => handleSend()}
               disabled={!input.trim() || loading}
-              className="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 bg-on-surface text-inverse-on-surface rounded-xl flex items-center justify-center shadow-2xl active:scale-90 transition-all disabled:opacity-30 disabled:pointer-events-none group-hover:scale-110"
+              className="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 bg-slate-900 text-white rounded-xl flex items-center justify-center shadow-2xl active:scale-90 transition-all disabled:opacity-30 disabled:pointer-events-none group-hover:scale-110 border border-white/10"
             >
-              <span className="material-symbols-outlined text-[20px]">send</span>
+              <span className="material-symbols-outlined text-[20px] font-bold">send</span>
             </button>
           </div>
-          <p className="text-[9px] text-on-surface-variant/40 text-center mt-6 font-black uppercase tracking-[0.4em] italic">Neural protocol sequence secured by enterprise-grade encryption</p>
+          <p className="text-[9px] text-slate-400 text-center mt-6 font-black uppercase tracking-[0.4em] italic">Neural protocol sequence secured by enterprise-grade encryption</p>
         </div>
       </div>
     </div>

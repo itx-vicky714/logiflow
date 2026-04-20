@@ -83,7 +83,7 @@ export default function LoginPage() {
            <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
               <div className="space-y-6">
                 <div>
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2.5 ml-1 block">Email Address</label>
+                  <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2.5 ml-1 block">Email Address</label>
                   <div className="relative">
                     <Mail className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-indigo-600 transition-colors" size={18} />
                     <input 
@@ -98,7 +98,7 @@ export default function LoginPage() {
 
                 <div>
                   <div className="flex justify-between items-center mb-2.5 ml-1">
-                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Password</label>
+                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Password</label>
                     <Link href="#" className="text-[10px] font-black text-indigo-600 uppercase tracking-widest hover:underline">Forgot?</Link>
                   </div>
                   <div className="relative">
@@ -133,7 +133,7 @@ export default function LoginPage() {
            </form>
 
            <div className="mt-12 flex flex-col items-center gap-6">
-              <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">
+              <p className="text-[11px] font-bold text-slate-500 uppercase tracking-widest">
                 Don&apos;t have an account? <Link href="/signup" className="text-indigo-600 hover:underline font-black decoration-2">Create Account</Link>
               </p>
               

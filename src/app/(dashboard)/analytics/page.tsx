@@ -114,19 +114,19 @@ export default function AnalyticsPage() {
              <span className="text-[10px] font-black text-indigo-600 uppercase tracking-widest bg-indigo-50 px-3 py-1 rounded-full">Analytical Insights</span>
           </div>
           <h1 className="text-3xl md:text-4xl font-black text-slate-800 tracking-tighter uppercase italic">Shipment Analytics</h1>
-          <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mt-2 flex items-center gap-2">
+          <p className="text-[11px] font-bold text-slate-500 uppercase tracking-widest mt-2 flex items-center gap-2">
              <Activity size={12} className="text-emerald-500" /> Analyzing {filtered.length} active shipments
           </p>
         </div>
 
-        <div className="flex items-center gap-4 bg-white p-2 rounded-2xl shadow-sm border border-slate-100">
-          <div className="flex bg-slate-100 p-1 rounded-xl">
+        <div className="flex items-center gap-4 bg-white p-2 rounded-2xl shadow-sm border border-slate-200/60">
+          <div className="flex bg-slate-50 p-1 rounded-xl">
             {(['7d', '30d', '90d'] as TimeFilter[]).map(t => (
               <button 
                 key={t} 
                 onClick={() => setTimeFilter(t)}
                 className={`px-5 py-2 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all ${
-                  timeFilter === t ? 'bg-white shadow-sm text-indigo-600' : 'text-slate-400 hover:text-slate-600'
+                  timeFilter === t ? 'bg-white shadow-sm text-indigo-600' : 'text-slate-500 hover:text-slate-600'
                 }`}
               >
                 {t}
@@ -136,7 +136,7 @@ export default function AnalyticsPage() {
           <button 
             onClick={fetchData} 
             disabled={isRefreshing}
-            className="w-10 h-10 flex items-center justify-center bg-white border border-slate-200 rounded-xl text-slate-400 hover:text-indigo-600 transition-all active:scale-95"
+            className="w-10 h-10 flex items-center justify-center bg-white border border-slate-200/60 rounded-xl text-slate-500 hover:text-indigo-600 transition-all active:scale-95 shadow-sm"
           >
             <RefreshCw size={18} className={isRefreshing ? 'animate-spin text-indigo-600' : ''} />
           </button>
@@ -146,13 +146,13 @@ export default function AnalyticsPage() {
       {/* Primary KPI Row */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
         {[
-          { label: 'On-Time Delivery', val: `${onTimePct}%`, icon: ShieldCheck, sub: 'Delivery Reliability', color: 'text-indigo-600', iconBg: 'bg-indigo-50', trend: '+2.4%' },
-          { label: 'Revenue Forecast', val: formatCurrency(totalRevenue), icon: TrendingUp, sub: '2.5% Net Yield', color: 'text-slate-800', iconBg: 'bg-slate-100', trend: '+14%'},
-          { label: 'Network Safety', val: `${100 - avgRisk}/100`, icon: Activity, sub: 'Safety Rating', color: 'text-emerald-600', iconBg: 'bg-emerald-50', trend: 'Stable' },
-          { label: 'Active Fleet', val: filtered.length, icon: Truck, sub: 'Total Vehicles', color: 'text-slate-800', iconBg: 'bg-slate-100', trend: '+8 units' },
+          { label: 'Reliability', val: `${onTimePct}%`, icon: ShieldCheck, sub: 'On-Time Delivery', color: 'text-indigo-600', iconBg: 'bg-indigo-50', trend: '+2.4%' },
+          { label: 'Forecast', val: formatCurrency(totalRevenue), icon: TrendingUp, sub: 'Estimated Yield', color: 'text-slate-900', iconBg: 'bg-slate-50', trend: '+14%'},
+          { label: 'Safety', val: `${100 - avgRisk}/100`, icon: Activity, sub: 'Rating', color: 'text-emerald-600', iconBg: 'bg-emerald-50', trend: 'Stable' },
+          { label: 'Fleet', val: filtered.length, icon: Truck, sub: 'Active Units', color: 'text-slate-900', iconBg: 'bg-slate-50', trend: '+8 units' },
         ].map((card, i) => (
-          <div key={i} className="bg-white p-8 rounded-[2rem] border border-slate-100 shadow-sm group hover:shadow-md transition-all duration-300">
-            <div className={`w-12 h-12 ${card.iconBg} rounded-2xl flex items-center justify-center mb-6 text-indigo-600 group-hover:scale-110 transition-transform`}>
+          <div key={i} className="premium-card p-8 group overflow-hidden">
+            <div className={`w-12 h-12 ${card.iconBg} rounded-2xl flex items-center justify-center mb-6 text-indigo-600 group-hover:scale-110 transition-transform shadow-sm`}>
               <card.icon size={24} />
             </div>
             <div className="flex justify-between items-end mb-1">
@@ -168,15 +168,15 @@ export default function AnalyticsPage() {
       {/* Main Charts Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
         {/* Mode Distribution */}
-        <div className="bg-white p-10 rounded-[2.5rem] border border-slate-100 shadow-sm relative overflow-hidden group">
+        <div className="premium-card p-10 relative overflow-hidden group">
           <div className="mb-10 flex justify-between items-start">
             <div>
               <p className="text-[10px] font-black text-indigo-600 uppercase tracking-widest mb-2 flex items-center gap-2">
-                 <BarChart3 size={12} /> Transport Distribution
+                 <BarChart3 size={12} /> Resource Allocation
               </p>
-              <h3 className="text-2xl font-black text-slate-800 tracking-tighter uppercase italic">Distribution by Mode</h3>
+              <h3 className="text-2xl font-black text-slate-900 tracking-tighter uppercase italic px-0.5">Mode Performance</h3>
             </div>
-            <button className="text-slate-300 hover:text-indigo-600 transition-colors"><Info size={20} /></button>
+            <button className="text-slate-300 hover:text-indigo-600 transition-colors p-1"><Info size={20} /></button>
           </div>
           <div className="h-[300px]">
             <Charts 
@@ -193,15 +193,15 @@ export default function AnalyticsPage() {
         </div>
 
         {/* Status Breakdown */}
-        <div className="bg-white p-10 rounded-[2.5rem] border border-slate-100 shadow-sm relative overflow-hidden group">
+        <div className="premium-card p-10 relative overflow-hidden group">
           <div className="mb-10 flex justify-between items-start">
             <div>
               <p className="text-[10px] font-black text-indigo-600 uppercase tracking-widest mb-2 flex items-center gap-2">
-                 <PieChart size={12} /> Shipment Health
+                 <PieChart size={12} /> Stream Health
               </p>
-              <h3 className="text-2xl font-black text-slate-800 tracking-tighter uppercase italic">Status Distribution</h3>
+              <h3 className="text-2xl font-black text-slate-900 tracking-tighter uppercase italic px-0.5">Operational Status</h3>
             </div>
-            <button className="text-slate-300 hover:text-indigo-600 transition-colors"><Info size={20} /></button>
+            <button className="text-slate-300 hover:text-indigo-600 transition-colors p-1"><Info size={20} /></button>
           </div>
           <div className="h-[300px]">
              {statusTypeStats.length > 0 ? (
@@ -254,16 +254,16 @@ export default function AnalyticsPage() {
       </div>
 
       {/* Predictive Analytics Full Width */}
-      <div className="bg-white p-10 md:p-12 rounded-[3rem] border border-slate-100 shadow-sm mb-12">
+      <div className="premium-card p-10 md:p-12 mb-12">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-12 gap-6">
             <div>
               <p className="text-[10px] font-black text-indigo-600 uppercase tracking-widest mb-2 flex items-center gap-2">
                  <Zap size={14} className="fill-indigo-600" /> Volume Prediction
               </p>
-              <h3 className="text-3xl font-black text-slate-800 tracking-tighter uppercase italic">Expected Volume</h3>
+              <h3 className="text-3xl font-black text-slate-900 tracking-tighter uppercase italic">Forecasting Units</h3>
             </div>
-            <div className="px-6 py-3 bg-slate-50 border border-slate-100 rounded-2xl text-[10px] font-black uppercase tracking-widest text-slate-400">
-               Data Analysis: <span className="text-indigo-600">Active</span>
+            <div className="px-6 py-3 bg-slate-50 border border-slate-100 rounded-2xl text-[10px] font-black uppercase tracking-widest text-slate-500 shadow-sm">
+               Engine Status: <span className="text-indigo-600">Active</span>
             </div>
           </div>
           <div className="h-[400px]">

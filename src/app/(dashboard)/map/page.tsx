@@ -40,7 +40,7 @@ const MapLayout = dynamic(() => import('@/components/MapLayout'), { ssr: false, 
           <div className="w-6 h-6 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin" />
         </div>
       </div>
-      <p className="text-slate-400 text-[10px] font-black uppercase tracking-widest">Loading Live Tracking...</p>
+      <p className="text-slate-500 text-[10px] font-black uppercase tracking-widest">Loading Live Tracking...</p>
     </div>
   </div>
 )});
@@ -129,7 +129,7 @@ export default function MapPage() {
     <div className="fixed inset-0 top-[64px] left-[256px] flex items-center justify-center bg-white z-[10]">
       <div className="flex flex-col items-center gap-4">
         <div className="w-12 h-12 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin" />
-        <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Initializing Control Tower...</p>
+        <p className="text-[10px] font-black uppercase text-slate-500 tracking-widest">Initializing Control Tower...</p>
       </div>
     </div>
   );
@@ -140,10 +140,10 @@ export default function MapPage() {
       {/* Mobile Toggle Button */}
       <button 
         onClick={() => setIsMobileListOpen(!isMobileListOpen)}
-        className="md:hidden fixed bottom-6 left-6 z-[10005] bg-indigo-600 text-white px-6 py-4 rounded-2xl shadow-2xl font-black text-xs uppercase tracking-widest flex items-center gap-3 active:scale-95 transition-transform"
+        className="md:hidden fixed bottom-6 left-6 z-[10005] bg-indigo-600 text-white px-6 py-4 rounded-2xl shadow-2xl font-black text-xs uppercase tracking-widest flex items-center gap-3 active:scale-95 transition-transform border border-white/20"
       >
         <Menu size={18} />
-        {isMobileListOpen ? 'Close List' : `Shipments (${filteredShipments.length})`}
+        {isMobileListOpen ? 'Close Manifest' : `Live Feed (${filteredShipments.length})`}
       </button>
 
       {/* LEFT PANEL: Shipment List */}
@@ -154,25 +154,25 @@ export default function MapPage() {
         transition-transform duration-300 ease-in-out
         ${isMobileListOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
       `}>
-        <div className="p-6 border-b border-slate-50">
+        <div className="p-6 border-b border-slate-100">
           <div className="flex items-center justify-between mb-1">
-            <h2 className="text-[18px] font-black text-slate-900 tracking-tight">Live Shipments</h2>
+            <h2 className="text-[18px] font-black text-slate-900 tracking-tight italic uppercase">Live Feed</h2>
             {isMobileListOpen && (
-              <button onClick={() => setIsMobileListOpen(false)} className="p-2 text-slate-400 md:hidden">
+              <button onClick={() => setIsMobileListOpen(false)} className="p-2 text-slate-500 md:hidden">
                 <X size={20} />
               </button>
             )}
           </div>
-          <p className="text-[13px] font-bold text-slate-500">{filteredShipments.length} Active Shipments</p>
+          <p className="text-[11px] font-black text-slate-500 uppercase tracking-widest">{filteredShipments.length} Active Nodes</p>
           
           <div className="mt-6 relative">
             <Search size={14} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
             <input 
               type="text"
-              placeholder="Search by ID or City..."
+              placeholder="Search Manifest ID..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-slate-50 border-none rounded-xl py-3 pl-10 pr-4 text-[12px] font-bold text-slate-700 outline-none focus:ring-2 focus:ring-indigo-600/10 transition-all border border-transparent focus:border-indigo-100"
+              className="w-full bg-slate-50 border border-slate-100 rounded-xl py-3.5 pl-10 pr-4 text-[12px] font-bold text-slate-900 outline-none focus:bg-white focus:ring-4 focus:ring-indigo-50/50 transition-all focus:border-indigo-100 placeholder-slate-400 shadow-sm"
             />
           </div>
         </div>
@@ -215,20 +215,20 @@ export default function MapPage() {
                   setHighlighted(isActive ? null : s.id);
                   if (window.innerWidth < 768) setIsMobileListOpen(false);
                 }}
-                className={`p-4 rounded-xl cursor-pointer border transition-all relative overflow-hidden group ${
-                  isActive ? 'bg-indigo-50 border-indigo-500 shadow-sm' : 'bg-white border-slate-100 hover:border-indigo-300 hover:shadow-md'
+                className={`p-5 rounded-2xl cursor-pointer border transition-all relative overflow-hidden group ${
+                  isActive ? 'bg-indigo-50 border-indigo-500 shadow-md ring-1 ring-indigo-500/10' : 'bg-white border-slate-100 hover:border-slate-200 hover:shadow-lg'
                 }`}
               >
-                <div className="flex justify-between items-start mb-3">
-                  <span className="text-[12px] font-black text-indigo-600 tracking-tight">{s.shipment_code}</span>
-                  <span className={`px-2 py-1 rounded text-[9px] font-black uppercase tracking-widest ${config.bg} ${config.text}`}>
+                <div className="flex justify-between items-start mb-4">
+                  <span className="text-[12px] font-black text-indigo-600 tracking-tight">#{s.shipment_code.split('-').pop()}</span>
+                  <span className={`px-2 py-1 rounded-lg text-[8px] font-black uppercase tracking-widest ${config.bg} ${config.text} border border-current opacity-80`}>
                     {config.label}
                   </span>
                 </div>
                 
-                <div className="flex items-center gap-2 mb-4">
-                  <div className="text-[13px] font-bold text-slate-800 tracking-tight flex-1 truncate">
-                    {s.origin} <span className="text-slate-300 mx-1">→</span> {s.destination}
+                <div className="flex items-center gap-2 mb-5">
+                  <div className="text-[13px] font-black text-slate-900 tracking-tight flex-1 truncate uppercase">
+                    {s.origin} <span className="text-slate-200 mx-1">→</span> {s.destination}
                   </div>
                   <div className="text-slate-400 group-hover:text-indigo-600 transition-colors">
                     <ModeIcon mode={s.mode} size={18} />
@@ -236,15 +236,15 @@ export default function MapPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <div className="flex items-center justify-between text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                  <div className="flex items-center justify-between text-[8px] font-black text-slate-500 uppercase tracking-widest opacity-60">
                     <span>ETA: {format(new Date(s.eta), 'dd MMM')}</span>
-                    <span>Progress: 65%</span>
+                    <span>Load: 65%</span>
                   </div>
-                  <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
+                  <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden shadow-inner">
                     <motion.div 
                       initial={{ width: 0 }}
                       animate={{ width: '65%' }}
-                      className={`h-full ${isHighRisk ? 'bg-amber-500' : 'bg-indigo-600'}`}
+                      className={`h-full ${isHighRisk ? 'bg-rose-500' : 'bg-indigo-600'}`}
                     />
                   </div>
                 </div>
@@ -318,7 +318,7 @@ export default function MapPage() {
               </div>
               <button 
                 onClick={() => setHighlighted(null)} 
-                className="w-8 h-8 flex items-center justify-center bg-slate-50 rounded-lg text-slate-400 hover:text-slate-900 transition-colors"
+                className="w-8 h-8 flex items-center justify-center bg-slate-50 rounded-lg text-slate-500 hover:text-slate-900 transition-colors"
               >
                 <X size={18} />
               </button>
@@ -327,20 +327,20 @@ export default function MapPage() {
             {/* Content */}
             <div className="flex-1 overflow-y-auto p-6 space-y-8 custom-scrollbar">
               <div className="space-y-4">
-                <h5 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Route</h5>
+                <h5 className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Route</h5>
                 <div className="space-y-3 relative pl-4 before:absolute before:left-[19px] before:top-2 before:bottom-2 before:w-[1px] before:bg-slate-100">
                    <div className="flex items-center gap-3">
                       <div className="w-3 h-3 rounded-full bg-slate-200 border-2 border-white z-10" />
                       <div>
                         <p className="text-[12px] font-black text-slate-900">{selectedShipment.origin}</p>
-                        <p className="text-[9px] text-slate-400 font-bold uppercase">Origin</p>
+                        <p className="text-[9px] text-slate-500 font-bold uppercase">Origin</p>
                       </div>
                    </div>
                    <div className="flex items-center gap-3">
                       <div className="w-3 h-3 rounded-full bg-indigo-600 border-2 border-white z-10 animate-pulse" />
                       <div>
                         <p className="text-[12px] font-black text-slate-900">{selectedShipment.destination}</p>
-                        <p className="text-[9px] text-slate-400 font-bold uppercase">Destination</p>
+                        <p className="text-[9px] text-slate-500 font-bold uppercase">Destination</p>
                       </div>
                    </div>
                 </div>
@@ -354,7 +354,7 @@ export default function MapPage() {
                   { label: 'Risk Score', val: `${selectedShipment.risk_score}%` },
                 ].map((item, i) => (
                   <div key={i} className="p-3 bg-slate-50 rounded-xl border border-slate-100">
-                    <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1">{item.label}</p>
+                    <p className="text-[8px] font-black text-slate-500 uppercase tracking-widest mb-1">{item.label}</p>
                     <p className="text-[11px] font-black text-slate-900 uppercase truncate">{item.val}</p>
                   </div>
                 ))}
@@ -362,7 +362,7 @@ export default function MapPage() {
 
               <div className="space-y-4">
                 <div className="flex justify-between items-center">
-                  <h5 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Risk</h5>
+                  <h5 className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Risk</h5>
                   <span className={`text-[11px] font-black ${
                     selectedShipment.risk_score >= 70 ? 'text-red-600' : selectedShipment.risk_score >= 40 ? 'text-amber-600' : 'text-green-600'
                   }`}>
@@ -380,18 +380,18 @@ export default function MapPage() {
               </div>
 
               <div className="space-y-4">
-                <h5 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Cargo</h5>
+                <h5 className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Cargo</h5>
                 <div className="space-y-2">
                   <div className="flex justify-between text-[11px] font-bold">
-                    <span className="text-slate-400">Type</span>
+                    <span className="text-slate-500">Type</span>
                     <span className="text-slate-900">{selectedShipment.cargo_type}</span>
                   </div>
                   <div className="flex justify-between text-[11px] font-bold">
-                    <span className="text-slate-400">Value</span>
+                    <span className="text-slate-500">Value</span>
                     <span className="text-slate-900">{formatCurrency(selectedShipment.declared_value || 0)}</span>
                   </div>
                   <div className="flex justify-between text-[11px] font-bold">
-                    <span className="text-slate-400">Supplier</span>
+                    <span className="text-slate-500">Supplier</span>
                     <span className="text-slate-900">{selectedShipment.supplier_name || 'N/A'}</span>
                   </div>
                 </div>

@@ -251,7 +251,7 @@ const ShipmentDetailModal = React.memo(({ shipment: initialShipment, onClose, on
                  </div>
               </div>
            </div>
-           <button onClick={onClose} className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400 hover:text-slate-900 hover:bg-slate-100 transition-all">
+           <button onClick={onClose} className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-all">
               <X size={20} />
            </button>
         </div>
@@ -265,7 +265,7 @@ const ShipmentDetailModal = React.memo(({ shipment: initialShipment, onClose, on
                <button 
                  key={t.id} 
                  onClick={() => setTab(t.id)}
-                 className={`py-4 text-[11px] font-black uppercase tracking-widest relative flex items-center gap-2 transition-all whitespace-nowrap ${active ? 'text-indigo-600' : 'text-slate-400 hover:text-slate-600'}`}
+                 className={`py-4 text-[11px] font-black uppercase tracking-widest relative flex items-center gap-2 transition-all whitespace-nowrap ${active ? 'text-indigo-600' : 'text-slate-500 hover:text-slate-600'}`}
                >
                  <Icon size={14} />
                  {t.label}
@@ -283,7 +283,7 @@ const ShipmentDetailModal = React.memo(({ shipment: initialShipment, onClose, on
                    
                    {/* A) LIVE LOCATION & PROGRESS */}
                    <section className="space-y-6">
-                      <h4 className="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
+                      <h4 className="flex items-center gap-2 text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">
                         <MapPin size={12} className="text-indigo-600" /> Live Location & Progress
                       </h4>
                       <div className="bg-slate-50 rounded-3xl p-6 border border-slate-100">
@@ -304,7 +304,7 @@ const ShipmentDetailModal = React.memo(({ shipment: initialShipment, onClose, on
                                <div className="absolute right-0 top-1/2 -translate-y-1/2 w-4 h-4 bg-white border-2 border-current rounded-full shadow-lg" />
                             </motion.div>
                          </div>
-                         <div className="flex justify-between text-[10px] font-bold text-slate-400 uppercase">
+                         <div className="flex justify-between text-[10px] font-bold text-slate-500 uppercase">
                             <span>~{coveredKm} km covered</span>
                             <span>~{hoursLeft}h remaining</span>
                          </div>
@@ -327,14 +327,14 @@ const ShipmentDetailModal = React.memo(({ shipment: initialShipment, onClose, on
                       ].map((box, i) => (
                         <div key={i} className={`rounded-xl p-4 border text-center ${box.style || 'bg-white border-slate-100'}`}>
                            <p className="text-2xl font-black tracking-tighter" style={{ color: box.color }}>{box.val}</p>
-                           <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 mt-1">{box.label}</p>
+                           <p className="text-[9px] font-black uppercase tracking-widest text-slate-500 mt-1">{box.label}</p>
                         </div>
                       ))}
                    </section>
 
                    {/* C) ROUTE TIMELINE */}
                    <section className="space-y-6">
-                      <h4 className="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
+                      <h4 className="flex items-center gap-2 text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">
                         <GitBranch size={12} className="text-indigo-600" /> Route Timeline
                       </h4>
                       <div className="relative pl-10 space-y-12 before:absolute before:left-3.5 before:top-2 before:bottom-2 before:w-0.5 before:bg-slate-100 before:border-l before:border-dashed before:border-slate-300">
@@ -346,7 +346,7 @@ const ShipmentDetailModal = React.memo(({ shipment: initialShipment, onClose, on
                             <div className="flex justify-between items-start">
                                <div>
                                   <p className="text-sm font-black text-slate-800 uppercase italic tracking-tight">{shipment.origin}</p>
-                                  <p className="text-[10px] font-bold text-slate-400">Shipment Departed</p>
+                                  <p className="text-[10px] font-bold text-slate-500">Shipment Departed</p>
                                </div>
                                <span className="px-2 py-0.5 rounded-full bg-green-50 text-green-600 text-[9px] font-black uppercase tracking-widest">Departed ✓</span>
                             </div>
@@ -358,7 +358,7 @@ const ShipmentDetailModal = React.memo(({ shipment: initialShipment, onClose, on
                             <div className="flex justify-between items-start">
                                <div>
                                   <p className="text-sm font-black text-slate-800 uppercase italic tracking-tight">Current Position — ~{coveredKm} km</p>
-                                  <p className="text-[10px] font-bold text-slate-400">Live GPS · {minutesAgo} min ago</p>
+                                  <p className="text-[10px] font-bold text-slate-500">Live GPS · {minutesAgo} min ago</p>
                                </div>
                                <span className="px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-600 text-[9px] font-black uppercase tracking-widest">{hoursLeft}h to destination</span>
                             </div>
@@ -370,7 +370,7 @@ const ShipmentDetailModal = React.memo(({ shipment: initialShipment, onClose, on
                             <div className="flex justify-between items-start">
                                <div>
                                   <p className="text-sm font-black text-slate-800 uppercase italic tracking-tight">{shipment.destination}</p>
-                                  <p className="text-[10px] font-bold text-slate-400">ETA ~{hoursLeft}h</p>
+                                  <p className="text-[10px] font-bold text-slate-500">ETA ~{hoursLeft}h</p>
                                </div>
                                <span className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest ${
                                  shipment.status === 'delayed' ? 'bg-red-50 text-red-600' : 
@@ -385,7 +385,7 @@ const ShipmentDetailModal = React.memo(({ shipment: initialShipment, onClose, on
 
                    {/* D) CARGO & SUPPLIER GRID */}
                    <section className="space-y-6 pb-20 md:pb-0">
-                      <h4 className="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
+                      <h4 className="flex items-center gap-2 text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">
                         <Package size={12} className="text-indigo-600" /> Cargo & Supplier
                       </h4>
                       <div className="grid grid-cols-2 gap-4">
@@ -398,7 +398,7 @@ const ShipmentDetailModal = React.memo(({ shipment: initialShipment, onClose, on
                            { label: 'Status', val: shipment.status.toUpperCase(), color: getStatusColor(shipment.status) },
                          ].map((cell, i) => (
                            <div key={i} className="bg-slate-50 rounded-xl p-4 border border-slate-100/50">
-                              <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">{cell.label}</p>
+                              <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest">{cell.label}</p>
                               <p className={`text-[12px] font-black tracking-tight mt-1 flex items-center gap-2 ${cell.color || 'text-slate-800'}`}>
                                  {cell.icon} {cell.val}
                               </p>
@@ -423,7 +423,7 @@ const ShipmentDetailModal = React.memo(({ shipment: initialShipment, onClose, on
                       />
                    </div>
                    <div className="space-y-4">
-                      <h5 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Risk Factors</h5>
+                      <h5 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Risk Factors</h5>
                       <div className="space-y-3">
                          {getRiskFactors(shipment).map((factor, i) => (
                            <div key={i} className={`p-4 rounded-xl border-l-4 ${
@@ -440,7 +440,7 @@ const ShipmentDetailModal = React.memo(({ shipment: initialShipment, onClose, on
                                <span className="font-bold text-[12px] text-slate-800 tracking-tight">{factor.title}</span>
                              </div>
                              <p className="text-[11px] text-slate-600 font-medium leading-relaxed">{factor.description}</p>
-                             <p className="text-[10px] text-slate-400 mt-2 font-bold uppercase italic tracking-wide">💡 {factor.action}</p>
+                             <p className="text-[10px] text-slate-500 mt-2 font-bold uppercase italic tracking-wide">💡 {factor.action}</p>
                            </div>
                          ))}
                       </div>
@@ -467,19 +467,19 @@ const ShipmentDetailModal = React.memo(({ shipment: initialShipment, onClose, on
                      
                      <div className="grid grid-cols-2 gap-4">
                        <div className="bg-white/60 backdrop-blur-sm rounded-2xl p-4 border border-white">
-                         <div className="text-[9px] text-slate-400 font-black uppercase tracking-widest mb-1">Fleet Tenure</div>
+                         <div className="text-[9px] text-slate-500 font-black uppercase tracking-widest mb-1">Fleet Tenure</div>
                          <div className="font-black text-slate-800 tracking-tighter text-lg">{getDriverInfo(shipment).experience}</div>
                        </div>
                        <div className="bg-white/60 backdrop-blur-sm rounded-2xl p-4 border border-white">
-                         <div className="text-[9px] text-slate-400 font-black uppercase tracking-widest mb-1">Age Index</div>
+                         <div className="text-[9px] text-slate-500 font-black uppercase tracking-widest mb-1">Age Index</div>
                          <div className="font-black text-slate-800 tracking-tighter text-lg">{getDriverInfo(shipment).age} Yrs</div>
                        </div>
                        <div className="bg-white/60 backdrop-blur-sm rounded-2xl p-4 border border-white col-span-2">
-                         <div className="text-[9px] text-slate-400 font-black uppercase tracking-widest mb-1">Operational Licence</div>
+                         <div className="text-[9px] text-slate-500 font-black uppercase tracking-widest mb-1">Operational Licence</div>
                          <div className="font-bold text-slate-800 font-mono text-sm tracking-widest break-all">{getDriverInfo(shipment).license}</div>
                        </div>
                        <div className="bg-white/60 backdrop-blur-sm rounded-2xl p-4 border border-white col-span-2">
-                         <div className="text-[9px] text-slate-400 font-black uppercase tracking-widest mb-1">Registered Node</div>
+                         <div className="text-[9px] text-slate-500 font-black uppercase tracking-widest mb-1">Registered Node</div>
                          <div className="font-bold text-slate-800 text-xs leading-loose italic uppercase tracking-tight">{getDriverInfo(shipment).address}</div>
                        </div>
                      </div>
@@ -487,7 +487,7 @@ const ShipmentDetailModal = React.memo(({ shipment: initialShipment, onClose, on
                    
                    {/* Current Route Progress */}
                    <div className="bg-white rounded-3xl p-6 border border-slate-100 shadow-sm relative overflow-hidden">
-                     <div className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-4">Live Transit Logic</div>
+                     <div className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-4">Live Transit Logic</div>
                      <div className="flex items-center gap-3 mb-4">
                        <div className="w-2 h-2 bg-indigo-600 rounded-full animate-ping"></div>
                        <span className="text-[12px] font-black text-slate-800 uppercase italic tracking-tight">
@@ -501,7 +501,7 @@ const ShipmentDetailModal = React.memo(({ shipment: initialShipment, onClose, on
                          className="bg-indigo-600 h-full rounded-full"
                        />
                      </div>
-                     <div className="text-[9px] font-black text-slate-400 uppercase tracking-widest text-right">{progressPercent}% Vector coverage confirmed</div>
+                     <div className="text-[9px] font-black text-slate-500 uppercase tracking-widest text-right">{progressPercent}% Vector coverage confirmed</div>
                    </div>
                    
                    {/* Contact Protocol */}
@@ -526,7 +526,7 @@ const ShipmentDetailModal = React.memo(({ shipment: initialShipment, onClose, on
                 <motion.div key="routes" className="space-y-6">
                    <div className="p-6 bg-slate-50 rounded-2xl border border-slate-100 text-center border-dashed">
                       <Sparkles size={24} className="mx-auto mb-3 text-indigo-600" />
-                      <p className="text-[11px] font-black text-slate-400 uppercase tracking-widest">Advanced Vector Alternatives Synthesis</p>
+                      <p className="text-[11px] font-black text-slate-500 uppercase tracking-widest">Advanced Vector Alternatives Synthesis</p>
                    </div>
                    
                    <div className="space-y-4">
@@ -551,11 +551,11 @@ const ShipmentDetailModal = React.memo(({ shipment: initialShipment, onClose, on
                           <div className="grid grid-cols-3 gap-3 mb-6">
                             <div className="text-center bg-slate-50 rounded-2xl p-4 border border-white">
                               <div className="font-black text-slate-800 tracking-tighter">{route.distance} KM</div>
-                              <div className="text-[8px] text-slate-400 uppercase font-black tracking-widest mt-1">Distance</div>
+                              <div className="text-[8px] text-slate-500 uppercase font-black tracking-widest mt-1">Distance</div>
                             </div>
                             <div className="text-center bg-slate-50 rounded-2xl p-4 border border-white">
                               <div className="font-black text-slate-800 tracking-tighter">~{route.estimatedHours}H</div>
-                              <div className="text-[8px] text-slate-400 uppercase font-black tracking-widest mt-1">Cycle Time</div>
+                              <div className="text-[8px] text-slate-500 uppercase font-black tracking-widest mt-1">Cycle Time</div>
                             </div>
                             <div className="text-center bg-indigo-50 rounded-2xl p-4 border border-white">
                               <div className="font-black text-indigo-600 tracking-tighter">

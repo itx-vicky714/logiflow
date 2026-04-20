@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSidebar } from '@/context/SidebarContext';
 import { useAuth } from '@/context/AuthContext';
@@ -30,6 +30,21 @@ export function TopBar() {
   const [showHelp, setShowHelp] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
   const [notifications, setNotifications] = useState<Notification[]>([]);
+  const profileRef = useRef<HTMLDivElement>(null);
+  const notificationRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (profileRef.current && !profileRef.current.contains(event.target as Node)) {
+        setShowProfile(false);
+      }
+      if (notificationRef.current && !notificationRef.current.contains(event.target as Node)) {
+        setShowNotifications(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   useEffect(() => {
     if (!user) return;
@@ -99,8 +114,8 @@ export function TopBar() {
   };
 
   return (
-    <header className="fixed top-0 right-0 left-0 lg:left-64 h-16 z-40 bg-white/80 backdrop-blur-xl border-b border-slate-200 transition-all duration-300">
-      <div className="flex items-center justify-between px-4 lg:px-12 w-full h-full">
+    <header className="sticky top-0 z-40 flex h-20 w-full items-center justify-between border-b border-slate-200/60 bg-white/80 backdrop-blur-md px-8 shadow-sm transition-all duration-300">
+      <div className="flex items-center gap-4">
         
         {/* Mobile Toggle & Brand */}
         <div className="flex lg:hidden items-center gap-3">
@@ -111,26 +126,18 @@ export function TopBar() {
         </div>
 
         {/* Search & Dashboard Actions */}
-        <div className="flex items-center gap-4 lg:gap-8 flex-1 min-w-0 mr-4 lg:mr-8 ml-2 lg:ml-0">
+        <div className="flex items-center gap-4 lg:gap-8 flex-1 min-w-0">
           <span className="text-lg font-black text-slate-800 tracking-tight shrink-0 hidden lg:block">LogiFlow Dashboard</span>
           
-          <div className="relative flex-1 max-w-md h-9 focus-within:ring-2 focus-within:ring-[#493ee5]/20 rounded-lg min-w-0 sm:min-w-[200px]">
-            <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">search</span>
+          <div className="relative group">
+            <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-600 transition-colors">search</span>
             <input 
-              className="w-full h-full bg-slate-100/50 border-none rounded-lg pl-10 pr-4 py-2 text-sm focus:ring-0 outline-none" 
-              placeholder="Search shipments..." 
-              type="text"
+              type="text" 
+              placeholder="Search network nodes..." 
+              className="h-11 w-64 md:w-96 rounded-2xl bg-slate-100/50 border border-transparent px-12 text-[13px] font-medium outline-none transition-all focus:bg-white focus:border-indigo-100 focus:ring-4 focus:ring-indigo-50/50"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
             />
-          </div>
-          
-          <div className="flex items-center gap-2 shrink-0 hidden md:flex">
-            <button type="button" onClick={handleAllClear} className="px-3 h-8 bg-[#493ee5] text-white rounded-lg text-[10px] font-bold uppercase tracking-wider hover:opacity-90 transition-opacity whitespace-nowrap">All Clear</button>
-            <button type="button" onClick={handleReset} className="px-3 h-8 border border-slate-200 text-slate-600 rounded-lg text-[10px] font-bold uppercase tracking-wider hover:bg-slate-50 transition-colors whitespace-nowrap">Reset</button>
-            <button type="button" onClick={handleSimulate} disabled={simulating} className="px-3 h-8 border border-slate-200 text-slate-600 rounded-lg text-[10px] font-bold uppercase tracking-wider hover:bg-slate-50 transition-colors whitespace-nowrap disabled:opacity-50">
-              {simulating ? 'Processing...' : 'Simulate'}
-            </button>
           </div>
         </div>
 
@@ -138,17 +145,21 @@ export function TopBar() {
         <div className="flex items-center gap-3 lg:gap-6 shrink-0 relative">
           <div className="flex items-center gap-1 lg:gap-2">
             {/* Notifications */}
-            <div className="relative">
+            <div className="relative" ref={notificationRef}>
               <button 
-                onClick={() => setShowNotifications(!showNotifications)}
-                className="w-9 h-9 flex items-center justify-center hover:bg-slate-100 rounded-lg transition-colors text-slate-600"
+                onClick={() => { setShowNotifications(!showNotifications); setShowProfile(false); }}
+                className="relative flex h-11 w-11 items-center justify-center rounded-2xl bg-slate-100/50 text-slate-600 hover:bg-slate-200/50 hover:text-indigo-600 transition-all active:scale-95 shadow-sm"
               >
-                <span className="material-symbols-outlined text-[20px]">notifications</span>
-                {notifications.length > 0 && <span className="absolute top-2 right-2 w-2 h-2 bg-[#493ee5] rounded-full border-2 border-white"></span>}
+                <span className="material-symbols-outlined transform group-hover:rotate-12 transition-transform">notifications</span>
+                {notifications.length > 0 && (
+                  <span className="absolute -right-0.5 -top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-indigo-600 text-[10px] font-black text-white ring-2 ring-white">
+                    {notifications.length}
+                  </span>
+                )}
               </button>
               
               {showNotifications && (
-                <div className="absolute top-12 right-0 w-80 bg-white rounded-2xl shadow-2xl border border-slate-100 p-4 animate-in fade-in slide-in-from-top-2 duration-300">
+                <div className="absolute top-16 right-0 w-80 bg-white rounded-2xl shadow-2xl border border-slate-100 p-4 animate-in fade-in slide-in-from-top-2 duration-300">
                   <h4 className="text-xs font-black uppercase tracking-widest text-slate-900 mb-4 px-2">System Alerts</h4>
                   <div className="space-y-3">
                     {notifications.length > 0 ? notifications.map((n, i) => (
@@ -159,11 +170,10 @@ export function TopBar() {
                     )) : (
                       <div className="py-8 text-center bg-slate-50 rounded-xl">
                         <span className="material-symbols-outlined text-3xl text-slate-200">notifications_off</span>
-                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-2">No new alerts</p>
+                        <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-2">No new alerts</p>
                       </div>
                     )}
                   </div>
-                  <button className="w-full mt-4 py-2 text-[10px] font-black text-[#493ee5] uppercase tracking-widest hover:bg-[#493ee5]/5 rounded-lg transition-colors">View All Notifications</button>
                 </div>
               )}
             </div>
@@ -171,34 +181,27 @@ export function TopBar() {
             {/* Help */}
             <button 
               onClick={() => setShowHelp(!showHelp)}
-              className="w-9 h-9 flex items-center justify-center hover:bg-slate-100 rounded-lg transition-colors text-slate-600"
+              className="w-11 h-11 flex items-center justify-center rounded-2xl bg-slate-100/50 text-slate-600 hover:bg-slate-200/50 hover:text-indigo-600 transition-all active:scale-95 shadow-sm"
             >
               <span className="material-symbols-outlined text-[20px]">help_outline</span>
-            </button>
-
-            {/* Grid */}
-            <button className="w-9 h-9 flex items-center justify-center hover:bg-slate-100 rounded-lg transition-colors text-slate-600">
-              <span className="material-symbols-outlined text-[20px]">grid_view</span>
             </button>
           </div>
           
           <div className="h-6 w-[1px] bg-slate-200 hidden sm:block"></div>
           
           {/* User Profile */}
-          <div className="relative">
+          <div className="relative" ref={profileRef}>
             <button 
-              onClick={() => setShowProfile(!showProfile)}
-              className="flex items-center gap-3 pl-2 py-1 hover:bg-slate-100 rounded-xl transition-all"
+              onClick={() => { setShowProfile(!showProfile); setShowNotifications(false); }}
+              className="flex items-center gap-3 rounded-2xl bg-slate-100/50 p-1.5 pl-3 border border-transparent hover:border-slate-200/50 transition-all active:scale-95 shadow-sm"
             >
-              <div className="text-right hidden sm:block">
-                <p className="text-xs font-black text-slate-800 tracking-tight truncate w-24">{profileName}</p>
-                <p className="text-[9px] text-[#493ee5] font-black uppercase tracking-widest">Logistics Manager</p>
+              <div className="text-right hidden md:block">
+                <p className="text-[11px] font-black uppercase tracking-widest text-slate-900">{(user as any)?.user_metadata?.full_name || 'Admin'}</p>
+                <p className="text-[9px] font-bold uppercase text-indigo-600 tracking-tighter">Enterprise Mode</p>
               </div>
-              <img 
-                alt="Profile" 
-                className="w-9 h-9 rounded-full border-2 border-[#493ee5]/10 object-cover" 
-                src={avatarUrl}
-              />
+              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-600 text-[13px] font-black text-white shadow-lg shadow-indigo-100">
+                {(user as any)?.user_metadata?.full_name?.[0] || 'A'}
+              </div>
             </button>
 
             {showProfile && (
@@ -256,7 +259,7 @@ export function TopBar() {
               ))}
             </div>
             <div className="mt-12 p-6 bg-slate-50 rounded-2xl flex items-center justify-between">
-              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Support team available</p>
+              <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Support team available</p>
               <a href="mailto:support@logiflow.app" className="text-[11px] font-black text-[#493ee5] uppercase tracking-widest border-b-2 border-primary/20 hover:border-primary transition-all pb-1">support@logiflow.app</a>
             </div>
           </div>

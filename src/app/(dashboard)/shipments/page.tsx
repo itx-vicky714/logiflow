@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/lib/supabase';
 import { seedShipments, statusConfig, modeIcon, riskColor, formatCurrency } from '@/lib/utils';
 import type { Shipment } from '@/types';
@@ -8,6 +8,7 @@ import dynamic from 'next/dynamic';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
 import { ModeIcon } from '@/components/ModeIcon';
+import { Filter, Search } from 'lucide-react';
 
 const ShipmentDetailModal = dynamic(() => import('@/components/ShipmentDetailModal'), { ssr: false });
 
@@ -23,6 +24,18 @@ export default function ShipmentsPage() {
   const [tab, setTab] = useState<Tab>('All');
   const [selected, setSelected] = useState<Shipment | null>(null);
   const [checked, setChecked] = useState<Set<string>>(new Set());
+  const [showStatusFilter, setShowStatusFilter] = useState(false);
+  const filterRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (filterRef.current && !filterRef.current.contains(event.target as Node)) {
+        setShowStatusFilter(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const fetchData = useCallback(async () => {
     const { data: { user } } = await supabase.auth.getUser();
@@ -130,14 +143,14 @@ export default function ShipmentsPage() {
       </div>
 
       {/* Filtration & Search Bar */}
-      <div className="bg-surface-container-lowest p-6 rounded-2xl border border-white/50 curated-shadow flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
-        <div className="flex bg-surface-container-low p-1 rounded-xl">
+      <div className="flex flex-col md:flex-row gap-4 items-center justify-between bg-white p-6 rounded-3xl border border-slate-200/60 shadow-sm mb-8">
+        <div className="flex bg-slate-50 p-1 rounded-2xl w-full md:w-auto">
           {TABS.map(t => (
             <button 
               key={t} 
               onClick={() => setTab(t)}
-              className={`px-6 py-2 text-[10px] font-bold uppercase tracking-widest rounded-lg transition-all ${
-                tab === t ? 'bg-surface-container-lowest shadow-sm text-[#493ee5]' : 'text-on-surface-variant hover:text-on-surface'
+              className={`flex-1 md:flex-none px-6 py-2.5 text-[11px] font-bold uppercase tracking-widest rounded-xl transition-all ${
+                tab === t ? 'bg-white shadow-sm text-[#493ee5]' : 'text-slate-500 hover:text-slate-700'
               }`}
             >
               {t}
@@ -145,15 +158,37 @@ export default function ShipmentsPage() {
           ))}
         </div>
         
-        <div className="relative group flex-1 md:max-w-md">
-          <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant text-sm group-focus-within:text-primary transition-colors">search</span>
-          <input
-            type="text"
-            placeholder="Search shipments, routes, or IDs..."
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-            className="w-full bg-surface-container-low border-none rounded-xl py-3 pl-12 pr-4 text-[13px] text-on-surface font-medium focus:ring-2 focus:ring-[#493ee5]/10 outline-none transition-all"
-          />
+        <div className="flex items-center gap-3 w-full md:w-auto">
+          <div className="relative flex-1 md:w-80">
+            <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
+            <input
+              type="text"
+              placeholder="Search shipments, routes, or IDs..."
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              className="w-full h-12 pl-12 pr-4 bg-slate-50 border border-slate-100 rounded-2xl text-[13px] text-on-surface font-medium outline-none focus:bg-white focus:ring-4 focus:ring-[#493ee5]/10 transition-all"
+            />
+          </div>
+          <div className="relative" ref={filterRef}>
+            <button 
+              onClick={() => setShowStatusFilter(!showStatusFilter)}
+              className={`h-12 w-12 flex items-center justify-center rounded-2xl transition-all active:scale-95 border ${
+                showStatusFilter ? 'bg-[#493ee5] text-white border-[#493ee5] shadow-lg shadow-indigo-100' : 'bg-white text-slate-600 border-slate-200/80 hover:bg-slate-50'
+              }`}
+            >
+              <Filter size={18} />
+            </button>
+            {showStatusFilter && (
+              <div className="absolute top-14 right-0 w-56 bg-white rounded-2xl shadow-2xl border border-slate-100 p-2 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
+                <div className="px-3 py-2 text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-50 mb-1">Filter by Risk</div>
+                {['Critical Risk', 'Medium Risk', 'Stable'].map((p) => (
+                  <button key={p} className="w-full text-left px-4 py-3 text-[12px] font-bold text-slate-600 hover:bg-slate-50 rounded-xl transition-colors">
+                    {p}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
@@ -184,7 +219,7 @@ export default function ShipmentsPage() {
                   <tr 
                     key={s.id} 
                     onClick={() => setSelected(s)}
-                    className="hover:bg-surface-container-low/30 cursor-pointer transition-all group"
+                    className="hover:bg-surface-container-low/30 cursor-pointer transition-all group border border-transparent hover:border-indigo-100 rounded-2xl"
                   >
                     <td className="px-8 py-6 text-center border-r border-surface-container/10" onClick={e => e.stopPropagation()}>
                       <input 

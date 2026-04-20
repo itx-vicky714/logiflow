@@ -48,7 +48,7 @@ const CARGO_CATEGORIES = [
 ];
 
 const inputCls = "w-full bg-slate-50 border border-slate-200 rounded-xl py-4 px-5 text-[13px] text-slate-800 font-bold focus:ring-4 focus:ring-indigo-600/5 focus:border-indigo-600 outline-none transition-all placeholder-slate-400";
-const labelCls = "block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2.5 ml-1";
+const labelCls = "block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2.5 ml-1";
 
 const modeLabel = (m: string) => m.charAt(0).toUpperCase() + m.slice(1);
 
@@ -164,7 +164,7 @@ export default function ShipmentForm() {
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 md:gap-10 pb-20 mt-8">
         <div className="lg:col-span-8 space-y-8">
             {/* Stepper Progress */}
-            <div className="bg-white rounded-3xl p-6 md:p-8 shadow-sm border border-slate-100">
+            <div className="premium-card p-6 md:p-8">
                 <div className="flex justify-between items-center px-2 md:px-8">
                     {STEPS.map((s, i) => {
                         const Icon = s.icon;
@@ -174,15 +174,15 @@ export default function ShipmentForm() {
                             <div key={i} className="flex flex-col items-center relative z-10">
                                 <div className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-all duration-500 border-2 ${
                                     active ? 'bg-indigo-600 border-indigo-600 text-white shadow-xl shadow-indigo-100 scale-110' : 
-                                    done ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-slate-50 text-slate-300 border-slate-100'
+                                    done ? 'bg-emerald-50 text-emerald-600 border-emerald-100 shadow-sm' : 'bg-slate-50 text-slate-300 border-slate-100'
                                 }`}>
                                     {done ? <Check size={20} strokeWidth={3} /> : <Icon size={20} />}
                                 </div>
-                                <span className={`text-[9px] font-black uppercase tracking-widest mt-4 ${active ? 'text-indigo-600' : 'text-slate-400'}`}>
+                                <span className={`text-[9px] font-black uppercase tracking-widest mt-4 ${active ? 'text-indigo-600' : 'text-slate-500'}`}>
                                     {s.label}
                                 </span>
                                 {i < STEPS.length - 1 && (
-                                    <div className={`absolute left-full w-[calc(100%-48px)] h-0.5 top-6 -translate-x-1/2 z-[-1] ${done ? 'bg-emerald-100' : 'bg-slate-50'}`} />
+                                    <div className={`absolute left-full w-[calc(100%-48px)] h-0.5 top-6 -translate-x-1/2 z-[-1] ${done ? 'bg-emerald-200' : 'bg-slate-100'}`} />
                                 )}
                             </div>
                         )
@@ -191,7 +191,7 @@ export default function ShipmentForm() {
             </div>
 
             {/* Form Content */}
-            <div className="bg-white rounded-[2.5rem] shadow-xl border border-slate-100 overflow-hidden min-h-[500px] flex flex-col">
+            <div className="premium-card overflow-hidden min-h-[500px] flex flex-col">
                 <div className="flex-1 p-8 md:p-12">
                    <AnimatePresence mode="wait" custom={direction}>
                      <motion.div
@@ -216,7 +216,7 @@ export default function ShipmentForm() {
                                           key={m.mode} type="button" onClick={() => setField('mode', m.mode)} 
                                           className={`flex flex-col items-center p-6 rounded-2xl border-2 transition-all ${isActive ? 'border-indigo-600 bg-indigo-50/50 shadow-lg shadow-indigo-50' : 'border-slate-100 bg-white hover:border-slate-200'}`}
                                         >
-                                           <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-4 ${isActive ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-400'}`}>
+                                           <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-4 ${isActive ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-500'}`}>
                                               <Icon size={24} />
                                            </div>
                                            <span className={`text-[11px] font-black uppercase tracking-widest ${isActive ? 'text-indigo-600' : 'text-slate-500'}`}>{m.label}</span>
@@ -337,13 +337,13 @@ export default function ShipmentForm() {
 
                        {step === 4 && (
                          <div className="space-y-8">
-                            <div className="flex items-center gap-4 py-6 border-b border-slate-50">
+                            <div className="flex items-center gap-4 py-6 border-b border-slate-100">
                                <div className="w-14 h-14 bg-indigo-600 text-white rounded-2xl flex items-center justify-center shadow-lg">
                                   <ShieldCheck size={28} />
                                </div>
                                <div>
-                                  <h3 className="text-2xl font-black text-slate-800 tracking-tighter uppercase italic">Final Review</h3>
-                                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">Check all details before deploying</p>
+                                  <h3 className="text-2xl font-black text-slate-900 tracking-tighter uppercase italic">Final Review</h3>
+                                  <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mt-1">Check all details before deploying</p>
                                </div>
                             </div>
 
@@ -356,9 +356,9 @@ export default function ShipmentForm() {
                                     { l: 'Cargo', v: `${form.cargo_type} (${form.weight_kg}kg)` },
                                     { l: 'Value', v: `${formatCurrency(parseFloat(form.declared_value) || 0)}` }
                                   ].map((row, i) => (
-                                    <div key={i} className="flex justify-between items-center bg-slate-50 p-4 rounded-xl border border-slate-100">
-                                       <span className="text-[10px] font-black text-slate-400 uppercase">{row.l}</span>
-                                       <span className="text-[12px] font-bold text-slate-800 uppercase italic">{row.v}</span>
+                                    <div key={i} className="flex justify-between items-center bg-slate-50 p-4 rounded-xl border border-slate-100 shadow-sm">
+                                       <span className="text-[10px] font-black text-slate-500 uppercase">{row.l}</span>
+                                       <span className="text-[12px] font-bold text-slate-900 uppercase italic">{row.v}</span>
                                     </div>
                                   ))}
                                </div>
@@ -371,7 +371,7 @@ export default function ShipmentForm() {
                                     { l: 'Priority', v: form.priority.toUpperCase() }
                                   ].map((row, i) => (
                                     <div key={i} className="flex justify-between items-center bg-slate-50 p-4 rounded-xl border border-slate-100">
-                                       <span className="text-[10px] font-black text-slate-400 uppercase">{row.l}</span>
+                                       <span className="text-[10px] font-black text-slate-500 uppercase">{row.l}</span>
                                        <span className="text-[12px] font-bold text-slate-800 uppercase italic">{row.v}</span>
                                     </div>
                                   ))}
@@ -383,16 +383,16 @@ export default function ShipmentForm() {
                    </AnimatePresence>
                 </div>
 
-                <div className="p-8 md:p-10 bg-slate-50/50 border-t border-slate-100 flex justify-between items-center">
+                <div className="p-8 md:p-10 bg-slate-50 border-t border-slate-100 flex justify-between items-center shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)]">
                     <button 
                       onClick={prev} disabled={step === 0} 
-                      className={`px-8 py-4 text-[10px] font-black uppercase tracking-[0.2em] rounded-2xl transition-all ${step === 0 ? 'opacity-0' : 'bg-white border border-slate-200 text-slate-400 hover:text-slate-800'}`}
+                      className={`px-8 py-4 text-[10px] font-black uppercase tracking-[0.2em] rounded-2xl transition-all ${step === 0 ? 'opacity-0 pointer-events-none' : 'bg-white border border-slate-200 text-slate-500 hover:text-slate-800 shadow-sm hover:shadow-md'}`}
                     >
                        Go Back
                     </button>
                     <button 
                        onClick={step === STEPS.length - 1 ? handleSubmit : next} disabled={submitting}
-                       className="px-10 py-5 bg-slate-900 text-white rounded-2xl text-[11px] font-black uppercase tracking-[0.3em] flex items-center gap-3 shadow-xl hover:bg-black transition-all active:scale-[0.98]"
+                       className="px-10 py-5 bg-slate-900 text-white rounded-2xl text-[11px] font-black uppercase tracking-[0.3em] flex items-center gap-3 shadow-xl hover:bg-slate-800 transition-all active:scale-[0.98] border border-white/10"
                     >
                        {submitting ? <Loader2 className="animate-spin" size={16} /> : step === STEPS.length - 1 ? (
                          <>Create Shipment <Zap size={16} className="fill-white" /></>
@@ -407,8 +407,8 @@ export default function ShipmentForm() {
         {/* Intelligence Sidebar */}
         <div className="lg:col-span-4 space-y-8">
             {/* Real-time Insights */}
-            <div className="bg-white rounded-[2.5rem] p-8 shadow-xl border border-slate-100 h-fit">
-               <h4 className="text-[12px] font-black text-slate-800 uppercase tracking-widest mb-8 flex items-center gap-2">
+            <div className="premium-card p-8 h-fit">
+               <h4 className="text-[12px] font-black text-slate-900 uppercase tracking-widest mb-8 flex items-center gap-2">
                   <Sparkles size={16} className="text-indigo-600" /> AI Insights
                </h4>
                
@@ -416,7 +416,7 @@ export default function ShipmentForm() {
                   {/* Distance & Time */}
                   {primaryRoute && (
                      <div className="space-y-4">
-                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Estimated Logistics</p>
+                        <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Estimated Logistics</p>
                         <div className="grid grid-cols-2 gap-4">
                            <div className="p-5 bg-indigo-50/50 rounded-2xl border border-indigo-100">
                               <p className="text-[9px] font-black text-indigo-400 uppercase mb-1">Distance</p>
@@ -433,10 +433,10 @@ export default function ShipmentForm() {
                   {/* Pricing Prediction */}
                   {estimatedPrice > 0 && (
                      <div className="space-y-4">
-                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Cost Estimate</p>
+                        <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Cost Estimate</p>
                         <div className="p-6 bg-slate-900 rounded-3xl text-white relative overflow-hidden group">
                            <div className="absolute right-0 top-0 opacity-10 blur-sm group-hover:opacity-20 transition-all scale-150"><IndianRupee size={100} /></div>
-                           <p className="text-[9px] font-black text-slate-400 uppercase mb-1 relative z-10">Market Average Rate</p>
+                           <p className="text-[9px] font-black text-slate-500 uppercase mb-1 relative z-10">Market Average Rate</p>
                            <h3 className="text-3xl font-black italic tracking-tighter relative z-10">{formatCurrency(estimatedPrice)}</h3>
                            <p className="text-[9px] font-black text-emerald-400 uppercase mt-4 relative z-10 flex items-center gap-1.5"><TrendingUp size={12} /> Competitive Pricing</p>
                         </div>
@@ -446,7 +446,7 @@ export default function ShipmentForm() {
                   {/* Weather Risk */}
                   {weatherRisk && (
                      <div className="space-y-4">
-                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Weather Assessment</p>
+                        <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Weather Assessment</p>
                         <div className={`p-6 rounded-3xl border ${weatherRisk.overallRisk > 60 ? 'bg-rose-50 border-rose-100 text-rose-800' : 'bg-emerald-50 border-emerald-100 text-emerald-800'}`}>
                            <div className="flex items-center gap-2 mb-3">
                               <CloudRain size={16} />

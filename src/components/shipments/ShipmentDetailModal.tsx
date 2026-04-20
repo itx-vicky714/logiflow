@@ -17,7 +17,7 @@ import { toast } from 'sonner';
 import { format, addHours, differenceInHours } from 'date-fns';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
-import { ModeIcon } from './ModeIcon';
+import { ModeIcon } from '../common/ModeIcon';
 
 interface Props {
   shipment: Shipment;

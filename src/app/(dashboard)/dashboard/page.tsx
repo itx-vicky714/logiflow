@@ -14,9 +14,13 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
-import { ModeIcon } from '@/components/ModeIcon';
+import { 
+  TrendingUp, Activity, CheckCircle2, AlertTriangle, ShieldAlert, Zap, 
+  Map as MapIcon, ChevronRight, Search, Clock, Box, LayoutDashboard
+} from 'lucide-react';
 
-const ShipmentDetailModal = dynamic(() => import('@/components/ShipmentDetailModal'), { ssr: false });
+const ShipmentDetailModal = dynamic(() => import('@/components/shipments/ShipmentDetailModal'), { ssr: false });
+import { ModeIcon } from '@/components/common/ModeIcon';
 
 const HIGH_RISK_THRESHOLD = 70;
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -37,7 +41,7 @@ const KPICard = React.memo(({ title, value, change, icon, iconColor, isError }: 
     <div className="relative z-10">
       <h2 className={`text-2xl lg:text-4xl font-black tracking-tighter ${isError ? 'text-rose-600' : 'text-slate-900'} mb-1 mt-4`}>{value}</h2>
       <div className={`flex items-center gap-1 ${isError ? 'text-rose-500' : 'text-indigo-600'} text-[10px] font-bold`}>
-        <span className="material-symbols-outlined text-xs lg:text-sm">{icon}</span>
+        {isError ? <AlertTriangle size={12} /> : icon === 'trending_up' ? <TrendingUp size={12} /> : <Zap size={12} />}
         <span>{change}</span>
       </div>
     </div>
@@ -175,7 +179,7 @@ export default function DashboardPage() {
   );
 
   return (
-    <div className="pt-16 animate-in fade-in slide-in-from-bottom-4 duration-1000">
+    <div className="min-h-screen bg-white text-slate-900 font-sans selection:bg-indigo-100 selection:text-indigo-900 relative overflow-x-hidden animate-in fade-in slide-in-from-bottom-4 duration-1000">
       
       {/* Top Section: Dashboard KPIs & Sidebar Panels (9+3 Enforced) */}
       <section className="grid grid-cols-12 gap-10 mt-10 mb-6">

@@ -8,7 +8,11 @@ import { useSearch } from '@/context/SearchContext';
 import { supabase } from '@/lib/supabase';
 import { seedShipments } from '@/lib/utils';
 import { toast } from 'sonner';
-import type { Notification, Shipment } from '@/types';
+import { Notification, Shipment } from '@/types';
+import { 
+  TrendingUp, Activity, CheckCircle2, AlertTriangle, ShieldAlert, Zap, Search, 
+  Bell, HelpCircle, User, LogOut, ChevronRight, Menu, RefreshCcw, Box
+} from 'lucide-react';
 
 const SIMULATE_SEQUENCE = [
   { origin: 'Mumbai', destination: 'Delhi', mode: 'road', status: 'on_time', priority: 'normal', risk_score: 15, cargo_type: 'Electronics', supplier_name: 'Tata Motors', weight_kg: 1200, declared_value: 150000 },
@@ -62,21 +66,36 @@ export function TopBar() {
 
   const [simulating, setSimulating] = useState(false);
 
-  const handleAllClear = () => {
-    setQuery('');
-    toast.success('Search cleared');
+  const handleAllClear = async () => {
+    if (!user) return;
+    const toastId = toast.loading('Purging network nodes...');
+    try {
+      const { error } = await supabase.from('shipments').delete().eq('user_id', user.id);
+      if (error) throw error;
+      toast.success('Network Cleared', { id: toastId });
+      window.location.reload();
+    } catch (err) {
+      toast.error('Purge Failed', { id: toastId });
+    }
   };
 
-  const handleReset = () => {
-    setQuery('');
-    toast.success('Dashboard Refreshed');
-    window.location.reload();
+  const handleReset = async () => {
+    if (!user) return;
+    const toastId = toast.loading('Re-initializing network samples...');
+    try {
+      await supabase.from('shipments').delete().eq('user_id', user.id);
+      await seedShipments(user.id);
+      toast.success('Network Re-initialized', { id: toastId });
+      window.location.reload();
+    } catch (err) {
+      toast.error('Initialization Failed', { id: toastId });
+    }
   };
 
   const handleSimulate = async () => {
     if (simulating) return;
     setSimulating(true);
-    const toastId = toast.loading('Simulating shipment...');
+    const toastId = toast.loading('Synthesizing active node...');
 
     try {
       const { data: { user: currentUser } } = await supabase.auth.getUser();
@@ -101,13 +120,12 @@ export function TopBar() {
       if (error) throw error;
       
       localStorage.setItem('simulate_index', String(currentIndex + 1));
-      toast.success(`Active Node: ${shipmentData.origin} → ${shipmentData.destination}`, { id: toastId });
+      toast.success(`Node Active: ${shipmentData.origin} → ${shipmentData.destination}`, { id: toastId });
       
-      // Full refresh to update all dashboard elements
       window.location.reload();
     } catch (err) {
       console.error(err);
-      toast.error('Simulation Failed', { id: toastId });
+      toast.error('Simulation Interrupted', { id: toastId });
     } finally {
       setSimulating(false);
     }
@@ -120,7 +138,7 @@ export function TopBar() {
         {/* Mobile Toggle & Brand */}
         <div className="flex lg:hidden items-center gap-3">
           <button onClick={toggleMobile} className="w-10 h-10 flex items-center justify-center hover:bg-primary/5 rounded-lg active:scale-90 transition-all">
-            <span className="material-symbols-outlined text-[#493ee5]">menu</span>
+            <Menu className="text-[#493ee5]" size={24} />
           </button>
           <span className="text-sm font-black tracking-tighter uppercase italic text-[#493ee5]">LogiFlow</span>
         </div>
@@ -130,14 +148,39 @@ export function TopBar() {
           <span className="text-lg font-black text-slate-800 tracking-tight shrink-0 hidden lg:block">LogiFlow Dashboard</span>
           
           <div className="relative group">
-            <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-600 transition-colors">search</span>
+            <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-600 transition-colors" />
             <input 
               type="text" 
               placeholder="Search network nodes..." 
-              className="h-11 w-64 md:w-96 rounded-2xl bg-slate-100/50 border border-transparent px-12 text-[13px] font-medium outline-none transition-all focus:bg-white focus:border-indigo-100 focus:ring-4 focus:ring-indigo-50/50"
+              className="h-11 w-60 md:w-80 rounded-2xl bg-slate-100/50 border border-transparent px-12 text-[13px] font-medium outline-none transition-all focus:bg-white focus:border-indigo-100 focus:ring-4 focus:ring-indigo-50/50"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
             />
+          </div>
+
+          <div className="hidden lg:flex items-center gap-3">
+            <button 
+              onClick={handleAllClear}
+              className="h-10 px-4 flex items-center justify-center rounded-xl bg-slate-100 text-slate-500 hover:bg-rose-50 hover:text-rose-600 transition-all font-bold text-[10px] uppercase tracking-widest active:scale-95 border border-transparent hover:border-rose-100"
+              title="Purge all shipments"
+            >
+              All Clear
+            </button>
+            <button 
+              onClick={handleReset}
+              className="h-10 px-4 flex items-center justify-center rounded-xl bg-slate-100 text-slate-500 hover:bg-slate-200 hover:text-slate-900 transition-all font-bold text-[10px] uppercase tracking-widest active:scale-95 border border-transparent hover:border-slate-200"
+              title="Reset to sample data"
+            >
+              Reset
+            </button>
+            <button 
+              onClick={handleSimulate}
+              disabled={simulating}
+              className="h-10 px-6 flex items-center gap-2 rounded-xl bg-indigo-600 text-white hover:bg-indigo-700 transition-all font-bold text-[10px] uppercase tracking-widest active:scale-95 shadow-md shadow-indigo-100 disabled:opacity-50 border border-white/10"
+            >
+              {simulating ? <RefreshCcw size={14} className="animate-spin" /> : <Zap size={14} className="fill-white" />}
+              <span>Simulate</span>
+            </button>
           </div>
         </div>
 
@@ -150,7 +193,7 @@ export function TopBar() {
                 onClick={() => { setShowNotifications(!showNotifications); setShowProfile(false); }}
                 className="relative flex h-11 w-11 items-center justify-center rounded-2xl bg-slate-100/50 text-slate-600 hover:bg-slate-200/50 hover:text-indigo-600 transition-all active:scale-95 shadow-sm"
               >
-                <span className="material-symbols-outlined transform group-hover:rotate-12 transition-transform">notifications</span>
+                <Bell size={20} className="transform group-hover:rotate-12 transition-transform" />
                 {notifications.length > 0 && (
                   <span className="absolute -right-0.5 -top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-indigo-600 text-[10px] font-black text-white ring-2 ring-white">
                     {notifications.length}
@@ -169,7 +212,7 @@ export function TopBar() {
                       </div>
                     )) : (
                       <div className="py-8 text-center bg-slate-50 rounded-xl">
-                        <span className="material-symbols-outlined text-3xl text-slate-200">notifications_off</span>
+                        <Bell size={32} className="mx-auto text-slate-200 mb-2" />
                         <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-2">No new alerts</p>
                       </div>
                     )}
@@ -183,7 +226,7 @@ export function TopBar() {
               onClick={() => setShowHelp(!showHelp)}
               className="w-11 h-11 flex items-center justify-center rounded-2xl bg-slate-100/50 text-slate-600 hover:bg-slate-200/50 hover:text-indigo-600 transition-all active:scale-95 shadow-sm"
             >
-              <span className="material-symbols-outlined text-[20px]">help_outline</span>
+              <HelpCircle size={20} />
             </button>
           </div>
           

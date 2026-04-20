@@ -6,7 +6,7 @@ import { TopBar } from '@/components/layout/TopBar';
 import dynamic from 'next/dynamic';
 import { SidebarProvider } from '@/context/SidebarContext';
 
-const LogiBot = dynamic(() => import('@/components/LogiBot'), { 
+const LogiBot = dynamic(() => import('@/components/ai/LogiBot'), { 
   ssr: false,
   loading: () => <div className="fixed bottom-8 right-8 w-16 h-16 bg-on-surface/10 rounded-full animate-pulse z-50" />
 });

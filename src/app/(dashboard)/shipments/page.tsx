@@ -7,10 +7,10 @@ import type { Shipment } from '@/types';
 import dynamic from 'next/dynamic';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
-import { ModeIcon } from '@/components/ModeIcon';
+import { ModeIcon } from '@/components/common/ModeIcon';
 import { Filter, Search } from 'lucide-react';
 
-const ShipmentDetailModal = dynamic(() => import('@/components/ShipmentDetailModal'), { ssr: false });
+const ShipmentDetailModal = dynamic(() => import('@/components/shipments/ShipmentDetailModal'), { ssr: false });
 
 const TABS = ['All', 'Active', 'Delivered', 'Delayed'] as const;
 type Tab = typeof TABS[number];

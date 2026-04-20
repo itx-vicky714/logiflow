@@ -7,7 +7,7 @@ import type { Shipment } from '@/types';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
-import { ModeIcon } from '@/components/ModeIcon';
+import { ModeIcon } from '@/components/common/ModeIcon';
 
 interface ReportCard { id: string; title: string; description: string; frequency: string; icon: string; col: string; }
 const REPORT_TYPES: ReportCard[] = [

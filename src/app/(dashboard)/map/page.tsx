@@ -13,7 +13,7 @@ import {
 import { format } from 'date-fns';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
-import { ModeIcon } from '@/components/ModeIcon';
+import { ModeIcon } from '@/components/common/ModeIcon';
 
 class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { hasError: boolean }> {
   constructor(props: any) { super(props); this.state = { hasError: false }; }
@@ -31,7 +31,7 @@ class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { has
   }
 }
 
-const MapLayout = dynamic(() => import('@/components/MapLayout'), { ssr: false, loading: () => (
+const MapLayout = dynamic(() => import('@/components/map/MapControlTower'), { ssr: false, loading: () => (
   <div className="flex-1 h-full min-h-[500px] flex items-center justify-center bg-slate-50 rounded-2xl border border-slate-200 shadow-inner">
     <div className="flex flex-col items-center gap-4">
       <div className="relative">

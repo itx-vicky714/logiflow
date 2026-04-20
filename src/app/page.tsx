@@ -37,12 +37,12 @@ import { motion, AnimatePresence, useScroll, useSpring } from 'framer-motion';
 // --- Types & Constants ---
 
 const ACTIVITY_EVENTS = [
-  { text: "✓ SHP-R042 delivered — Mumbai to Delhi — 14 Apr, 09:41", type: "delivered" },
-  { text: "⚠ Weather alert on NH-48 — 3 shipments rerouted automatically", type: "alert" },
-  { text: "🔔 SHP-A018 at risk — ETA pushed by 2h — Chennai corridor", type: "risk" },
-  { text: "✓ SHP-L007 arrived Bangalore — On time — Tata Motors", type: "delivered" },
-  { text: "📊 Route optimized — Pune to Hyderabad — saving 4 hours", type: "delivered" },
-  { text: "✓ SHP-R089 cleared customs — Air freight — IndiGo Cargo", type: "delivered" },
+  { text: "SHP-R042 delivered — Mumbai to Delhi — 14 April", type: "delivered" },
+  { text: "Weather alert on NH-48 — 3 shipments rerouted", type: "alert" },
+  { text: "SHP-A018 at risk — ETA pushed by 2h — Chennai", type: "risk" },
+  { text: "SHP-L007 arrived Bangalore — On time — Tata Motors", type: "delivered" },
+  { text: "Route optimized — Pune to Hyderabad — +4 hours", type: "delivered" },
+  { text: "SHP-R089 cleared customs — IndiGo Cargo", type: "delivered" },
 ];
 
 const INDUSTRIES = [
@@ -55,11 +55,11 @@ const INDUSTRIES = [
 ];
 
 const CAPABILITIES = [
-  "✓ Live GPS Tracking",
-  "✓ AI Delay Prediction",
-  "✓ Weather-Aware Routing",
-  "✓ Multi-Modal Support",
-  "✓ Instant Alerts",
+  { icon: <CheckCircle2 size={14} />, label: "Live GPS Tracking" },
+  { icon: <CheckCircle2 size={14} />, label: "AI Delay Prediction" },
+  { icon: <CheckCircle2 size={14} />, label: "Weather-Aware Routing" },
+  { icon: <CheckCircle2 size={14} />, label: "Multi-Modal Support" },
+  { icon: <CheckCircle2 size={14} />, label: "Instant Alerts" },
 ];
 
 const FAQS = [
@@ -177,14 +177,13 @@ const TiltCard = ({ children, className = "" }: { children: React.ReactNode, cla
 
 const ActivityTicker = () => {
   return (
-    <div className="bg-indigo-50 border-y border-indigo-100 py-2 overflow-hidden whitespace-nowrap relative z-30">
+    <div className="bg-slate-50 border-y border-slate-100 py-4 overflow-hidden whitespace-nowrap relative z-30">
       <div className="flex animate-marquee hover:[animation-play-state:paused] w-max">
         {[...ACTIVITY_EVENTS, ...ACTIVITY_EVENTS].map((event, idx) => (
-          <div key={idx} className="flex items-center mx-8 text-[13px] font-medium text-indigo-800">
-            <div className={`w-2 h-2 rounded-full mr-3 ${
-              event.type === 'delivered' ? 'bg-emerald-500' : 
-              event.type === 'risk' ? 'bg-amber-500' : 'bg-rose-500'
-            }`} />
+          <div key={idx} className="flex items-center mx-10 text-[11px] font-black uppercase tracking-widest text-slate-600">
+            {event.type === 'delivered' ? <CheckCircle2 size={14} className="mr-3 text-emerald-500" /> : 
+             event.type === 'risk' ? <AlertCircle size={14} className="mr-3 text-amber-500" /> : 
+             <AlertTriangle size={14} className="mr-3 text-rose-500" />}
             {event.text}
           </div>
         ))}
@@ -420,10 +419,10 @@ const ShowcaseAlerts = () => (
 );
 
 const ShowcaseAnalytics = () => (
-  <div className="bg-white rounded-[2rem] shadow-2xl border border-slate-100 p-8 w-full h-full grid grid-cols-2 gap-8">
+  <div className="bg-white rounded-[2rem] shadow-2xl border border-slate-100 p-8 w-full h-full grid grid-cols-1 lg:grid-cols-2 gap-8">
      <div className="bg-slate-50 rounded-3xl p-6 border border-slate-100 flex flex-col">
-       <h4 className="text-xs font-black text-slate-500 uppercase tracking-wider mb-6">Mode Distribution</h4>
-       <div className="flex-1 flex items-center justify-center relative">
+       <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-6 text-center">Mode Distribution</h4>
+       <div className="flex-1 flex items-center justify-center relative py-4">
          <div className="w-32 h-32 rounded-full border-[16px] border-indigo-600 relative">
             <motion.div 
               className="absolute inset-[-16px] rounded-full border-[16px] border-amber-500" 
@@ -431,30 +430,30 @@ const ShowcaseAnalytics = () => (
             />
          </div>
          <div className="absolute inset-0 flex flex-col items-center justify-center">
-           <span className="text-xl font-black">94%</span>
-           <span className="text-[10px] font-bold text-slate-500">On Time</span>
+           <span className="text-xl font-black text-slate-900">94%</span>
+           <span className="text-[10px] font-black text-slate-500 italic">On Time</span>
          </div>
        </div>
        <div className="mt-6 flex flex-wrap gap-4 justify-center">
-          <div className="flex items-center gap-2 text-[10px] font-bold"><div className="w-2 h-2 rounded-full bg-indigo-600" /> Road 45%</div>
-          <div className="flex items-center gap-2 text-[10px] font-bold"><div className="w-2 h-2 rounded-full bg-amber-500" /> Rail 30%</div>
+          <div className="flex items-center gap-2 text-[10px] font-black text-slate-600 uppercase tracking-tight"><div className="w-2 h-2 rounded-full bg-indigo-600" /> Road 45%</div>
+          <div className="flex items-center gap-2 text-[10px] font-black text-slate-600 uppercase tracking-tight"><div className="w-2 h-2 rounded-full bg-amber-500" /> Rail 30%</div>
        </div>
      </div>
      <div className="flex flex-col gap-6">
         <div className="bg-slate-50 rounded-3xl p-6 border border-slate-100">
            <p className="text-[10px] font-black text-slate-500 mb-2 uppercase tracking-widest">Avg Delay Cost</p>
-           <p className="text-2xl font-black text-rose-500">₹42,300<span className="text-xs font-bold text-slate-500 ml-2">/ shipment</span></p>
+           <p className="text-2xl font-black text-rose-500">₹42,300<span className="text-[10px] font-bold text-slate-400 ml-2 uppercase">/ shipment</span></p>
         </div>
         <div className="bg-slate-50 rounded-3xl p-6 border border-slate-100 flex-1">
            <p className="text-[10px] font-black text-slate-500 mb-4 uppercase tracking-widest">Route Efficiency</p>
            <div className="space-y-4">
               {[80, 65, 90].map((w, i) => (
                 <div key={i}>
-                  <div className="flex justify-between text-[10px] font-bold mb-1">
+                  <div className="flex justify-between text-[10px] font-black text-slate-600 mb-1">
                     <span>{['NH-48', 'NH-44', 'Eastern Corridor'][i]}</span>
                     <span>{w}%</span>
                   </div>
-                  <div className="h-1.5 bg-slate-200 rounded-full overflow-hidden">
+                  <div className="h-2 bg-white border border-slate-100 rounded-full overflow-hidden shadow-inner">
                     <motion.div initial={{ width: 0 }} animate={{ width: `${w}%` }} transition={{ delay: 0.5 + i * 0.1 }} className="h-full bg-indigo-600 rounded-full" />
                   </div>
                 </div>
@@ -556,7 +555,7 @@ export default function LandingPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-white text-slate-900 font-sans selection:bg-indigo-100 selection:text-indigo-900 relative">
+    <div className="min-h-screen bg-white text-slate-900 font-sans selection:bg-indigo-100 selection:text-indigo-900 relative overflow-x-hidden">
       
       {/* Scroll Progress Bar */}
       <motion.div 
@@ -644,12 +643,12 @@ export default function LandingPage() {
       {/* 2. HERO SECTION */}
       <section className="relative pt-40 pb-20 md:pt-60 md:pb-32 overflow-hidden bg-[400%_400%] animate-hero-gradient bg-gradient-to-br from-white via-indigo-50/20 to-white">
         
-        {/* Floating Operational Chips (Hero only visibility logic handled in CSS/Responsive) */}
-        <div className="absolute inset-0 max-w-7xl mx-auto pointer-events-none hidden md:block">
-          <FloatingChip icon={<AlertTriangle size={16} />} label="Delay Risk" value="High — NH-48" color="bg-amber-50 text-amber-600" delay="0s" className="absolute top-[25%] left-[5%]" index={0} />
-          <FloatingChip icon={<Bell size={16} />} label="Active Alerts" value="3 shipments" color="bg-rose-50 text-rose-600" delay="0.5s" className="absolute top-[20%] right-[10%]" index={1} />
-          <FloatingChip icon={<CheckCircle2 size={16} />} label="ETA Confidence" value="94% on track" color="bg-emerald-50 text-emerald-600" delay="1s" className="absolute bottom-[25%] left-[10%]" index={2} />
-          <FloatingChip icon={<CloudRain size={16} />} label="Weather Impact" value="Coastal route risk" color="bg-indigo-50 text-indigo-600" delay="1.5s" className="absolute bottom-[30%] right-[5%]" index={3} />
+        {/* Floating Operational Chips - Only visible on Large Desktops to prevent overlap */}
+        <div className="absolute inset-0 max-w-[1600px] mx-auto pointer-events-none hidden xl:block">
+          <FloatingChip icon={<AlertTriangle size={16} />} label="Delay Risk" value="High — NH-48" color="bg-amber-50 text-amber-600" delay="0s" className="absolute top-[28%] left-[2%]" index={0} />
+          <FloatingChip icon={<Bell size={16} />} label="Active Alerts" value="3 shipments" color="bg-rose-50 text-rose-600" delay="0.5s" className="absolute top-[22%] right-[2%]" index={1} />
+          <FloatingChip icon={<CheckCircle2 size={16} />} label="ETA Confidence" value="94% on track" color="bg-emerald-50 text-emerald-600" delay="1s" className="absolute bottom-[28%] left-[4%]" index={2} />
+          <FloatingChip icon={<CloudRain size={16} />} label="Weather Impact" value="Coastal route risk" color="bg-indigo-50 text-indigo-600" delay="1.5s" className="absolute bottom-[35%] right-[4%]" index={3} />
         </div>
 
         {/* Mobile Chips (Only show 2) */}
@@ -707,7 +706,7 @@ export default function LandingPage() {
              <h2 className="text-xl md:text-2xl font-black text-slate-900 mb-12 uppercase tracking-tight italic">Built for every link in the Indian supply chain</h2>
              
              {/* Row 1: Industries */}
-             <div className="flex flex-wrap justify-center gap-4 mb-8">
+             <div className="flex flex-wrap justify-center gap-4 mb-16">
                 {INDUSTRIES.map((ind, i) => (
                   <span key={i} className="px-6 py-3 bg-slate-50 border border-slate-100 rounded-2xl text-xs font-black text-slate-700 flex items-center gap-2 hover:bg-white hover:border-indigo-200 hover:shadow-xl transition-all group">
                     <span className="text-indigo-500 group-hover:scale-110 transition-transform">{ind.icon}</span> {ind.label}
@@ -716,10 +715,10 @@ export default function LandingPage() {
              </div>
 
              {/* Row 2: Capabilities */}
-             <div className="flex flex-wrap justify-center gap-6">
+             <div className="flex flex-wrap justify-center gap-x-10 gap-y-6">
                 {CAPABILITIES.map((cap, i) => (
-                  <span key={i} className="text-indigo-600 font-black text-xs uppercase tracking-widest flex items-center gap-2">
-                    {cap}
+                  <span key={i} className="text-slate-900 font-black text-[11px] uppercase tracking-[0.2em] flex items-center gap-3">
+                    <span className="text-indigo-600">{cap.icon}</span> {cap.label}
                   </span>
                 ))}
              </div>

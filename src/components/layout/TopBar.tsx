@@ -106,10 +106,14 @@ export function TopBar() {
     }
   };
 
-  const handleReset = () => {
+  const handleReset = async () => {
     setQuery('');
     localStorage.removeItem('simulate_index');
-    toast.success('Dashboard filters and view state reset');
+    if (user) {
+      await supabase.from('shipments').delete().eq('user_id', user.id);
+      await supabase.from('notifications').delete().eq('user_id', user.id);
+    }
+    toast.success('Dashboard filters, view state, and all shipments reset');
     // We reload to ensure all components reset to their default initial state
     setTimeout(() => window.location.reload(), 500);
   };
@@ -328,7 +332,13 @@ export function TopBar() {
                     Settings
                   </button>
                   <div className="h-px bg-slate-100 my-2 mx-2"></div>
-                  <button onClick={signOut} className="w-full flex items-center gap-3 px-4 py-3 text-[11px] font-black text-error hover:bg-error/5 rounded-xl transition-colors">
+                  <button onClick={async () => {
+                     localStorage.removeItem('demo_session');
+                     localStorage.removeItem('simulate_index');
+                     await signOut();
+                     router.replace('/login');
+                     setTimeout(() => window.location.reload(), 200);
+                  }} className="w-full flex items-center gap-3 px-4 py-3 text-[11px] font-black text-error hover:bg-error/5 rounded-xl transition-colors">
                     <span className="material-symbols-outlined text-lg">logout</span>
                     Logout
                   </button>

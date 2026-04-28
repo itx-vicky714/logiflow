@@ -4,7 +4,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
 import {
   seedShipments, riskColor,
-  estimateRevenue, formatCurrency, modeLabel
+  estimateRevenue, formatCurrency, modeLabel, SAMPLE_SHIPMENTS
 } from '@/lib/utils';
 import { getCityWeather, KEY_CITIES } from '@/lib/weather';
 import type { Shipment, KPIData } from '@/types';
@@ -80,27 +80,45 @@ export default function DashboardPage() {
   const fetchData = useCallback(async () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-      
-      await seedShipments(user.id);
-      
-      const { data } = await supabase
-        .from('shipments')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false });
-        
-      if (data) {
-        setShipments(data);
+      const isDemo = localStorage.getItem('demo_session') === 'true';
+      if (!user && !isDemo) {
+         window.location.href = '/login';
+         return;
       }
+      
+      if (user) {
+        await seedShipments(user.id);
+        
+        const { data } = await supabase
+          .from('shipments')
+          .select('*')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false });
+          
+        if (data) {
+          setShipments(data);
+        }
 
-      const { data: alertsData } = await supabase
-        .from('notifications')
-        .select('*')
-        .eq('user_id', user.id)
-        .eq('is_read', false)
-        .order('created_at', { ascending: false });
-      if (alertsData) setDbAlerts(alertsData);
+        const { data: alertsData } = await supabase
+          .from('notifications')
+          .select('*')
+          .eq('user_id', user.id)
+          .eq('is_read', false)
+          .order('created_at', { ascending: false });
+        if (alertsData) setDbAlerts(alertsData);
+      } else if (isDemo) {
+        const demoShips = SAMPLE_SHIPMENTS.map((s, i) => ({
+           id: `demo-${i}`,
+           user_id: 'demo-local',
+           shipment_code: `LOG-${new Date().toISOString().slice(0,10).replace(/-/g,'')}${String(i+1).padStart(4,'0')}`,
+           created_at: new Date(Date.now() - Math.random() * 86400000).toISOString(),
+           eta: new Date(Date.now() + (s.eta_hours || 0) * 3600000).toISOString(),
+           risk_score: s.priority === 'high' ? 85 : 30,
+           ...s
+        })) as any[];
+        setShipments(demoShips);
+        setDbAlerts([]);
+      }
     } catch (error) {
       console.error('Error fetching dashboard data:', error);
     } finally {
@@ -196,7 +214,7 @@ export default function DashboardPage() {
   );
 
   return (
-    <div className="min-h-screen bg-white text-slate-900 font-sans selection:bg-indigo-100 selection:text-indigo-900 relative overflow-x-hidden animate-in fade-in slide-in-from-bottom-4 duration-1000">
+    <div className="min-h-screen bg-slate-50 text-slate-900 font-sans selection:bg-indigo-100 selection:text-indigo-900 relative overflow-x-hidden animate-in fade-in slide-in-from-bottom-4 duration-1000">
       
       {/* Top Section: Dashboard KPIs & Sidebar Panels (9+3 Enforced) */}
       <section className="grid grid-cols-12 gap-10 mt-10 mb-6">
@@ -214,11 +232,11 @@ export default function DashboardPage() {
              <KPICard title="On Time" value={`${stats.onTimePct}%`} change="Target met" icon="verified" iconColor="#493ee5" />
              <KPICard title="Delayed" value={stats.delayed.toLocaleString()} change="Needs Attention" icon="warning" iconColor="error" isError />
              <KPICard title="High Risk" value={stats.atRisk.toLocaleString()} change="Review Data" icon="gpp_maybe" iconColor="error" isError={stats.atRisk > 0} />
-             <KPICard title="System Alerts" value={dbAlerts.length.toLocaleString()} change="Real-time" icon="bolt" iconColor="#493ee5" />
+             <KPICard title="System Alerts" value={alerts.length.toLocaleString()} change="Real-time" icon="bolt" iconColor="#493ee5" />
           </div>
 
           {/* Revenue Graph Area */}
-          <div className="mt-6 lg:mt-10 w-full premium-card p-6 lg:p-12">
+          <div className="mt-6 lg:mt-10 w-full bg-white rounded-2xl border border-slate-200 shadow-sm p-6 lg:p-12">
             <div className="flex items-center justify-between mb-12">
               <div>
                 <h3 className="text-[11px] font-bold uppercase tracking-widest text-slate-500 mb-2">Revenue Forecast</h3>
@@ -262,7 +280,7 @@ export default function DashboardPage() {
 
         {/* Tactical Panels Column */}
         <div className="col-span-12 lg:col-span-3 flex flex-col gap-6 lg:gap-10">
-          <div className="premium-card p-6 lg:p-10 flex-1">
+          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 lg:p-10 flex-1">
             <div className="flex items-center justify-between mb-10">
               <h4 className="text-[11px] font-black uppercase tracking-widest text-slate-900">System Alerts</h4>
               <span className="px-3 py-1.5 bg-rose-50 text-rose-600 text-[10px] font-black rounded-full border border-rose-100 uppercase tracking-widest">
@@ -306,7 +324,7 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          <div className="bg-slate-50 p-6 lg:p-10 rounded-3xl border border-slate-200/60 shadow-sm">
+          <div className="bg-white p-6 lg:p-10 rounded-2xl border border-slate-200 shadow-sm">
             <h4 className="text-[11px] font-black uppercase tracking-widest text-slate-500 mb-6 font-headline">Weather Intel</h4>
             <div className="grid grid-cols-2 gap-4">
               {cityWeathers.map((w, idx) => (
@@ -332,7 +350,7 @@ export default function DashboardPage() {
 
       {/* Bottom Section: Operations Registry & Transport Modal */}
       <section className="grid grid-cols-12 gap-6 lg:gap-10">
-        <div className="col-span-12 lg:col-span-9 premium-card overflow-hidden" style={{ contentVisibility: 'auto', containIntrinsicSize: '0 500px' }}>
+        <div className="col-span-12 lg:col-span-9 bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden" style={{ contentVisibility: 'auto', containIntrinsicSize: '0 500px' }}>
           <div className="p-6 lg:p-12 border-b border-slate-100">
             <div className="flex items-center justify-between">
               <h4 className="text-[11px] font-black uppercase tracking-widest text-slate-900">Active Shipments</h4>
@@ -404,7 +422,7 @@ export default function DashboardPage() {
 
         {/* Transport Breakdown Area */}
         <div className="col-span-12 lg:col-span-3 flex flex-col gap-6 lg:gap-10" style={{ contentVisibility: 'auto', containIntrinsicSize: '0 400px' }}>
-          <div className="premium-card p-8 lg:p-12 flex-1 flex flex-col group overflow-hidden relative">
+          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-8 lg:p-12 flex-1 flex flex-col group overflow-hidden relative">
             <h4 className="text-[11px] font-black uppercase tracking-widest text-slate-900 mb-12">Modal Distribution</h4>
             <div className="relative w-48 h-48 mx-auto mb-12 transition-transform duration-1000 group-hover:scale-105">
               <svg className="w-full h-full transform -rotate-90 rounded-full" viewBox="0 0 100 100">

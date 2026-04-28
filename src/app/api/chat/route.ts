@@ -14,6 +14,17 @@ function detectIntent(message: string):
   | 'revenue_query' | 'reports_analytics' | 'map_usage' | 'dashboard_usage' | 'alerts_management' | null {
   const m = message.toLowerCase();
   
+  // Explicit Demo Queries
+  if (m.includes('is website ko kaise use kru')) return 'product_help';
+  if (m.includes('dashboard ka use kya hai')) return 'dashboard_usage';
+  if (m.includes('reports ke bare me batao')) return 'reports_analytics';
+  if (m.includes('map kaise use kare')) return 'map_usage';
+  if (m.includes('active alerts dikhao')) return 'alerts_summary';
+  if (m.includes('delayed shipments kitne hai')) return 'delayed_shipments';
+  if (m.includes('total shipments kitna hai')) return 'total_shipments';
+  if (m.includes('high risk shipments kaun se hai')) return 'high_risk';
+  if (m.includes('patna to surat')) return 'route_query';
+  
   // High Priority: Website Usage / Help
   const helpTerms = ['what can you do', 'website', 'features', 'help', 'use kru', 'kaise use', 'ka kaam ki', 'use hota hai', 'kaise hota hai', 'how to use', 'guide'];
   if (helpTerms.some(term => m.includes(term))) return 'product_help';
@@ -154,7 +165,7 @@ function smartFallbackText(message: string, shipments: ShipmentRecord[]): string
       
       const c1Cap = city1.charAt(0).toUpperCase() + city1.slice(1);
       const c2Cap = city2.charAt(0).toUpperCase() + city2.slice(1);
-      return `${c1Cap} to ${c2Cap} route ka koi active shipment nahi mila.`;
+      return `Is route (${c1Cap} to ${c2Cap}) ka active shipment data available nahi hai.`;
     }
 
     return `I can help you analyze specific routes or shipment IDs. Please provide a route (e.g., "Mumbai to Delhi") or a Shipment ID.`;

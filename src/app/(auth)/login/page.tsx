@@ -7,8 +7,11 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { toast } from 'sonner';
-import { Mail, Lock, Eye, EyeOff, ArrowRight, Truck, ShieldCheck, Loader2 } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff, ArrowRight, Truck, ShieldCheck, Loader2, Info } from 'lucide-react';
 import { motion } from 'framer-motion';
+
+const DEMO_EMAIL = "demo@logiflow.ai";
+const DEMO_PASSWORD = "demo123456";
 
 const loginSchema = z.object({
   email: z.string().email('Please enter a valid email address'),
@@ -56,6 +59,16 @@ export default function LoginPage() {
     }
   };
 
+  const handleDemoLogin = () => {
+    const data = { email: DEMO_EMAIL, password: DEMO_PASSWORD };
+    // Set form values for visual feedback
+    const emailInput = document.querySelector('input[name="email"]') as HTMLInputElement;
+    const passwordInput = document.querySelector('input[name="password"]') as HTMLInputElement;
+    if (emailInput) emailInput.value = DEMO_EMAIL;
+    if (passwordInput) passwordInput.value = DEMO_PASSWORD;
+    onSubmit(data);
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-slate-50 p-6 font-sans selection:bg-indigo-100 selection:text-indigo-900">
       <div className="w-full max-w-[440px] animate-in fade-in slide-in-from-bottom-4 duration-700">
@@ -75,9 +88,27 @@ export default function LoginPage() {
         <div className="bg-white rounded-[3rem] p-10 md:p-12 shadow-2xl shadow-slate-200/50 border border-slate-100 relative overflow-hidden group">
            <div className="absolute -right-8 -top-8 w-32 h-32 bg-indigo-50 rounded-full blur-3xl opacity-50 group-hover:opacity-80 transition-opacity" />
 
-           <div className="mb-10">
+           <div className="mb-6">
               <h2 className="text-2xl font-black text-slate-800 tracking-tighter uppercase italic">Welcome Back</h2>
               <p className="text-[12px] font-bold text-slate-600 uppercase tracking-widest mt-1">Sign in to manage your shipments</p>
+           </div>
+
+           {/* Demo Credentials Card */}
+           <div className="mb-8 p-4 bg-indigo-50 border border-indigo-100 rounded-2xl">
+             <div className="flex items-start gap-3">
+               <Info className="text-indigo-600 mt-0.5 shrink-0" size={16} />
+               <div className="flex-1">
+                 <h3 className="text-[11px] font-black uppercase tracking-widest text-indigo-900 mb-1">Demo Access</h3>
+                 <p className="text-[10px] text-indigo-700/80 mb-4 leading-relaxed font-medium">For hackathon judges, use this one-click demo account to explore the platform safely. (Ensure this user is created in Supabase Auth)</p>
+                 <button 
+                   type="button"
+                   onClick={handleDemoLogin}
+                   className="text-[10px] font-black uppercase tracking-widest bg-indigo-600 text-white px-5 py-2.5 rounded-xl hover:bg-indigo-700 transition-all shadow-sm active:scale-95 flex items-center gap-2 w-full justify-center"
+                 >
+                   Use Demo Account <ArrowRight size={14} />
+                 </button>
+               </div>
+             </div>
            </div>
 
            <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">

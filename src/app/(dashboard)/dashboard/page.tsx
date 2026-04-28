@@ -33,9 +33,8 @@ const KPICard = React.memo(({ title, value, change, icon, iconColor, isError }: 
   <motion.div 
     initial={{ opacity: 0, y: 20 }}
     animate={{ opacity: 1, y: 0 }}
-    whileHover={{ y: -4 }}
-    className="premium-card p-6 lg:p-8 relative overflow-hidden group"
   >
+    <div className="bg-white p-6 lg:p-8 rounded-2xl border border-slate-200 shadow-sm relative overflow-hidden group hover:shadow-md transition-all h-full">
     <div className="absolute inset-0 bg-gradient-to-br from-indigo-50/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
     <p className="text-slate-500 text-[10px] lg:text-[11px] font-bold uppercase tracking-widest leading-none relative z-10">{title}</p>
     <div className="relative z-10">
@@ -44,6 +43,7 @@ const KPICard = React.memo(({ title, value, change, icon, iconColor, isError }: 
         {isError ? <AlertTriangle size={12} /> : icon === 'trending_up' ? <TrendingUp size={12} /> : <Zap size={12} />}
         <span>{change}</span>
       </div>
+    </div>
     </div>
   </motion.div>
 ));
@@ -65,6 +65,16 @@ export default function DashboardPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [dateFilter, setDateFilter] = useState('all');
+  const [dismissedDemoAlerts, setDismissedDemoAlerts] = useState<string[]>([]);
+
+  useEffect(() => {
+    const handleAlertsCleared = () => {
+      setDbAlerts([]);
+      setDismissedDemoAlerts(['demo1', 'demo2', 'demo3']);
+    };
+    window.addEventListener('alerts-cleared', handleAlertsCleared);
+    return () => window.removeEventListener('alerts-cleared', handleAlertsCleared);
+  }, []);
 
 
   const fetchData = useCallback(async () => {
@@ -158,7 +168,14 @@ export default function DashboardPage() {
   }, [shipments]);
 
   const cityWeathers = React.useMemo(() => KEY_CITIES.slice(0, 2).map(getCityWeather), []);
-  const alerts = React.useMemo(() => dbAlerts.length > 0 ? dbAlerts.slice(0, 3) : [], [dbAlerts]);
+  
+  const demoAlerts = React.useMemo(() => [
+    { id: 'demo1', type: 'risk', title: 'High route risk detected', message: 'Shipment requires operator review due to severe weather anomalies.', is_read: false },
+    { id: 'demo2', type: 'delay', title: 'Weather delay warning', message: 'Expected delay of 4 hours on active route.', is_read: false },
+    { id: 'demo3', type: 'info', title: 'Operator review needed', message: 'Customs documentation pending clearance.', is_read: false }
+  ].filter(a => !dismissedDemoAlerts.includes(a.id)), [dismissedDemoAlerts]);
+
+  const alerts = React.useMemo(() => dbAlerts.length > 0 ? dbAlerts.slice(0, 3) : demoAlerts, [dbAlerts, demoAlerts]);
 
   if (loading) return (
     <div className="pt-16 px-12">
@@ -261,10 +278,15 @@ export default function DashboardPage() {
                       <p className="text-[13px] font-semibold text-on-surface tracking-tight leading-none uppercase">{a.title}</p>
                       <button 
                         onClick={async () => {
-                          const { error } = await supabase.from('notifications').update({ is_read: true }).eq('id', a.id);
-                          if (!error) {
-                            setDbAlerts(prev => prev.filter(item => item.id !== a.id));
+                          if (a.id.toString().startsWith('demo')) {
+                            setDismissedDemoAlerts(prev => [...prev, a.id]);
                             toast.success('Alert resolved');
+                          } else {
+                            const { error } = await supabase.from('notifications').update({ is_read: true }).eq('id', a.id);
+                            if (!error) {
+                              setDbAlerts(prev => prev.filter(item => item.id !== a.id));
+                              toast.success('Alert resolved');
+                            }
                           }
                         }}
                         className="text-[9px] font-black uppercase text-indigo-600 opacity-0 group-hover:opacity-100 transition-opacity"

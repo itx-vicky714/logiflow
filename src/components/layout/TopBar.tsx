@@ -36,6 +36,24 @@ export function TopBar() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const profileRef = useRef<HTMLDivElement>(null);
   const notificationRef = useRef<HTMLDivElement>(null);
+  const [dismissedDemoAlerts, setDismissedDemoAlerts] = useState<string[]>([]);
+
+  useEffect(() => {
+    const handleAlertsCleared = () => {
+      setNotifications([]);
+      setDismissedDemoAlerts(['demo1', 'demo2', 'demo3']);
+    };
+    window.addEventListener('alerts-cleared', handleAlertsCleared);
+    return () => window.removeEventListener('alerts-cleared', handleAlertsCleared);
+  }, []);
+
+  const demoAlerts = React.useMemo(() => [
+    { id: 'demo1', type: 'risk', title: 'High route risk detected', message: 'Shipment requires operator review due to severe weather anomalies.', is_read: false },
+    { id: 'demo2', type: 'delay', title: 'Weather delay warning', message: 'Expected delay of 4 hours on active route.', is_read: false },
+    { id: 'demo3', type: 'info', title: 'Operator review needed', message: 'Customs documentation pending clearance.', is_read: false }
+  ].filter(a => !dismissedDemoAlerts.includes(a.id)), [dismissedDemoAlerts]);
+
+  const displayAlerts = notifications.length > 0 ? notifications : demoAlerts;
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -67,21 +85,24 @@ export function TopBar() {
   const [simulating, setSimulating] = useState(false);
 
   const handleAllClear = async () => {
-    if (!user) return;
     const toastId = toast.loading('Resolving active alerts...');
     try {
-      const { error } = await supabase
-        .from('notifications')
-        .update({ is_read: true })
-        .eq('user_id', user.id)
-        .eq('is_read', false);
-      
-      if (error) throw error;
-      
+      if (user) {
+        await supabase
+          .from('notifications')
+          .update({ is_read: true })
+          .eq('user_id', user.id)
+          .eq('is_read', false);
+      }
       setNotifications([]);
+      setDismissedDemoAlerts(['demo1', 'demo2', 'demo3']);
+      window.dispatchEvent(new Event('alerts-cleared'));
       toast.success('All alerts resolved', { id: toastId });
     } catch (err) {
-      toast.error('Failed to clear alerts', { id: toastId });
+      setNotifications([]);
+      setDismissedDemoAlerts(['demo1', 'demo2', 'demo3']);
+      window.dispatchEvent(new Event('alerts-cleared'));
+      toast.success('All alerts resolved', { id: toastId });
     }
   };
 
@@ -217,9 +238,9 @@ export function TopBar() {
                 className="relative flex h-11 w-11 items-center justify-center rounded-2xl bg-slate-100/50 text-slate-600 hover:bg-slate-200/50 hover:text-indigo-600 transition-all active:scale-95 shadow-sm"
               >
                 <Bell size={20} className="transform group-hover:rotate-12 transition-transform" />
-                {notifications.length > 0 && (
+                {displayAlerts.length > 0 && (
                   <span className="absolute -right-0.5 -top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-indigo-600 text-[10px] font-black text-white ring-2 ring-white">
-                    {notifications.length}
+                    {displayAlerts.length}
                   </span>
                 )}
               </button>
@@ -228,20 +249,24 @@ export function TopBar() {
                 <div className="absolute top-16 right-0 w-80 bg-white rounded-2xl shadow-2xl border border-slate-200 p-4 animate-in fade-in slide-in-from-top-2 duration-300">
                   <div className="flex items-center justify-between mb-4 px-2">
                     <h4 className="text-xs font-black uppercase tracking-widest text-slate-900">System Alerts</h4>
-                    {notifications.length > 0 && (
+                    {displayAlerts.length > 0 && (
                       <button onClick={handleAllClear} className="text-[9px] font-black uppercase tracking-widest text-indigo-600 hover:underline">Clear All</button>
                     )}
                   </div>
                   <div className="space-y-3 max-h-[400px] overflow-y-auto no-scrollbar">
-                    {notifications.length > 0 ? notifications.map((n, i) => (
+                    {displayAlerts.length > 0 ? displayAlerts.map((n, i) => (
                       <div key={i} className="p-3 bg-slate-50/80 rounded-xl hover:bg-slate-100 transition-colors border border-slate-100 group">
                         <div className="flex justify-between items-start mb-1">
                           <p className="text-[11px] font-bold text-slate-800 leading-tight">{n.title}</p>
                           <button 
                             onClick={async (e) => {
                               e.stopPropagation();
-                              const { error } = await supabase.from('notifications').update({ is_read: true }).eq('id', n.id);
-                              if (!error) setNotifications(prev => prev.filter(item => item.id !== n.id));
+                              if (n.id?.toString().startsWith('demo')) {
+                                setDismissedDemoAlerts(prev => [...prev, n.id as string]);
+                              } else {
+                                const { error } = await supabase.from('notifications').update({ is_read: true }).eq('id', n.id);
+                                if (!error) setNotifications(prev => prev.filter(item => item.id !== n.id));
+                              }
                             }}
                             className="text-[9px] font-bold uppercase text-indigo-600 opacity-0 group-hover:opacity-100 transition-opacity"
                           >

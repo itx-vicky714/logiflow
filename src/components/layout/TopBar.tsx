@@ -6,7 +6,14 @@ import { useSidebar } from '@/context/SidebarContext';
 import { useAuth } from '@/context/AuthContext';
 import { useSearch } from '@/context/SearchContext';
 import { supabase } from '@/lib/supabase';
-import { seedShipments } from '@/lib/utils';
+import { 
+  seedShipments, 
+  getDemoAlerts, 
+  markAllDemoAlertsRead, 
+  clearDemoAlerts, 
+  addDemoAlert, 
+  resolveDemoAlert 
+} from '@/lib/utils';
 import { toast } from 'sonner';
 import { Notification, Shipment } from '@/types';
 import { 
@@ -77,10 +84,10 @@ export function TopBar() {
 
   useEffect(() => {
     const handleAlertsCleared = () => {
-      setNotifications([]);
+      setNotifications(getDemoAlerts().filter((a: any) => !a.is_read));
     };
-    window.addEventListener('alerts-cleared', handleAlertsCleared);
-    return () => window.removeEventListener('alerts-cleared', handleAlertsCleared);
+    window.addEventListener('logiflow-alerts-updated', handleAlertsCleared);
+    return () => window.removeEventListener('logiflow-alerts-updated', handleAlertsCleared);
   }, []);
 
   const displayAlerts = notifications;
@@ -96,29 +103,14 @@ export function TopBar() {
     };
     document.addEventListener('mousedown', handleClickOutside);
     
-    const handleAlertResolved = (e: Event) => {
-      const customEvent = e as CustomEvent;
-      if (customEvent.detail) {
-        setNotifications(prev => prev.filter(n => n.id !== customEvent.detail));
-      }
-    };
-    window.addEventListener('alert-resolved', handleAlertResolved);
-    
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
-      window.removeEventListener('alert-resolved', handleAlertResolved);
     };
   }, []);
 
   useEffect(() => {
     if (!user) return;
-    supabase.from('notifications')
-      .select('*')
-      .eq('user_id', user.id)
-      .eq('is_read', false)
-      .order('created_at', { ascending: false })
-      .limit(5)
-      .then(({ data }) => setNotifications(data || []));
+    setNotifications(getDemoAlerts().filter((a: any) => !a.is_read));
   }, [user]);
 
   const profileName = (user as { user_metadata?: { full_name?: string } })?.user_metadata?.full_name || user?.email?.split('@')[0]?.replace(/[._]/g, ' ') || 'User';
@@ -128,30 +120,16 @@ export function TopBar() {
 
   const handleAllClear = async () => {
     const toastId = toast.loading('Resolving active alerts...');
-    try {
-      if (user) {
-        await supabase
-          .from('notifications')
-          .update({ is_read: true })
-          .eq('user_id', user.id)
-          .eq('is_read', false);
-      }
-      setNotifications([]);
-      window.dispatchEvent(new Event('alerts-cleared'));
-      toast.success('All alerts resolved', { id: toastId });
-    } catch (err) {
-      setNotifications([]);
-      window.dispatchEvent(new Event('alerts-cleared'));
-      toast.success('All alerts resolved', { id: toastId });
-    }
+    markAllDemoAlertsRead();
+    toast.success('All alerts resolved', { id: toastId });
   };
 
   const handleReset = async () => {
     setQuery('');
     localStorage.removeItem('simulate_index');
+    clearDemoAlerts();
     if (user) {
       await supabase.from('shipments').delete().eq('user_id', user.id);
-      await supabase.from('notifications').delete().eq('user_id', user.id);
     }
     toast.success('Dashboard filters, view state, and all shipments reset');
     // We reload to ensure all components reset to their default initial state
@@ -204,21 +182,13 @@ export function TopBar() {
         if (reason.includes('delay')) type = 'delay';
         else if (reason.includes('maintenance')) type = 'system';
         
-        const { error: alertError } = await supabase.from('notifications').insert({
-          user_id: currentUser.id,
-          shipment_id: newShipment.id,
+        addDemoAlert({
+          shipment_code: newShipment.shipment_code,
           type,
           title: 'System Alert',
           message: `${reason} for shipment #${newShipment.shipment_code.split('-').pop()}.`,
-          is_read: false
         });
-        
-        if (alertError) {
-          console.error('[DEV ERROR] Notification Insert Failed:', alertError);
-          toast.error(`Alert Insert Failed: ${alertError.message}`);
-        } else {
-          toast.info(`Alert: ${reason}`);
-        }
+        toast.info(`Alert: ${reason}`);
       }
 
       localStorage.setItem('simulate_index', String(currentIndex + 1));
@@ -319,11 +289,7 @@ export function TopBar() {
                           <button 
                             onClick={async (e) => {
                               e.stopPropagation();
-                              const { error } = await supabase.from('notifications').update({ is_read: true }).eq('id', n.id);
-                              if (!error) {
-                                setNotifications(prev => prev.filter(item => item.id !== n.id));
-                                window.dispatchEvent(new CustomEvent('alert-resolved', { detail: n.id }));
-                              }
+                              resolveDemoAlert(n.id);
                             }}
                             className="text-[9px] font-bold uppercase text-indigo-600 opacity-0 group-hover:opacity-100 transition-opacity"
                           >

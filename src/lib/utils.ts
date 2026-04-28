@@ -293,3 +293,45 @@ export function generateDynamicAlerts(shipments: Shipment[]): Array<{
   return alerts.slice(0, 5);
 }
 
+const LOCAL_ALERT_KEY = 'logiflow_demo_alerts';
+
+export function getDemoAlerts() {
+  if (typeof window === 'undefined') return [];
+  const stored = localStorage.getItem(LOCAL_ALERT_KEY);
+  return stored ? JSON.parse(stored) : [];
+}
+
+export function saveDemoAlerts(alerts: any[]) {
+  if (typeof window === 'undefined') return;
+  localStorage.setItem(LOCAL_ALERT_KEY, JSON.stringify(alerts));
+  window.dispatchEvent(new Event('logiflow-alerts-updated'));
+}
+
+export function addDemoAlert(alert: any) {
+  const alerts = getDemoAlerts();
+  const newAlert = {
+    ...alert,
+    id: alert.id || `demo-alert-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`,
+    created_at: new Date().toISOString(),
+    is_read: false
+  };
+  alerts.unshift(newAlert);
+  saveDemoAlerts(alerts);
+}
+
+export function resolveDemoAlert(id: string) {
+  const alerts = getDemoAlerts();
+  const updated = alerts.map((a: any) => a.id === id ? { ...a, is_read: true } : a);
+  saveDemoAlerts(updated);
+}
+
+export function markAllDemoAlertsRead() {
+  const alerts = getDemoAlerts();
+  const updated = alerts.map((a: any) => ({ ...a, is_read: true }));
+  saveDemoAlerts(updated);
+}
+
+export function clearDemoAlerts() {
+  saveDemoAlerts([]);
+}
+

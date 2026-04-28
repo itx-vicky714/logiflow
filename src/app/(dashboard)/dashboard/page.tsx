@@ -4,7 +4,8 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
 import {
   seedShipments, riskColor,
-  estimateRevenue, formatCurrency, modeLabel, SAMPLE_SHIPMENTS
+  estimateRevenue, formatCurrency, modeLabel, SAMPLE_SHIPMENTS,
+  getDemoAlerts, resolveDemoAlert
 } from '@/lib/utils';
 import { getCityWeather, KEY_CITIES } from '@/lib/weather';
 import type { Shipment, KPIData } from '@/types';
@@ -67,19 +68,11 @@ export default function DashboardPage() {
   const [dateFilter, setDateFilter] = useState('all');
   useEffect(() => {
     const handleAlertsCleared = () => {
-      setDbAlerts([]);
+      setDbAlerts(getDemoAlerts().filter((a: any) => !a.is_read));
     };
-    const handleAlertResolved = (e: Event) => {
-      const customEvent = e as CustomEvent;
-      if (customEvent.detail) {
-        setDbAlerts(prev => prev.filter(n => n.id !== customEvent.detail));
-      }
-    };
-    window.addEventListener('alerts-cleared', handleAlertsCleared);
-    window.addEventListener('alert-resolved', handleAlertResolved);
+    window.addEventListener('logiflow-alerts-updated', handleAlertsCleared);
     return () => {
-      window.removeEventListener('alerts-cleared', handleAlertsCleared);
-      window.removeEventListener('alert-resolved', handleAlertResolved);
+      window.removeEventListener('logiflow-alerts-updated', handleAlertsCleared);
     };
   }, []);
 
@@ -106,13 +99,7 @@ export default function DashboardPage() {
           setShipments(data);
         }
 
-        const { data: alertsData } = await supabase
-          .from('notifications')
-          .select('*')
-          .eq('user_id', user.id)
-          .eq('is_read', false)
-          .order('created_at', { ascending: false });
-        if (alertsData) setDbAlerts(alertsData);
+        setDbAlerts(getDemoAlerts().filter((a: any) => !a.is_read));
       } else if (isDemo) {
         const demoShips = SAMPLE_SHIPMENTS.map((s, i) => ({
            id: `demo-${i}`,
@@ -297,12 +284,8 @@ export default function DashboardPage() {
                       <p className="text-[13px] font-semibold text-on-surface tracking-tight leading-none uppercase">{a.title}</p>
                       <button 
                         onClick={async () => {
-                          const { error } = await supabase.from('notifications').update({ is_read: true }).eq('id', a.id);
-                          if (!error) {
-                            setDbAlerts(prev => prev.filter(item => item.id !== a.id));
-                            window.dispatchEvent(new CustomEvent('alert-resolved', { detail: a.id }));
-                            toast.success('Alert resolved');
-                          }
+                          resolveDemoAlert(a.id);
+                          toast.success('Alert resolved');
                         }}
                         className="text-[9px] font-black uppercase text-indigo-600 opacity-0 group-hover:opacity-100 transition-opacity"
                       >

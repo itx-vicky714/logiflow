@@ -69,8 +69,18 @@ export default function DashboardPage() {
     const handleAlertsCleared = () => {
       setDbAlerts([]);
     };
+    const handleAlertResolved = (e: Event) => {
+      const customEvent = e as CustomEvent;
+      if (customEvent.detail) {
+        setDbAlerts(prev => prev.filter(n => n.id !== customEvent.detail));
+      }
+    };
     window.addEventListener('alerts-cleared', handleAlertsCleared);
-    return () => window.removeEventListener('alerts-cleared', handleAlertsCleared);
+    window.addEventListener('alert-resolved', handleAlertResolved);
+    return () => {
+      window.removeEventListener('alerts-cleared', handleAlertsCleared);
+      window.removeEventListener('alert-resolved', handleAlertResolved);
+    };
   }, []);
 
 
@@ -223,7 +233,7 @@ export default function DashboardPage() {
              <KPICard title="On Time" value={`${stats.onTimePct}%`} change="Target met" icon="verified" iconColor="#493ee5" />
              <KPICard title="Delayed" value={stats.delayed.toLocaleString()} change="Needs Attention" icon="warning" iconColor="error" isError />
              <KPICard title="High Risk" value={stats.atRisk.toLocaleString()} change="Review Data" icon="gpp_maybe" iconColor="error" isError={stats.atRisk > 0} />
-             <KPICard title="System Alerts" value={alerts.length.toLocaleString()} change="Real-time" icon="bolt" iconColor="#493ee5" />
+             <KPICard title="System Alerts" value={dbAlerts.length.toLocaleString()} change="Real-time" icon="bolt" iconColor="#493ee5" />
           </div>
 
           {/* Revenue Graph Area */}
@@ -290,6 +300,7 @@ export default function DashboardPage() {
                           const { error } = await supabase.from('notifications').update({ is_read: true }).eq('id', a.id);
                           if (!error) {
                             setDbAlerts(prev => prev.filter(item => item.id !== a.id));
+                            window.dispatchEvent(new CustomEvent('alert-resolved', { detail: a.id }));
                             toast.success('Alert resolved');
                           }
                         }}

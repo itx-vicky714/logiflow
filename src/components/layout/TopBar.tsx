@@ -95,7 +95,19 @@ export function TopBar() {
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    
+    const handleAlertResolved = (e: Event) => {
+      const customEvent = e as CustomEvent;
+      if (customEvent.detail) {
+        setNotifications(prev => prev.filter(n => n.id !== customEvent.detail));
+      }
+    };
+    window.addEventListener('alert-resolved', handleAlertResolved);
+    
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      window.removeEventListener('alert-resolved', handleAlertResolved);
+    };
   }, []);
 
   useEffect(() => {
@@ -177,23 +189,36 @@ export function TopBar() {
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('[DEV ERROR] Shipment Insert Failed:', error);
+        throw error;
+      }
       
       const alertReasons = [];
       if (shipmentData.status === 'delayed') alertReasons.push('Transit delay detected');
       if (shipmentData.risk_score > 70) alertReasons.push('High risk threshold exceeded');
       if (currentIndex % 5 === 4) alertReasons.push('Mandatory system maintenance check');
       
-      if (alertReasons.length > 0) {
-        await supabase.from('notifications').insert({
+      for (const reason of alertReasons) {
+        let type = 'risk';
+        if (reason.includes('delay')) type = 'delay';
+        else if (reason.includes('maintenance')) type = 'system';
+        
+        const { error: alertError } = await supabase.from('notifications').insert({
           user_id: currentUser.id,
           shipment_id: newShipment.id,
-          type: shipmentData.status === 'delayed' ? 'delay' : 'risk',
+          type,
           title: 'System Alert',
-          message: `${alertReasons[0]} for shipment #${newShipment.shipment_code.split('-').pop()}.`,
+          message: `${reason} for shipment #${newShipment.shipment_code.split('-').pop()}.`,
           is_read: false
         });
-        toast.info('Alert Triggered for simulated shipment.');
+        
+        if (alertError) {
+          console.error('[DEV ERROR] Notification Insert Failed:', alertError);
+          toast.error(`Alert Insert Failed: ${alertError.message}`);
+        } else {
+          toast.info(`Alert: ${reason}`);
+        }
       }
 
       localStorage.setItem('simulate_index', String(currentIndex + 1));
@@ -295,7 +320,10 @@ export function TopBar() {
                             onClick={async (e) => {
                               e.stopPropagation();
                               const { error } = await supabase.from('notifications').update({ is_read: true }).eq('id', n.id);
-                              if (!error) setNotifications(prev => prev.filter(item => item.id !== n.id));
+                              if (!error) {
+                                setNotifications(prev => prev.filter(item => item.id !== n.id));
+                                window.dispatchEvent(new CustomEvent('alert-resolved', { detail: n.id }));
+                              }
                             }}
                             className="text-[9px] font-bold uppercase text-indigo-600 opacity-0 group-hover:opacity-100 transition-opacity"
                           >

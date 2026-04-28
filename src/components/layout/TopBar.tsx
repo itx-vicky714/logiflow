@@ -14,16 +14,53 @@ import {
   Bell, HelpCircle, User, LogOut, ChevronRight, Menu, RefreshCcw, Box
 } from 'lucide-react';
 
-const SIMULATE_SEQUENCE = [
-  { origin: 'Mumbai', destination: 'Delhi', mode: 'road', status: 'on_time', priority: 'normal', risk_score: 15, cargo_type: 'Electronics', supplier_name: 'Tata Motors', weight_kg: 1200, declared_value: 150000 },
-  { origin: 'Chennai', destination: 'Bangalore', mode: 'rail', status: 'in_transit', priority: 'normal', risk_score: 35, cargo_type: 'Textiles', supplier_name: 'Reliance Industries', weight_kg: 3000, declared_value: 200000 },
-  { origin: 'Kolkata', destination: 'Hyderabad', mode: 'air', status: 'in_transit', priority: 'high', risk_score: 72, cargo_type: 'Pharmaceuticals', supplier_name: 'Sun Pharma Logistics', weight_kg: 500, declared_value: 500000 },
-  { origin: 'Ahmedabad', destination: 'Pune', mode: 'road', status: 'delayed', priority: 'high', risk_score: 85, cargo_type: 'Automotive Parts', supplier_name: 'Mahindra Supply Co', weight_kg: 4500, declared_value: 350000 },
-  { origin: 'Delhi', destination: 'Kolkata', mode: 'rail', status: 'on_time', priority: 'normal', risk_score: 20, cargo_type: 'FMCG Goods', supplier_name: 'Flipkart Commerce', weight_kg: 2000, declared_value: 120000 },
-  { origin: 'Mumbai', destination: 'Chennai', mode: 'sea', status: 'in_transit', priority: 'normal', risk_score: 45, cargo_type: 'Industrial Equipment', supplier_name: 'Larsen & Toubro', weight_kg: 8000, declared_value: 800000 },
-  { origin: 'Bangalore', destination: 'Hyderabad', mode: 'road', status: 'on_time', priority: 'normal', risk_score: 10, cargo_type: 'IT Hardware', supplier_name: 'Infosys Logistics', weight_kg: 800, declared_value: 250000 },
-  { origin: 'Patna', destination: 'Mumbai', mode: 'rail', status: 'in_transit', priority: 'high', risk_score: 68, cargo_type: 'Agricultural Goods', supplier_name: 'ITC Agribusiness', weight_kg: 6000, declared_value: 90000 },
-];
+const generateSimulatedData = (index: number) => {
+  const routes = [
+    { o: 'Delhi', d: 'Mumbai', m: 'road' },
+    { o: 'Patna', d: 'Surat', m: 'rail' },
+    { o: 'Kolkata', d: 'Chennai', m: 'sea' },
+    { o: 'Jaipur', d: 'Lucknow', m: 'road' },
+    { o: 'Bengaluru', d: 'Hyderabad', m: 'air' },
+    { o: 'Pune', d: 'Ahmedabad', m: 'road' },
+    { o: 'Mumbai', d: 'Chennai', m: 'sea' }
+  ];
+  const step = index % 5;
+  const route = routes[index % routes.length];
+  
+  let status = 'in_transit';
+  let risk_score = 10 + (index % 20);
+  let priority = 'normal';
+
+  if (step === 0) {
+    status = 'in_transit';
+  } else if (step === 1) {
+    status = 'on_time';
+  } else if (step === 2) {
+    status = 'delayed';
+    risk_score = 45;
+  } else if (step === 3) {
+    status = 'in_transit';
+    risk_score = 75 + (index % 20);
+    priority = 'high';
+  } else if (step === 4) {
+    status = 'delayed';
+    risk_score = 85 + (index % 10);
+    priority = 'high';
+  }
+
+  return {
+    origin: route.o,
+    destination: route.d,
+    mode: route.m,
+    status,
+    priority,
+    risk_score,
+    cargo_type: 'Industrial Goods',
+    supplier_name: `Supplier ${String.fromCharCode(65 + (index % 26))} Logistics`,
+    weight_kg: 1000 + (index * 150),
+    declared_value: 50000 + (index * 5000),
+  };
+};
 
 export function TopBar() {
   const { user, signOut } = useAuth();
@@ -41,19 +78,12 @@ export function TopBar() {
   useEffect(() => {
     const handleAlertsCleared = () => {
       setNotifications([]);
-      setDismissedDemoAlerts(['demo1', 'demo2', 'demo3']);
     };
     window.addEventListener('alerts-cleared', handleAlertsCleared);
     return () => window.removeEventListener('alerts-cleared', handleAlertsCleared);
   }, []);
 
-  const demoAlerts = React.useMemo(() => [
-    { id: 'demo1', type: 'risk', title: 'High route risk detected', message: 'Shipment requires operator review due to severe weather anomalies.', is_read: false },
-    { id: 'demo2', type: 'delay', title: 'Weather delay warning', message: 'Expected delay of 4 hours on active route.', is_read: false },
-    { id: 'demo3', type: 'info', title: 'Operator review needed', message: 'Customs documentation pending clearance.', is_read: false }
-  ].filter(a => !dismissedDemoAlerts.includes(a.id)), [dismissedDemoAlerts]);
-
-  const displayAlerts = notifications.length > 0 ? notifications : demoAlerts;
+  const displayAlerts = notifications;
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -95,12 +125,10 @@ export function TopBar() {
           .eq('is_read', false);
       }
       setNotifications([]);
-      setDismissedDemoAlerts(['demo1', 'demo2', 'demo3']);
       window.dispatchEvent(new Event('alerts-cleared'));
       toast.success('All alerts resolved', { id: toastId });
     } catch (err) {
       setNotifications([]);
-      setDismissedDemoAlerts(['demo1', 'demo2', 'demo3']);
       window.dispatchEvent(new Event('alerts-cleared'));
       toast.success('All alerts resolved', { id: toastId });
     }
@@ -132,7 +160,7 @@ export function TopBar() {
       if (!currentUser) throw new Error('Authentication required');
 
       const currentIndex = parseInt(localStorage.getItem('simulate_index') || '0');
-      const shipmentData = SIMULATE_SEQUENCE[currentIndex % SIMULATE_SEQUENCE.length];
+      const shipmentData = generateSimulatedData(currentIndex);
       
       const eta = new Date();
       eta.setHours(eta.getHours() + Math.floor(Math.random() * 48) + 6);
@@ -151,20 +179,21 @@ export function TopBar() {
 
       if (error) throw error;
       
-      // Auto-generate alert on every 4th simulation run
-      if (currentIndex % 4 === 3) {
-        const severityArr = ['low', 'medium', 'high', 'critical'];
-        const reasons = ['Weather anomaly detected', 'Transit vector drift', 'Resource bottleneck', 'Route disruption'];
-        
+      const alertReasons = [];
+      if (shipmentData.status === 'delayed') alertReasons.push('Transit delay detected');
+      if (shipmentData.risk_score > 70) alertReasons.push('High risk threshold exceeded');
+      if (currentIndex % 5 === 4) alertReasons.push('Mandatory system maintenance check');
+      
+      if (alertReasons.length > 0) {
         await supabase.from('notifications').insert({
           user_id: currentUser.id,
           shipment_id: newShipment.id,
-          type: 'risk',
-          title: 'Simulated System Alert',
-          message: `${reasons[currentIndex % reasons.length]} for shipment #${newShipment.shipment_code.split('-').pop()}.`,
+          type: shipmentData.status === 'delayed' ? 'delay' : 'risk',
+          title: 'System Alert',
+          message: `${alertReasons[0]} for shipment #${newShipment.shipment_code.split('-').pop()}.`,
           is_read: false
         });
-        toast.info('Alert Triggered: Anomalous vector detected in sandbox node.');
+        toast.info('Alert Triggered for simulated shipment.');
       }
 
       localStorage.setItem('simulate_index', String(currentIndex + 1));
@@ -265,12 +294,8 @@ export function TopBar() {
                           <button 
                             onClick={async (e) => {
                               e.stopPropagation();
-                              if (n.id?.toString().startsWith('demo')) {
-                                setDismissedDemoAlerts(prev => [...prev, n.id as string]);
-                              } else {
-                                const { error } = await supabase.from('notifications').update({ is_read: true }).eq('id', n.id);
-                                if (!error) setNotifications(prev => prev.filter(item => item.id !== n.id));
-                              }
+                              const { error } = await supabase.from('notifications').update({ is_read: true }).eq('id', n.id);
+                              if (!error) setNotifications(prev => prev.filter(item => item.id !== n.id));
                             }}
                             className="text-[9px] font-bold uppercase text-indigo-600 opacity-0 group-hover:opacity-100 transition-opacity"
                           >

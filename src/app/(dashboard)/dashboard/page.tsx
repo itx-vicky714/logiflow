@@ -65,12 +65,9 @@ export default function DashboardPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [dateFilter, setDateFilter] = useState('all');
-  const [dismissedDemoAlerts, setDismissedDemoAlerts] = useState<string[]>([]);
-
   useEffect(() => {
     const handleAlertsCleared = () => {
       setDbAlerts([]);
-      setDismissedDemoAlerts(['demo1', 'demo2', 'demo3']);
     };
     window.addEventListener('alerts-cleared', handleAlertsCleared);
     return () => window.removeEventListener('alerts-cleared', handleAlertsCleared);
@@ -187,13 +184,7 @@ export default function DashboardPage() {
 
   const cityWeathers = React.useMemo(() => KEY_CITIES.slice(0, 2).map(getCityWeather), []);
   
-  const demoAlerts = React.useMemo(() => [
-    { id: 'demo1', type: 'risk', title: 'High route risk detected', message: 'Shipment requires operator review due to severe weather anomalies.', is_read: false },
-    { id: 'demo2', type: 'delay', title: 'Weather delay warning', message: 'Expected delay of 4 hours on active route.', is_read: false },
-    { id: 'demo3', type: 'info', title: 'Operator review needed', message: 'Customs documentation pending clearance.', is_read: false }
-  ].filter(a => !dismissedDemoAlerts.includes(a.id)), [dismissedDemoAlerts]);
-
-  const alerts = React.useMemo(() => dbAlerts.length > 0 ? dbAlerts.slice(0, 3) : demoAlerts, [dbAlerts, demoAlerts]);
+  const alerts = React.useMemo(() => dbAlerts.slice(0, 3), [dbAlerts]);
 
   if (loading) return (
     <div className="pt-16 px-12">
@@ -296,15 +287,10 @@ export default function DashboardPage() {
                       <p className="text-[13px] font-semibold text-on-surface tracking-tight leading-none uppercase">{a.title}</p>
                       <button 
                         onClick={async () => {
-                          if (a.id.toString().startsWith('demo')) {
-                            setDismissedDemoAlerts(prev => [...prev, a.id]);
+                          const { error } = await supabase.from('notifications').update({ is_read: true }).eq('id', a.id);
+                          if (!error) {
+                            setDbAlerts(prev => prev.filter(item => item.id !== a.id));
                             toast.success('Alert resolved');
-                          } else {
-                            const { error } = await supabase.from('notifications').update({ is_read: true }).eq('id', a.id);
-                            if (!error) {
-                              setDbAlerts(prev => prev.filter(item => item.id !== a.id));
-                              toast.success('Alert resolved');
-                            }
                           }
                         }}
                         className="text-[9px] font-black uppercase text-indigo-600 opacity-0 group-hover:opacity-100 transition-opacity"

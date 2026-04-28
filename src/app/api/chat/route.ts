@@ -75,7 +75,7 @@ interface ShipmentRecord {
   declared_value?: number;
 }
 
-function smartFallbackText(message: string, shipments: ShipmentRecord[]): string {
+function smartFallbackText(message: string, shipments: ShipmentRecord[], alerts: any[] = []): string {
   const msg = message.toLowerCase();
   const intent = detectIntent(message);
   
@@ -119,9 +119,7 @@ function smartFallbackText(message: string, shipments: ShipmentRecord[]): string
   }
 
   if (intent === 'alerts_summary') {
-    const criticalCount = shipments.filter((s) => s.risk_score >= HIGH_RISK_THRESHOLD).length;
-    const delayCount = shipments.filter((s) => s.status === 'delayed').length;
-    return `**AI Alerts Summary:**\n- 🔴 Delayed shipments requiring action: **${delayCount}**\n- ⚠️ High-risk shipments (score ≥ ${HIGH_RISK_THRESHOLD}): **${criticalCount}**\n\nFor real-time alert logs and grid telemetry, please visit the Dashboard or Reports page.`;
+    return `**AI Alerts Summary:**\nThere are currently **${alerts.length}** unresolved alerts in the system.\n\nFor real-time alert logs and grid telemetry, please visit the Dashboard or Reports page.`;
   }
 
   if (intent === 'revenue_query') {
@@ -226,14 +224,18 @@ export async function POST(req: Request) {
       }
     );
 
-    const { data: { user } } = await supabase.auth.getUser();
-    let shipments: ShipmentRecord[] = [];
-    if (user) {
-      const { data } = await supabase.from('shipments').select('*').eq('user_id', user.id);
-      if (data) shipments = data;
-    } else {
-      // Fallback to passed shipments if not logged in (e.g. testing)
-      shipments = body.shipments || [];
+    let shipments: ShipmentRecord[] = Array.isArray(body.shipments) && body.shipments.length > 0 ? body.shipments : [];
+    let alerts: any[] = Array.isArray(body.alerts) ? body.alerts : [];
+    
+    // Fallback if not provided by client
+    if (shipments.length === 0) {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data } = await supabase.from('shipments').select('*').eq('user_id', user.id);
+        if (data) shipments = data;
+        const { data: a } = await supabase.from('notifications').select('*').eq('user_id', user.id).eq('is_read', false);
+        if (a) alerts = a;
+      }
     }
 
     const apiKey = process.env.GEMINI_API_KEY;
@@ -241,11 +243,11 @@ export async function POST(req: Request) {
     // Deterministic override before calling LLM
     const intent = detectIntent(userMessage);
     if (intent && intent !== 'risk_analysis') {
-      return NextResponse.json({ text: smartFallbackText(userMessage, shipments), deterministic: true });
+      return NextResponse.json({ text: smartFallbackText(userMessage, shipments, alerts), deterministic: true });
     }
 
     if (!apiKey || apiKey === '' || apiKey.startsWith('your_')) {
-      return NextResponse.json({ text: smartFallbackText(message, shipments), fallback: true });
+      return NextResponse.json({ text: smartFallbackText(message, shipments, alerts), fallback: true });
     }
 
     // Comprehensive Summary Generation
@@ -326,20 +328,20 @@ export async function POST(req: Request) {
       try {
         response = await tryModel('gemini-1.5-pro');
       } catch {
-        return NextResponse.json({ text: smartFallbackText(message, shipments), fallback: true });
+        return NextResponse.json({ text: smartFallbackText(message, shipments, alerts), fallback: true });
       }
     }
 
-    if (!response.ok) return NextResponse.json({ text: smartFallbackText(message, shipments), fallback: true });
+    if (!response.ok) return NextResponse.json({ text: smartFallbackText(message, shipments, alerts), fallback: true });
 
     const data = await response.json();
     const text = data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
 
-    return NextResponse.json({ text: text || smartFallbackText(message, shipments) });
+    return NextResponse.json({ text: text || smartFallbackText(message, shipments, alerts) });
 
   } catch (err) {
     console.error('[LogiBot] Chat Error:', err);
-    return NextResponse.json({ text: smartFallbackText(userMessage, []), fallback: true });
+    return NextResponse.json({ text: smartFallbackText(userMessage, [], []), fallback: true });
   }
 }
 

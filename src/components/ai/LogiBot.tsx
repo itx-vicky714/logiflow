@@ -6,6 +6,7 @@ import {
   X, Zap, Send, MessageSquare, Brain, Dot 
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { supabase } from '@/lib/supabase';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -39,6 +40,20 @@ export default function LogiBot() {
     setLoading(true);
 
     try {
+      let freshShipments = [];
+      let freshAlerts = [];
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          const { data: s } = await supabase.from('shipments').select('*').eq('user_id', user.id);
+          const { data: a } = await supabase.from('notifications').select('*').eq('user_id', user.id).eq('is_read', false);
+          if (s) freshShipments = s;
+          if (a) freshAlerts = a;
+        }
+      } catch (e) {
+        console.error('Error fetching fresh context', e);
+      }
+
       const res = await fetch('/api/chat', {
         method: 'POST',
         headers: { 
@@ -48,9 +63,11 @@ export default function LogiBot() {
         body: JSON.stringify({
           message: userMsg,
           history: messages.map(m => ({
-          role: m.role === 'user' ? 'user' : 'model',
-          content: m.content
-        })),
+            role: m.role === 'user' ? 'user' : 'model',
+            content: m.content
+          })),
+          shipments: freshShipments,
+          alerts: freshAlerts
         })
       });
 
